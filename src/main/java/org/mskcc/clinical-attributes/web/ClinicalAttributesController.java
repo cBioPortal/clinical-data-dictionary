@@ -17,7 +17,7 @@ package org.mskcc.clinical_attributes.web;
 
 import org.mskcc.clinical_attributes.model.ClinicalAttribute;
 import org.mskcc.clinical_attributes.service.ClinicalAttributesService;
-//import org.mskcc.clinical_attributes.service.exception.*;  TODO
+import org.mskcc.clinical_attributes.service.exception.ClinicalAttributeNotFoundException;
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * @author Manda Wilson 
@@ -40,26 +41,21 @@ public class ClinicalAttributesController {
     private ClinicalAttributesService clinicalAttributesService;
 
     @RequestMapping(method = RequestMethod.GET, value="/")
-    public Iterable<ClinicalAttribute> getClinicalAttributes() {
+    public Iterable<ClinicalAttribute> getClinicalAttributes(@RequestParam(value = "normalizedColumnHeaders", required = false) String normalizedColumnHeaders) {
+        if (normalizedColumnHeaders != null) {
+            return clinicalAttributesService.getMetadataByNormalizedColumnHeaders(Arrays.asList(normalizedColumnHeaders.split(",")));
+        }
+        // otherwise return all clinical attributes
         return clinicalAttributesService.getClinicalAttributes();
     }
 
-    /* TODO
-    @ExceptionHandler
-    public void handleSessionInvalid(SessionInvalidException e, HttpServletResponse response) 
-        throws IOException {
-        response.sendError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+    @RequestMapping(value = "/{normalizedColumnHeader}", method = RequestMethod.GET)
+    public ClinicalAttribute getClinicalAttribute(@PathVariable String normalizedColumnHeader) {
+        return clinicalAttributesService.getMetadataByNormalizedColumnHeader(normalizedColumnHeader);
     }
 
-    @ExceptionHandler
-    public void handleSessionQueryInvalid(SessionQueryInvalidException e, HttpServletResponse response) 
-        throws IOException {
-        response.sendError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
-    }
-    
-    @ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "Session not found")
-    @ExceptionHandler(SessionNotFoundException.class)
-    public void handleSessionNotFound() {}
-    */
+    @ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "Clinical attribute not found")
+    @ExceptionHandler(ClinicalAttributeNotFoundException.class)
+    public void handleClinicalAttributeNotFound() {}
 }
 

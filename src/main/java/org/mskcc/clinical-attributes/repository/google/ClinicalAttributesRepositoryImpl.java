@@ -126,8 +126,9 @@ public class ClinicalAttributesRepositoryImpl implements ClinicalAttributesRepos
             spreadsheetService = new SpreadsheetService("data");
             spreadsheetService.setOAuth2Credentials(credential);
         } catch (IOException | GeneralSecurityException e) {
-            // TODO think about this
-            e.printStackTrace();
+            // we don't throw the exception, we will just return no data
+            // TODO we should probably throw an exception the user must catch
+            logger.error("initSpreadsheetService():", e);
         }
     }
 
@@ -145,7 +146,7 @@ public class ClinicalAttributesRepositoryImpl implements ClinicalAttributesRepos
         // error happens here
         feed = spreadsheetService.getFeed(factory.getSpreadsheetsFeedUrl(), SpreadsheetFeed.class);
         for (SpreadsheetEntry entry : feed.getEntries()) {
-            System.out.println(entry.getTitle().getPlainText());
+            logger.info("getSpreadsheet(): " + spreadsheetName + " title: " + entry.getTitle().getPlainText());
             if (entry.getTitle().getPlainText().equals(spreadsheetName)) {
                 return entry;
             }

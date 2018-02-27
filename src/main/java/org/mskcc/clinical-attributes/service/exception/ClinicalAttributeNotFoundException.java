@@ -13,18 +13,19 @@
  * Center has been advised of the possibility of such damage.
  */
 
-package org.mskcc.clinical_attributes.service;
+package org.mskcc.clinical_attributes.service.exception;
 
-import org.mskcc.clinical_attributes.model.ClinicalAttribute;
-import org.mskcc.clinical_attributes.service.exception.ClinicalAttributeNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.List;
+public class ClinicalAttributeNotFoundException extends RuntimeException {
 
-/**
- * @author Manda Wilson 
- */
-public interface ClinicalAttributesService {
-    List<ClinicalAttribute> getClinicalAttributes();
-    List<ClinicalAttribute> getMetadataByNormalizedColumnHeaders(List<String> normalizedColumnHeaders) throws ClinicalAttributeNotFoundException;
-    ClinicalAttribute getMetadataByNormalizedColumnHeader(String normalizedColumnHeader) throws ClinicalAttributeNotFoundException;
+    private static final Logger logger = LoggerFactory.getLogger(ClinicalAttributeNotFoundException.class);
+
+    public ClinicalAttributeNotFoundException(String normalizedColumnHeader) {
+        super("Could not find clinical attribute by normalized column header '" + normalizedColumnHeader + "'.");
+        logger.error("Could not find clinical attribute by normalized column header '" + normalizedColumnHeader + "'.");
+    }
+
 }
+
