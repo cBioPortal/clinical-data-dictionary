@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2018 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -40,18 +40,18 @@ public class ClinicalAttributesController {
     @Autowired
     private ClinicalAttributesService clinicalAttributesService;
 
-    @RequestMapping(method = RequestMethod.GET, value="/")
-    public Iterable<ClinicalAttribute> getClinicalAttributes(@RequestParam(value = "normalizedColumnHeaders", required = false) String normalizedColumnHeaders) {
+    @RequestMapping(method = RequestMethod.GET, value="/{studyId}")
+    public Iterable<ClinicalAttribute> getClinicalAttributes(@PathVariable String studyId, @RequestParam(value = "normalizedColumnHeaders", required = false) String normalizedColumnHeaders) {
         if (normalizedColumnHeaders != null) {
-            return clinicalAttributesService.getMetadataByNormalizedColumnHeaders(Arrays.asList(normalizedColumnHeaders.split(",")));
+            return clinicalAttributesService.getMetadataByNormalizedColumnHeaders(studyId, Arrays.asList(normalizedColumnHeaders.split(",")));
         }
         // otherwise return all clinical attributes
-        return clinicalAttributesService.getClinicalAttributes();
+        return clinicalAttributesService.getClinicalAttributes(studyId);
     }
 
-    @RequestMapping(value = "/{normalizedColumnHeader}", method = RequestMethod.GET)
-    public ClinicalAttribute getClinicalAttribute(@PathVariable String normalizedColumnHeader) {
-        return clinicalAttributesService.getMetadataByNormalizedColumnHeader(normalizedColumnHeader);
+    @RequestMapping(value = "/{studyId}/{normalizedColumnHeader}", method = RequestMethod.GET)
+    public ClinicalAttribute getClinicalAttribute(@PathVariable String studyId, @PathVariable String normalizedColumnHeader) {
+        return clinicalAttributesService.getMetadataByNormalizedColumnHeader(studyId, normalizedColumnHeader);
     }
 
     @ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "Clinical attribute not found")

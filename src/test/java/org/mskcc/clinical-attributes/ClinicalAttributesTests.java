@@ -49,7 +49,7 @@ public class ClinicalAttributesTests {
     @Test
     public void getClinicalAttributesTest() throws Exception {
         // now test all clinical attributes are returned by GET /api/
-        ResponseEntity<String> response = restTemplate.getForEntity("/api/", String.class);
+        ResponseEntity<String> response = restTemplate.getForEntity("/api/fake_study_id", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
 
         ObjectMapper mapper = new ObjectMapper();

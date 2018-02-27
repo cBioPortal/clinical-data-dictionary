@@ -15,10 +15,7 @@
 
 package org.mskcc.clinical_attributes.service.internal;
 
-import javax.annotation.PostConstruct;
-
 import org.mskcc.clinical_attributes.model.ClinicalAttribute;
-import org.mskcc.clinical_attributes.repository.ClinicalAttributesRepository;
 import org.mskcc.clinical_attributes.service.ClinicalAttributesService;
 import org.mskcc.clinical_attributes.service.exception.ClinicalAttributeNotFoundException;
 
@@ -26,66 +23,55 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 
 /**
- * @author Manda Wilson 
+ * Note this class relies on the ClinicalAttributesCache class which will frequently generate a
+ * new cache of clinical attributes.  Each method in this class should only get the cache once
+ * and should not attempt to make any modifications to the cache.
+ *
+ * @author Robert Sheridan, Manda Wilson
  */
-@EnableScheduling
 @Service
 public class ClinicalAttributesServiceImpl implements ClinicalAttributesService {
 
-    private static HashMap<String, ClinicalAttribute> clinicalAttributeCashe = new HashMap<String, ClinicalAttribute>();
+    @Autowired
+    private ClinicalAttributesCache clinicalAttributesCache; 
 
     private static final Logger logger = LoggerFactory.getLogger(ClinicalAttributesServiceImpl.class);
 
-    @Autowired
-    private ClinicalAttributesRepository clinicalAttributesRepository;
-
     @Override
-    public List<ClinicalAttribute> getClinicalAttributes() {
-        return new ArrayList(clinicalAttributeCashe.values());
+    public List<ClinicalAttribute> getClinicalAttributes(String studyId) {
+        return new ArrayList(clinicalAttributesCache.getClinicalAttributes().values());
     }
 
     @Override
-    public List<ClinicalAttribute> getMetadataByNormalizedColumnHeaders(List<String> normalizedColumnHeaders)
+    public List<ClinicalAttribute> getMetadataByNormalizedColumnHeaders(String studyId, List<String> normalizedColumnHeaders)
         throws ClinicalAttributeNotFoundException {
         List<ClinicalAttribute> clinicalAttributes = new ArrayList<ClinicalAttribute>();
+        Map<String, ClinicalAttribute> clinicalAttributeCache = clinicalAttributesCache.getClinicalAttributes();
         for (String normalizedColumnHeader : normalizedColumnHeaders) {
-            clinicalAttributes.add(getMetadataByNormalizedColumnHeader(normalizedColumnHeader)); 
+            clinicalAttributes.add(getMetadataByNormalizedColumnHeader(clinicalAttributeCache, studyId, normalizedColumnHeader));
         }
         return clinicalAttributes;
     }
 
     @Override
-    public ClinicalAttribute getMetadataByNormalizedColumnHeader(String normalizedColumnHeader) 
+    public ClinicalAttribute getMetadataByNormalizedColumnHeader(String studyId, String normalizedColumnHeader)
         throws ClinicalAttributeNotFoundException {
-        if (clinicalAttributeCashe.containsKey(normalizedColumnHeader.toUpperCase())) {
-            return clinicalAttributeCashe.get(normalizedColumnHeader.toUpperCase());
+        return getMetadataByNormalizedColumnHeader(clinicalAttributesCache.getClinicalAttributes(), studyId, normalizedColumnHeader);
+    }
+
+    private ClinicalAttribute getMetadataByNormalizedColumnHeader(Map<String, ClinicalAttribute> clinicalAttributeCache, String studyId, String normalizedColumnHeader)
+        throws ClinicalAttributeNotFoundException {
+        if (clinicalAttributeCache.containsKey(normalizedColumnHeader.toUpperCase())) {
+            return clinicalAttributeCache.get(normalizedColumnHeader.toUpperCase());
         }
         throw new ClinicalAttributeNotFoundException(normalizedColumnHeader);
     }
 
-    @PostConstruct // call when constructed
-    @Scheduled(cron="0 */5 * * * *") // call every 5 minutes (TODO change this?)
-    private void resetCache() {
-        logger.info("resetCache(): refilling clinical attribute cache");
-        List<ClinicalAttribute> latestClinicalAttributes = clinicalAttributesRepository.getClinicalAttribute(); 
-        if (latestClinicalAttributes.size() > 0) {
-            // TODO delete values not used anymore
-            for (ClinicalAttribute clinicalAttribute : latestClinicalAttributes) {
-                clinicalAttributeCashe.put(clinicalAttribute.getNormalizedColumnHeader(), clinicalAttribute);
-            }
-            logger.info("resetCache(): refillled cache with " + latestClinicalAttributes.size() + " clinical attributes");
-        } else {
-            // what if cache never gets updated because we break something?
-            logger.error("resetCache(): failed to pull clinical attributes from repository, not updating cache");
-        }
-    }
 }

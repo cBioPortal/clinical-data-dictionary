@@ -24,7 +24,7 @@ import java.util.List;
  * @author Manda Wilson 
  */
 public interface ClinicalAttributesService {
-    List<ClinicalAttribute> getClinicalAttributes();
-    List<ClinicalAttribute> getMetadataByNormalizedColumnHeaders(List<String> normalizedColumnHeaders) throws ClinicalAttributeNotFoundException;
-    ClinicalAttribute getMetadataByNormalizedColumnHeader(String normalizedColumnHeader) throws ClinicalAttributeNotFoundException;
+    List<ClinicalAttribute> getClinicalAttributes(String studyId);
+    List<ClinicalAttribute> getMetadataByNormalizedColumnHeaders(String studyId, List<String> normalizedColumnHeaders) throws ClinicalAttributeNotFoundException;
+    ClinicalAttribute getMetadataByNormalizedColumnHeader(String studyId, String normalizedColumnHeader) throws ClinicalAttributeNotFoundException;
 }
