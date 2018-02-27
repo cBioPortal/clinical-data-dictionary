@@ -15,6 +15,10 @@
 
 package org.mskcc.clinical_attributes.service.internal;
 
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.List;
+
 import org.mskcc.clinical_attributes.model.ClinicalAttribute;
 import org.mskcc.clinical_attributes.service.ClinicalAttributesService;
 import org.mskcc.clinical_attributes.service.exception.ClinicalAttributeNotFoundException;
@@ -24,10 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.List;
 
 /**
  * Note this class relies on the ClinicalAttributesCache class which will frequently generate a

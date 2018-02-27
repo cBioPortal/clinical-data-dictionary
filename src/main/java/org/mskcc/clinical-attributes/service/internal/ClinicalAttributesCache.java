@@ -17,6 +17,11 @@ package org.mskcc.clinical_attributes.service.internal;
 
 import javax.annotation.PostConstruct;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.mskcc.clinical_attributes.model.ClinicalAttribute;
 import org.mskcc.clinical_attributes.repository.ClinicalAttributesRepository;
 
@@ -27,11 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Robert Sheridan, Manda Wilson

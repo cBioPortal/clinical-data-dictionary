@@ -15,13 +15,6 @@
 
 package org.mskcc.clinical_attributes.web;
 
-import org.mskcc.clinical_attributes.model.ClinicalAttribute;
-import org.mskcc.clinical_attributes.service.ClinicalAttributesService;
-import org.mskcc.clinical_attributes.service.exception.ClinicalAttributeNotFoundException;
-
-import org.springframework.web.bind.annotation.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
@@ -29,6 +22,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.Arrays;
+
+import org.mskcc.clinical_attributes.model.ClinicalAttribute;
+import org.mskcc.clinical_attributes.service.ClinicalAttributesService;
+import org.mskcc.clinical_attributes.service.exception.ClinicalAttributeNotFoundException;
+
+import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 
 /**
  * @author Manda Wilson 

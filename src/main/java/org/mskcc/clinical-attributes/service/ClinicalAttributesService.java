@@ -15,10 +15,10 @@
 
 package org.mskcc.clinical_attributes.service;
 
+import java.util.List;
+
 import org.mskcc.clinical_attributes.model.ClinicalAttribute;
 import org.mskcc.clinical_attributes.service.exception.ClinicalAttributeNotFoundException;
-
-import java.util.List;
 
 /**
  * @author Manda Wilson 
