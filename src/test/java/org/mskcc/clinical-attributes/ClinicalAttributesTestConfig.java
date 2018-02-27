@@ -44,6 +44,10 @@ public class ClinicalAttributesTestConfig {
     private Map<String, ClinicalAttribute> makeMockAttributeMap() {
         Map<String, ClinicalAttribute> attributeMap = new HashMap<>();
         attributeMap.put("AGE", new ClinicalAttribute("AGE", "Diagnosis Age", "Age at which a condition or disease was first diagnosed.", "NUMBER", "PATIENT", "1"));
+        attributeMap.put("BONE_MARROW_SAMPLE_HISTOLOGY", new ClinicalAttribute("BONE_MARROW_SAMPLE_HISTOLOGY", "Bone Marrow Sample Histology", "Bone Marrow Sample Histology", "STRING", "SAMPLE", "1"));
+        attributeMap.put("CLIN_M_STAGE", new ClinicalAttribute("CLIN_M_STAGE", "Neoplasm American Joint Committee on Cancer Clinical Distant Metastasis M Stage", "Extent of the distant metastasis for the cancer based on evidence obtained from clinical assessment parameters determined prior to treatment.", "STRING", "PATIENT", "1"));
+        attributeMap.put("DISEASE_STAGE", new ClinicalAttribute("DISEASE_STAGE", "Disease Stage", "Disease Stage", "STRING", "SAMPLE", "1"));
+        attributeMap.put("LAST_STATUS", new ClinicalAttribute("LAST_STATUS", "Last Status", "Last Status.", "STRING", "PATIENT", "1"));
         return Collections.unmodifiableMap(attributeMap);
     }
 

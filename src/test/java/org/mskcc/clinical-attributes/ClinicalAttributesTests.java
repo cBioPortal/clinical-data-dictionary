@@ -57,6 +57,47 @@ public class ClinicalAttributesTests {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode responseJSON = mapper.readTree(response.getBody());
 
-        assertThat(responseJSON.size(), equalTo(3533));
-        assertThat(response.getBody(), containsString("{\"normalized_column_header\":\"DX_PERCENT_PR\",\"display_name\":\"MedR Diagnostic PR %\",\"descriptions\":\"Progesterone Receptor (PR) percentage reported in diagnostic sample. A value of >=1% indicates a \\\"PR Positive\\\" tumor.\",\"datatype\":\"STRING\",\"attribute_type\":\"PATIENT\",\"priority\":\"1\"}")); }
+        assertThat(responseJSON.size(), equalTo(5));
+        assertThat(response.getBody(), containsString("{\"normalized_column_header\":\"LAST_STATUS\",\"display_name\":\"Last Status\",\"descriptions\":\"Last Status.\",\"datatype\":\"STRING\",\"attribute_type\":\"PATIENT\",\"priority\":\"1\"}"));
     }
+
+    @Test
+    public void getClinicalAttributesFilteredTest() throws Exception {
+        // now test all clinical attributes are returned by GET /api/
+        ResponseEntity<String> response = restTemplate.getForEntity("/api/fake_study_id?normalizedColumnHeaders=AGE,LAST_status", String.class);
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode responseJSON = mapper.readTree(response.getBody());
+
+        assertThat(responseJSON.size(), equalTo(2));
+        assertThat(response.getBody(), containsString("{\"normalized_column_header\":\"LAST_STATUS\",\"display_name\":\"Last Status\",\"descriptions\":\"Last Status.\",\"datatype\":\"STRING\",\"attribute_type\":\"PATIENT\",\"priority\":\"1\"}"));
+        assertThat(response.getBody(), containsString("{\"normalized_column_header\":\"AGE\",\"display_name\":\"Diagnosis Age\",\"descriptions\":\"Age at which a condition or disease was first diagnosed.\",\"datatype\":\"NUMBER\",\"attribute_type\":\"PATIENT\",\"priority\":\"1\"}"));
+    }
+
+    @Test
+    public void getClinicalAttributesInvalidClinicalAttributeTest() throws Exception {
+        // now test all clinical attributes are returned by GET /api/
+        ResponseEntity<String> response = restTemplate.getForEntity("/api/fake_study_id?normalizedColumnHeaders=AGE,LAST_status,INVALID_ATTRIBUTE", String.class);
+        assertThat(response.getBody(), containsString("org.mskcc.clinical_attributes.service.exception.ClinicalAttributeNotFoundException"));
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.NOT_FOUND));
+    }
+
+    @Test
+    public void getClinicalAttributeTest() throws Exception {
+        // now test all clinical attributes are returned by GET /api/
+        ResponseEntity<String> response = restTemplate.getForEntity("/api/fake_study_id/AGE", String.class);
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+
+        assertThat(response.getBody(), equalTo("{\"normalized_column_header\":\"AGE\",\"display_name\":\"Diagnosis Age\",\"descriptions\":\"Age at which a condition or disease was first diagnosed.\",\"datatype\":\"NUMBER\",\"attribute_type\":\"PATIENT\",\"priority\":\"1\"}"));
+    }
+
+    @Test
+    public void getClinicalAttributeInvalidClinicalAttributeTest() throws Exception {
+        // now test all clinical attributes are returned by GET /api/
+        ResponseEntity<String> response = restTemplate.getForEntity("/api/fake_study_id/INVALID_ATTRIBUTE", String.class);
+        assertThat(response.getBody(), containsString("org.mskcc.clinical_attributes.service.exception.ClinicalAttributeNotFoundException"));
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.NOT_FOUND));
+    }
+
+}
