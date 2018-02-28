@@ -13,7 +13,7 @@
  * Center has been advised of the possibility of such damage.
  */
 
-package org.mskcc.clinical_attributes.service.internal;
+package org.cbioportal.cam.service.internal;
 
 import javax.annotation.PostConstruct;
 
@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.mskcc.clinical_attributes.model.ClinicalAttribute;
-import org.mskcc.clinical_attributes.repository.ClinicalAttributesRepository;
+import org.cbioportal.cam.model.ClinicalAttribute;
+import org.cbioportal.cam.repository.ClinicalAttributesRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -13,18 +13,15 @@
  * Center has been advised of the possibility of such damage.
  */
 
-package org.mskcc.clinical_attributes.service;
+package org.cbioportal.cam.repository;
 
 import java.util.List;
 
-import org.mskcc.clinical_attributes.model.ClinicalAttribute;
-import org.mskcc.clinical_attributes.service.exception.ClinicalAttributeNotFoundException;
+import org.cbioportal.cam.model.ClinicalAttribute;
 
 /**
  * @author Manda Wilson 
  */
-public interface ClinicalAttributesService {
-    List<ClinicalAttribute> getClinicalAttributes(String studyId);
-    List<ClinicalAttribute> getMetadataByNormalizedColumnHeaders(String studyId, List<String> normalizedColumnHeaders) throws ClinicalAttributeNotFoundException;
-    ClinicalAttribute getMetadataByNormalizedColumnHeader(String studyId, String normalizedColumnHeader) throws ClinicalAttributeNotFoundException;
+public interface ClinicalAttributesRepository {
+    List<ClinicalAttribute> getClinicalAttribute();
 }

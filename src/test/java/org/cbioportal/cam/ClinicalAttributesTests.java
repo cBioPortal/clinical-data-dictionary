@@ -13,7 +13,7 @@
  * Center has been advised of the possibility of such damage.
  */
 
-package org.mskcc.clinical_attributes;
+package org.cbioportal.cam;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -79,7 +79,7 @@ public class ClinicalAttributesTests {
     public void getClinicalAttributesInvalidClinicalAttributeTest() throws Exception {
         // now test all clinical attributes are returned by GET /api/
         ResponseEntity<String> response = restTemplate.getForEntity("/api/fake_study_id?normalizedColumnHeaders=AGE,LAST_status,INVALID_ATTRIBUTE", String.class);
-        assertThat(response.getBody(), containsString("org.mskcc.clinical_attributes.service.exception.ClinicalAttributeNotFoundException"));
+        assertThat(response.getBody(), containsString("org.cbioportal.cam.service.exception.ClinicalAttributeNotFoundException"));
         assertThat(response.getStatusCode(), equalTo(HttpStatus.NOT_FOUND));
     }
 
@@ -96,7 +96,7 @@ public class ClinicalAttributesTests {
     public void getClinicalAttributeInvalidClinicalAttributeTest() throws Exception {
         // now test all clinical attributes are returned by GET /api/
         ResponseEntity<String> response = restTemplate.getForEntity("/api/fake_study_id/INVALID_ATTRIBUTE", String.class);
-        assertThat(response.getBody(), containsString("org.mskcc.clinical_attributes.service.exception.ClinicalAttributeNotFoundException"));
+        assertThat(response.getBody(), containsString("org.cbioportal.cam.service.exception.ClinicalAttributeNotFoundException"));
         assertThat(response.getStatusCode(), equalTo(HttpStatus.NOT_FOUND));
     }
 

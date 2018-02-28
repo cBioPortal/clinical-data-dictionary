@@ -13,7 +13,7 @@
  * Center has been advised of the possibility of such damage.
  */
 
-package org.mskcc.clinical_attributes.model;
+package org.cbioportal.cam.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;

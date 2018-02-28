@@ -13,7 +13,7 @@
  * Center has been advised of the possibility of such damage.
  */
 
-package org.mskcc.clinical_attributes.swagger;
+package org.cbioportal.cam.swagger;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Bean;

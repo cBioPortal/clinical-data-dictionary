@@ -13,7 +13,7 @@
  * Center has been advised of the possibility of such damage.
  */
 
-package org.mskcc.clinical_attributes.repository.google;
+package org.cbioportal.cam.repository.google;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.HttpTransport;
@@ -34,8 +34,8 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.*;
 
-import org.mskcc.clinical_attributes.model.ClinicalAttribute;
-import org.mskcc.clinical_attributes.repository.ClinicalAttributesRepository;
+import org.cbioportal.cam.model.ClinicalAttribute;
+import org.cbioportal.cam.repository.ClinicalAttributesRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

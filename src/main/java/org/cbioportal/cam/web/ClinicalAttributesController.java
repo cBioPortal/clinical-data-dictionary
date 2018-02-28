@@ -13,7 +13,7 @@
  * Center has been advised of the possibility of such damage.
  */
 
-package org.mskcc.clinical_attributes.web;
+package org.cbioportal.cam.web;
 
 
 import com.fasterxml.jackson.annotation.JsonView;
@@ -23,9 +23,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.mskcc.clinical_attributes.model.ClinicalAttribute;
-import org.mskcc.clinical_attributes.service.ClinicalAttributesService;
-import org.mskcc.clinical_attributes.service.exception.ClinicalAttributeNotFoundException;
+import org.cbioportal.cam.model.ClinicalAttribute;
+import org.cbioportal.cam.service.ClinicalAttributesService;
+import org.cbioportal.cam.service.exception.ClinicalAttributeNotFoundException;
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;

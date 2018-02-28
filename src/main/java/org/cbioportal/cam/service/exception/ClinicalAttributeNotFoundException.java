@@ -13,19 +13,19 @@
  * Center has been advised of the possibility of such damage.
  */
 
-package org.mskcc.clinical_attributes;
+package org.cbioportal.cam.service.exception;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * @author Manda Wilson 
- */
-@SpringBootApplication // shorthand for @Configuration, @EnableAutoConfiguration, @ComponentScan
-public class ClinicalAttributes {
+public class ClinicalAttributeNotFoundException extends RuntimeException {
 
-    public static void main(String[] args) {
-        SpringApplication.run(ClinicalAttributes.class, args);
+    private static final Logger logger = LoggerFactory.getLogger(ClinicalAttributeNotFoundException.class);
+
+    public ClinicalAttributeNotFoundException(String normalizedColumnHeader) {
+        super("Could not find clinical attribute by normalized column header '" + normalizedColumnHeader + "'.");
+        logger.error("Could not find clinical attribute by normalized column header '" + normalizedColumnHeader + "'.");
     }
+
 }
 

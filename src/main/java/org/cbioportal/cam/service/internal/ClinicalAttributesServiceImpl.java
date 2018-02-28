@@ -13,15 +13,15 @@
  * Center has been advised of the possibility of such damage.
  */
 
-package org.mskcc.clinical_attributes.service.internal;
+package org.cbioportal.cam.service.internal;
 
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.List;
 
-import org.mskcc.clinical_attributes.model.ClinicalAttribute;
-import org.mskcc.clinical_attributes.service.ClinicalAttributesService;
-import org.mskcc.clinical_attributes.service.exception.ClinicalAttributeNotFoundException;
+import org.cbioportal.cam.model.ClinicalAttribute;
+import org.cbioportal.cam.service.ClinicalAttributesService;
+import org.cbioportal.cam.service.exception.ClinicalAttributeNotFoundException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

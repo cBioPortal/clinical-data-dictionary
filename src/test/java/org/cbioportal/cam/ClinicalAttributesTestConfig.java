@@ -13,14 +13,14 @@
  * Center has been advised of the possibility of such damage.
  */
 
-package org.mskcc.clinical_attributes;
+package org.cbioportal.cam;
 
 import java.util.*;
 import org.mockito.Mockito;
-import org.mskcc.clinical_attributes.model.ClinicalAttribute;
-import org.mskcc.clinical_attributes.repository.ClinicalAttributesRepository;
-import org.mskcc.clinical_attributes.service.internal.ClinicalAttributesCache;
-import org.mskcc.clinical_attributes.repository.google.ClinicalAttributesRepositoryImpl;
+import org.cbioportal.cam.model.ClinicalAttribute;
+import org.cbioportal.cam.repository.ClinicalAttributesRepository;
+import org.cbioportal.cam.service.internal.ClinicalAttributesCache;
+import org.cbioportal.cam.repository.google.ClinicalAttributesRepositoryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
