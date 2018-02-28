@@ -17,15 +17,21 @@ package org.cbioportal.cam;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.support.SpringBootServletInitializer;
 
 /**
  * @author Manda Wilson 
  */
 @SpringBootApplication // shorthand for @Configuration, @EnableAutoConfiguration, @ComponentScan
-public class ClinicalAttributeMetadataApplication {
+public class ClinicalAttributeMetadataApplication extends SpringBootServletInitializer {
+
+    @Override
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+        return application.sources(ClinicalAttributeMetadataApplication.class);
+    }
 
     public static void main(String[] args) {
         SpringApplication.run(ClinicalAttributeMetadataApplication.class, args);
     }
 }
-
