@@ -23,8 +23,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.cbioportal.cam.model.ClinicalAttribute;
-import org.cbioportal.cam.service.ClinicalAttributesService;
+import org.cbioportal.cam.model.ClinicalAttributeMetadata;
+import org.cbioportal.cam.service.ClinicalAttributeMetadataService;
 import org.cbioportal.cam.service.exception.ClinicalAttributeNotFoundException;
 
 import org.springframework.web.bind.annotation.*;
@@ -36,22 +36,22 @@ import org.springframework.http.HttpStatus;
  */
 @RestController // shorthand for @Controller, @ResponseBody
 @RequestMapping(value = "/api/")
-public class ClinicalAttributesController {
+public class ClinicalAttributeMetadataController {
 
     @Autowired
-    private ClinicalAttributesService clinicalAttributesService;
+    private ClinicalAttributeMetadataService clinicalAttributesService;
 
     @RequestMapping(method = RequestMethod.GET, value="/{studyId}")
-    public Iterable<ClinicalAttribute> getClinicalAttributes(@PathVariable String studyId, @RequestParam(value = "normalizedColumnHeaders", required = false) String normalizedColumnHeaders) {
+    public Iterable<ClinicalAttributeMetadata> getClinicalAttributeMetadata(@PathVariable String studyId, @RequestParam(value = "normalizedColumnHeaders", required = false) String normalizedColumnHeaders) {
         if (normalizedColumnHeaders != null) {
             return clinicalAttributesService.getMetadataByNormalizedColumnHeaders(studyId, Arrays.asList(normalizedColumnHeaders.split(",")));
         }
         // otherwise return all clinical attributes
-        return clinicalAttributesService.getClinicalAttributes(studyId);
+        return clinicalAttributesService.getClinicalAttributeMetadata(studyId);
     }
 
     @RequestMapping(value = "/{studyId}/{normalizedColumnHeader}", method = RequestMethod.GET)
-    public ClinicalAttribute getClinicalAttribute(@PathVariable String studyId, @PathVariable String normalizedColumnHeader) {
+    public ClinicalAttributeMetadata getClinicalAttribute(@PathVariable String studyId, @PathVariable String normalizedColumnHeader) {
         return clinicalAttributesService.getMetadataByNormalizedColumnHeader(studyId, normalizedColumnHeader);
     }
 

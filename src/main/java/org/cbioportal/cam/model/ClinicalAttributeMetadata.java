@@ -32,19 +32,19 @@ import java.util.*;
 @JsonPropertyOrder({
     "normalized_column_header",
     "display_name",
-    "descriptions",
+    "description",
     "datatype",
     "attribute_type",
     "priority",
 })
-public class ClinicalAttribute {
+public class ClinicalAttributeMetadata {
 
     @JsonProperty("normalized_column_header")
     private String normalizedColumnHeader;
     @JsonProperty("display_name")
     private String displayName;
-    @JsonProperty("descriptions")
-    private String descriptions;
+    @JsonProperty("description")
+    private String description;
     @JsonProperty("datatype")
     private String datatype;
     @JsonProperty("attribute_type")
@@ -58,7 +58,7 @@ public class ClinicalAttribute {
     * No args constructor for use in serialization
     *
     */
-    private ClinicalAttribute() {}
+    private ClinicalAttributeMetadata() {}
 
 
     /**
@@ -68,12 +68,12 @@ public class ClinicalAttribute {
     * @param attributeType
     * @param datatype
     * @param displayName
-    * @param descriptions
+    * @param description
     */
-    public ClinicalAttribute(String normalizedColumnHeader, String displayName, String descriptions, String datatype, String attributeType, String priority) {
+    public ClinicalAttributeMetadata(String normalizedColumnHeader, String displayName, String description, String datatype, String attributeType, String priority) {
         this.normalizedColumnHeader = normalizedColumnHeader;
         this.displayName = displayName;
-        this.descriptions = descriptions;
+        this.description = description;
         this.datatype = datatype;
         this.attributeType = attributeType;
         this.priority = priority;
@@ -122,21 +122,21 @@ public class ClinicalAttribute {
     /**
     *
     * @return
-    * The descriptions
+    * The description
     */
-    @JsonProperty("descriptions")
-    public String getDescriptions() {
-        return descriptions;
+    @JsonProperty("description")
+    public String getDescription() {
+        return description;
     }
 
     /**
     *
-    * @param descriptions
-    * The descriptions
+    * @param description
+    * The description
     */
-    @JsonProperty("descriptions")
-    public void setDescriptions(String descriptions) {
-        this.descriptions = descriptions;
+    @JsonProperty("description")
+    public void setDescriptions(String description) {
+        this.description = description;
     }
 
     /**

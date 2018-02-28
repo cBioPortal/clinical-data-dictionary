@@ -19,8 +19,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.List;
 
-import org.cbioportal.cam.model.ClinicalAttribute;
-import org.cbioportal.cam.service.ClinicalAttributesService;
+import org.cbioportal.cam.model.ClinicalAttributeMetadata;
+import org.cbioportal.cam.service.ClinicalAttributeMetadataService;
 import org.cbioportal.cam.service.exception.ClinicalAttributeNotFoundException;
 
 import org.slf4j.Logger;
@@ -30,30 +30,30 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * Note this class relies on the ClinicalAttributesCache class which will frequently generate a
+ * Note this class relies on the ClinicalAttributeMetadataCache class which will frequently generate a
  * new cache of clinical attributes.  Each method in this class should only get the cache once
  * and should not attempt to make any modifications to the cache.
  *
  * @author Robert Sheridan, Manda Wilson
  */
 @Service
-public class ClinicalAttributesServiceImpl implements ClinicalAttributesService {
+public class ClinicalAttributeMetadataServiceImpl implements ClinicalAttributeMetadataService {
 
     @Autowired
-    private ClinicalAttributesCache clinicalAttributesCache; 
+    private ClinicalAttributeMetadataCache clinicalAttributesCache; 
 
-    private static final Logger logger = LoggerFactory.getLogger(ClinicalAttributesServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClinicalAttributeMetadataServiceImpl.class);
 
     @Override
-    public List<ClinicalAttribute> getClinicalAttributes(String studyId) {
-        return new ArrayList(clinicalAttributesCache.getClinicalAttributes().values());
+    public List<ClinicalAttributeMetadata> getClinicalAttributeMetadata(String studyId) {
+        return new ArrayList(clinicalAttributesCache.getClinicalAttributeMetadata().values());
     }
 
     @Override
-    public List<ClinicalAttribute> getMetadataByNormalizedColumnHeaders(String studyId, List<String> normalizedColumnHeaders)
+    public List<ClinicalAttributeMetadata> getMetadataByNormalizedColumnHeaders(String studyId, List<String> normalizedColumnHeaders)
         throws ClinicalAttributeNotFoundException {
-        List<ClinicalAttribute> clinicalAttributes = new ArrayList<ClinicalAttribute>();
-        Map<String, ClinicalAttribute> clinicalAttributeCache = clinicalAttributesCache.getClinicalAttributes();
+        List<ClinicalAttributeMetadata> clinicalAttributes = new ArrayList<ClinicalAttributeMetadata>();
+        Map<String, ClinicalAttributeMetadata> clinicalAttributeCache = clinicalAttributesCache.getClinicalAttributeMetadata();
         for (String normalizedColumnHeader : normalizedColumnHeaders) {
             clinicalAttributes.add(getMetadataByNormalizedColumnHeader(clinicalAttributeCache, studyId, normalizedColumnHeader));
         }
@@ -61,12 +61,12 @@ public class ClinicalAttributesServiceImpl implements ClinicalAttributesService 
     }
 
     @Override
-    public ClinicalAttribute getMetadataByNormalizedColumnHeader(String studyId, String normalizedColumnHeader)
+    public ClinicalAttributeMetadata getMetadataByNormalizedColumnHeader(String studyId, String normalizedColumnHeader)
         throws ClinicalAttributeNotFoundException {
-        return getMetadataByNormalizedColumnHeader(clinicalAttributesCache.getClinicalAttributes(), studyId, normalizedColumnHeader);
+        return getMetadataByNormalizedColumnHeader(clinicalAttributesCache.getClinicalAttributeMetadata(), studyId, normalizedColumnHeader);
     }
 
-    private ClinicalAttribute getMetadataByNormalizedColumnHeader(Map<String, ClinicalAttribute> clinicalAttributeCache, String studyId, String normalizedColumnHeader)
+    private ClinicalAttributeMetadata getMetadataByNormalizedColumnHeader(Map<String, ClinicalAttributeMetadata> clinicalAttributeCache, String studyId, String normalizedColumnHeader)
         throws ClinicalAttributeNotFoundException {
         if (clinicalAttributeCache.containsKey(normalizedColumnHeader.toUpperCase())) {
             return clinicalAttributeCache.get(normalizedColumnHeader.toUpperCase());

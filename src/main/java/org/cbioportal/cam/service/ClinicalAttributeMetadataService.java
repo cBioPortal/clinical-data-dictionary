@@ -17,14 +17,14 @@ package org.cbioportal.cam.service;
 
 import java.util.List;
 
-import org.cbioportal.cam.model.ClinicalAttribute;
+import org.cbioportal.cam.model.ClinicalAttributeMetadata;
 import org.cbioportal.cam.service.exception.ClinicalAttributeNotFoundException;
 
 /**
  * @author Manda Wilson 
  */
-public interface ClinicalAttributesService {
-    List<ClinicalAttribute> getClinicalAttributes(String studyId);
-    List<ClinicalAttribute> getMetadataByNormalizedColumnHeaders(String studyId, List<String> normalizedColumnHeaders) throws ClinicalAttributeNotFoundException;
-    ClinicalAttribute getMetadataByNormalizedColumnHeader(String studyId, String normalizedColumnHeader) throws ClinicalAttributeNotFoundException;
+public interface ClinicalAttributeMetadataService {
+    List<ClinicalAttributeMetadata> getClinicalAttributeMetadata(String studyId);
+    List<ClinicalAttributeMetadata> getMetadataByNormalizedColumnHeaders(String studyId, List<String> normalizedColumnHeaders) throws ClinicalAttributeNotFoundException;
+    ClinicalAttributeMetadata getMetadataByNormalizedColumnHeader(String studyId, String normalizedColumnHeader) throws ClinicalAttributeNotFoundException;
 }

@@ -22,10 +22,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author Manda Wilson 
  */
 @SpringBootApplication // shorthand for @Configuration, @EnableAutoConfiguration, @ComponentScan
-public class ClinicalAttributes {
+public class ClinicalAttributeMetadataApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(ClinicalAttributes.class, args);
+        SpringApplication.run(ClinicalAttributeMetadataApplication.class, args);
     }
 }
 

@@ -17,11 +17,11 @@ package org.cbioportal.cam.repository;
 
 import java.util.List;
 
-import org.cbioportal.cam.model.ClinicalAttribute;
+import org.cbioportal.cam.model.ClinicalAttributeMetadata;
 
 /**
  * @author Manda Wilson 
  */
-public interface ClinicalAttributesRepository {
-    List<ClinicalAttribute> getClinicalAttribute();
+public interface ClinicalAttributeMetadataRepository {
+    List<ClinicalAttributeMetadata> getClinicalAttribute();
 }

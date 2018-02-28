@@ -22,8 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.cbioportal.cam.model.ClinicalAttribute;
-import org.cbioportal.cam.repository.ClinicalAttributesRepository;
+import org.cbioportal.cam.model.ClinicalAttributeMetadata;
+import org.cbioportal.cam.repository.ClinicalAttributeMetadataRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,16 +38,16 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @EnableScheduling
-public class ClinicalAttributesCache {
+public class ClinicalAttributeMetadataCache {
 
-    private static HashMap<String, ClinicalAttribute> clinicalAttributeCache = new HashMap<String, ClinicalAttribute>();
+    private static HashMap<String, ClinicalAttributeMetadata> clinicalAttributeCache = new HashMap<String, ClinicalAttributeMetadata>();
 
-    private static final Logger logger = LoggerFactory.getLogger(ClinicalAttributesCache.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClinicalAttributeMetadataCache.class);
 
     @Autowired
-    private ClinicalAttributesRepository clinicalAttributesRepository;
+    private ClinicalAttributeMetadataRepository clinicalAttributesRepository;
 
-    public Map<String, ClinicalAttribute> getClinicalAttributes() {
+    public Map<String, ClinicalAttributeMetadata> getClinicalAttributeMetadata() {
         return Collections.unmodifiableMap(clinicalAttributeCache);
     }
 
@@ -56,14 +56,14 @@ public class ClinicalAttributesCache {
     private void resetCache() {
         // TODO make sure we don't have two scheduled calls run simultaneously
         logger.info("resetCache(): refilling clinical attribute cache");
-        List<ClinicalAttribute> latestClinicalAttributes = clinicalAttributesRepository.getClinicalAttribute();
-        HashMap<String, ClinicalAttribute> latestClinicalAttributesCache = new HashMap<String, ClinicalAttribute>();
-        if (latestClinicalAttributes.size() > 0) {
-            for (ClinicalAttribute clinicalAttribute : latestClinicalAttributes) {
-                latestClinicalAttributesCache.put(clinicalAttribute.getNormalizedColumnHeader(), clinicalAttribute);
+        List<ClinicalAttributeMetadata> latestClinicalAttributeMetadata = clinicalAttributesRepository.getClinicalAttribute();
+        HashMap<String, ClinicalAttributeMetadata> latestClinicalAttributeMetadataCache = new HashMap<String, ClinicalAttributeMetadata>();
+        if (latestClinicalAttributeMetadata.size() > 0) {
+            for (ClinicalAttributeMetadata clinicalAttributeMetadata : latestClinicalAttributeMetadata) {
+                latestClinicalAttributeMetadataCache.put(clinicalAttributeMetadata.getNormalizedColumnHeader(), clinicalAttributeMetadata);
             }
-            clinicalAttributeCache = latestClinicalAttributesCache;
-            logger.info("resetCache(): refillled cache with " + latestClinicalAttributes.size() + " clinical attributes");
+            clinicalAttributeCache = latestClinicalAttributeMetadataCache;
+            logger.info("resetCache(): refillled cache with " + latestClinicalAttributeMetadata.size() + " clinical attributes");
         } else {
             // what if cache never gets updated because we break something?
             logger.error("resetCache(): failed to pull clinical attributes from repository, not updating cache");

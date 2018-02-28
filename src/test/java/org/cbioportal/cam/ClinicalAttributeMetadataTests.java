@@ -40,8 +40,8 @@ import org.springframework.test.context.junit4.SpringRunner;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-@Import(ClinicalAttributesTestConfig.class)
-public class ClinicalAttributesTests {
+@Import(ClinicalAttributeMetadataTestConfig.class)
+public class ClinicalAttributeMetadataTests {
 
     // TODO this is using the real Google spreadsheet, mock that instead
 
@@ -49,7 +49,7 @@ public class ClinicalAttributesTests {
     private TestRestTemplate restTemplate;
 
     @Test
-    public void getClinicalAttributesTest() throws Exception {
+    public void getClinicalAttributeMetadataTest() throws Exception {
         // now test all clinical attributes are returned by GET /api/
         ResponseEntity<String> response = restTemplate.getForEntity("/api/fake_study_id", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
@@ -58,11 +58,11 @@ public class ClinicalAttributesTests {
         JsonNode responseJSON = mapper.readTree(response.getBody());
 
         assertThat(responseJSON.size(), equalTo(5));
-        assertThat(response.getBody(), containsString("{\"normalized_column_header\":\"LAST_STATUS\",\"display_name\":\"Last Status\",\"descriptions\":\"Last Status.\",\"datatype\":\"STRING\",\"attribute_type\":\"PATIENT\",\"priority\":\"1\"}"));
+        assertThat(response.getBody(), containsString("{\"normalized_column_header\":\"LAST_STATUS\",\"display_name\":\"Last Status\",\"description\":\"Last Status.\",\"datatype\":\"STRING\",\"attribute_type\":\"PATIENT\",\"priority\":\"1\"}"));
     }
 
     @Test
-    public void getClinicalAttributesFilteredTest() throws Exception {
+    public void getClinicalAttributeMetadataFilteredTest() throws Exception {
         // now test all clinical attributes are returned by GET /api/
         ResponseEntity<String> response = restTemplate.getForEntity("/api/fake_study_id?normalizedColumnHeaders=AGE,LAST_status", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
@@ -71,12 +71,12 @@ public class ClinicalAttributesTests {
         JsonNode responseJSON = mapper.readTree(response.getBody());
 
         assertThat(responseJSON.size(), equalTo(2));
-        assertThat(response.getBody(), containsString("{\"normalized_column_header\":\"LAST_STATUS\",\"display_name\":\"Last Status\",\"descriptions\":\"Last Status.\",\"datatype\":\"STRING\",\"attribute_type\":\"PATIENT\",\"priority\":\"1\"}"));
-        assertThat(response.getBody(), containsString("{\"normalized_column_header\":\"AGE\",\"display_name\":\"Diagnosis Age\",\"descriptions\":\"Age at which a condition or disease was first diagnosed.\",\"datatype\":\"NUMBER\",\"attribute_type\":\"PATIENT\",\"priority\":\"1\"}"));
+        assertThat(response.getBody(), containsString("{\"normalized_column_header\":\"LAST_STATUS\",\"display_name\":\"Last Status\",\"description\":\"Last Status.\",\"datatype\":\"STRING\",\"attribute_type\":\"PATIENT\",\"priority\":\"1\"}"));
+        assertThat(response.getBody(), containsString("{\"normalized_column_header\":\"AGE\",\"display_name\":\"Diagnosis Age\",\"description\":\"Age at which a condition or disease was first diagnosed.\",\"datatype\":\"NUMBER\",\"attribute_type\":\"PATIENT\",\"priority\":\"1\"}"));
     }
 
     @Test
-    public void getClinicalAttributesInvalidClinicalAttributeTest() throws Exception {
+    public void getClinicalAttributeMetadataInvalidClinicalAttributeTest() throws Exception {
         // now test all clinical attributes are returned by GET /api/
         ResponseEntity<String> response = restTemplate.getForEntity("/api/fake_study_id?normalizedColumnHeaders=AGE,LAST_status,INVALID_ATTRIBUTE", String.class);
         assertThat(response.getBody(), containsString("org.cbioportal.cam.service.exception.ClinicalAttributeNotFoundException"));
@@ -89,7 +89,7 @@ public class ClinicalAttributesTests {
         ResponseEntity<String> response = restTemplate.getForEntity("/api/fake_study_id/AGE", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
 
-        assertThat(response.getBody(), equalTo("{\"normalized_column_header\":\"AGE\",\"display_name\":\"Diagnosis Age\",\"descriptions\":\"Age at which a condition or disease was first diagnosed.\",\"datatype\":\"NUMBER\",\"attribute_type\":\"PATIENT\",\"priority\":\"1\"}"));
+        assertThat(response.getBody(), equalTo("{\"normalized_column_header\":\"AGE\",\"display_name\":\"Diagnosis Age\",\"description\":\"Age at which a condition or disease was first diagnosed.\",\"datatype\":\"NUMBER\",\"attribute_type\":\"PATIENT\",\"priority\":\"1\"}"));
     }
 
     @Test

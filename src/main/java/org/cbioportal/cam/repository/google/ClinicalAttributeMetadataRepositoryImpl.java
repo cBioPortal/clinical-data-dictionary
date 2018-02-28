@@ -34,8 +34,8 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.*;
 
-import org.cbioportal.cam.model.ClinicalAttribute;
-import org.cbioportal.cam.repository.ClinicalAttributesRepository;
+import org.cbioportal.cam.model.ClinicalAttributeMetadata;
+import org.cbioportal.cam.repository.ClinicalAttributeMetadataRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +48,7 @@ import org.springframework.beans.factory.annotation.Value;
  * @author Avery Wang, Manda Wilson
  */
 @Repository
-public class ClinicalAttributesRepositoryImpl implements ClinicalAttributesRepository {
+public class ClinicalAttributeMetadataRepositoryImpl implements ClinicalAttributeMetadataRepository {
 
     @Value("${google.id}")
     private String googleId;
@@ -67,7 +67,7 @@ public class ClinicalAttributesRepositoryImpl implements ClinicalAttributesRepos
 
     private SpreadsheetService spreadsheetService;
 
-    private static final Logger logger = LoggerFactory.getLogger(ClinicalAttributesRepositoryImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClinicalAttributeMetadataRepositoryImpl.class);
 
     public SpreadsheetService getSpreadsheetService() {
         if (spreadsheetService == null) {
@@ -77,14 +77,14 @@ public class ClinicalAttributesRepositoryImpl implements ClinicalAttributesRepos
     }
 
     /**
-     * Gets an array of ClinicalAttribute.
-     * @return ClinicalAttribute[] array 
+     * Gets an array of ClinicalAttributeMetadata.
+     * @return ClinicalAttributeMetadata[] array 
      */
-    public List<ClinicalAttribute> getClinicalAttribute() {
+    public List<ClinicalAttributeMetadata> getClinicalAttribute() {
         // generate matrix representing each record in metadata worksheet
         ArrayList<ArrayList<String>> clinicalAttributesMatrix = getWorksheetData(gdataSpreadsheet, clinicalAttributesWorksheet);
         // initialize array to store all metadata bojects
-        List<ClinicalAttribute> clinicalAttributeMetadataList = getClinicalAttributeFromMatrix(clinicalAttributesMatrix);
+        List<ClinicalAttributeMetadata> clinicalAttributeMetadataList = getClinicalAttributeFromMatrix(clinicalAttributesMatrix);
         return clinicalAttributeMetadataList;
     }
 
@@ -92,15 +92,15 @@ public class ClinicalAttributesRepositoryImpl implements ClinicalAttributesRepos
      * Constructs a collection of objects of the given classname from the given matrix.
      *
      * @param metadataMatrix ArrayList<ArrayList<String>>
-     * @return List<ClinicalAttribute> list
+     * @return List<ClinicalAttributeMetadata> list
      */
-    private List<ClinicalAttribute> getClinicalAttributeFromMatrix(ArrayList<ArrayList<String>> metadataMatrix) {
+    private List<ClinicalAttributeMetadata> getClinicalAttributeFromMatrix(ArrayList<ArrayList<String>> metadataMatrix) {
         logger.debug("getClinicalAttributeFromMatrix() -- metadataMatrix.size(): " + metadataMatrix.size());
-        List<ClinicalAttribute> clinicalAttributeMetadataList = new ArrayList<ClinicalAttribute>(metadataMatrix.size() - 1);
+        List<ClinicalAttributeMetadata> clinicalAttributeMetadataList = new ArrayList<ClinicalAttributeMetadata>(metadataMatrix.size() - 1);
         // we start at one and subtract 1 from metadataMatrix size because row 0 is the column headers
         for (int row = 1; row < metadataMatrix.size(); row++) {
             ArrayList<String> record = metadataMatrix.get(row);
-            ClinicalAttribute clinicalAttributeMetadata = new ClinicalAttribute(record.get(0),
+            ClinicalAttributeMetadata clinicalAttributeMetadata = new ClinicalAttributeMetadata(record.get(0),
                 record.get(1),
                 record.get(2),
                 record.get(3),
