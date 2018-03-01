@@ -13,7 +13,7 @@
  * Center has been advised of the possibility of such damage.
  */
 
-package org.cbioportal.cam.repository.google;
+package org.cbioportal.cdd.repository.google;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.HttpTransport;
@@ -34,8 +34,8 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.*;
 
-import org.cbioportal.cam.model.ClinicalAttributeMetadata;
-import org.cbioportal.cam.repository.ClinicalAttributeMetadataRepository;
+import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
+import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,26 +48,26 @@ import org.springframework.beans.factory.annotation.Value;
  * @author Avery Wang, Manda Wilson
  */
 @Repository
-public class ClinicalAttributeMetadataRepositoryImpl implements ClinicalAttributeMetadataRepository {
+public class ClinicalAttributeMetadataRepositoryGoogleImpl implements ClinicalAttributeMetadataRepository {
 
-    @Value("${google.id}")
+    @Value("${metadatarepository.google.id}")
     private String googleId;
-    @Value("${google.pw}")
+    @Value("${metadatarepository.google.pw}")
     private String googlePw;
-    @Value("${importer.spreadsheet_service_appname}")
+    @Value("${metadatarepository.google.spreadsheet_service_appname}")
     private String appName;
-    @Value("${importer.spreadsheet}")
+    @Value("${metadatarepository.google.spreadsheet}")
     private String gdataSpreadsheet;
-    @Value("${importer.google.service.email}")
+    @Value("${metadatarepository.google.service.email}")
     private String googleServiceEmail;
-    @Value("${importer.google.service.private.key.file}")
+    @Value("${metadatarepository.google.service.private.key.file}")
     private String googleServicePrivateKeyFile;
-    @Value ("${importer.clinical_attributes_worksheet}")
+    @Value ("${metadatarepository.google.clinical_attributes_worksheet}")
     private String clinicalAttributesWorksheet;
 
     private SpreadsheetService spreadsheetService;
 
-    private static final Logger logger = LoggerFactory.getLogger(ClinicalAttributeMetadataRepositoryImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClinicalAttributeMetadataRepositoryGoogleImpl.class);
 
     public SpreadsheetService getSpreadsheetService() {
         if (spreadsheetService == null) {
@@ -131,7 +131,6 @@ public class ClinicalAttributeMetadataRepositoryImpl implements ClinicalAttribut
             logger.error("initSpreadsheetService():", e);
         }
     }
-
 
     /**
      * Gets the spreadsheet.

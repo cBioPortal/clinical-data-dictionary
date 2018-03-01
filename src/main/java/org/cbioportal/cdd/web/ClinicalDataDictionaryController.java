@@ -13,7 +13,7 @@
  * Center has been advised of the possibility of such damage.
  */
 
-package org.cbioportal.cam.web;
+package org.cbioportal.cdd.web;
 
 
 import com.fasterxml.jackson.annotation.JsonView;
@@ -23,9 +23,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.cbioportal.cam.model.ClinicalAttributeMetadata;
-import org.cbioportal.cam.service.ClinicalAttributeMetadataService;
-import org.cbioportal.cam.service.exception.ClinicalAttributeNotFoundException;
+import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
+import org.cbioportal.cdd.service.ClinicalDataDictionaryService;
+import org.cbioportal.cdd.service.exception.ClinicalAttributeNotFoundException;
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,10 +36,10 @@ import org.springframework.http.HttpStatus;
  */
 @RestController // shorthand for @Controller, @ResponseBody
 @RequestMapping(value = "/api/")
-public class ClinicalAttributeMetadataController {
+public class ClinicalDataDictionaryController {
 
     @Autowired
-    private ClinicalAttributeMetadataService clinicalAttributesService;
+    private ClinicalDataDictionaryService clinicalAttributesService;
 
     @RequestMapping(method = RequestMethod.GET, value="/{studyId}")
     public Iterable<ClinicalAttributeMetadata> getClinicalAttributeMetadata(@PathVariable String studyId, @RequestParam(value = "normalizedColumnHeaders", required = false) String normalizedColumnHeaders) {

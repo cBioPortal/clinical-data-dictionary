@@ -1,6 +1,6 @@
-# clinical-attribute-metadata
+# clinical-data-dictionary
 
-RESTful API to cBioPortal clinical attribute metadata.
+Clinical Attribute Web Service for retrieving clinical attribute names and metadata.
 
 ### Requirements
 
@@ -12,11 +12,11 @@ Maven 3.0+: http://maven.apache.org/download.cgi
 
 Clone repository, compile, run tests, and start server:
 ```
-$ git clone https://github.com/cBioPortal/clinical-attribute-metadata.git
+$ git clone https://github.com/cBioPortal/clinical-data-dictionary.git
 
-$ cd clinical-attribute-metadata
+$ cd clinical-data-dictionary
 
-$ export set SERVER_PORT=8091; mvn package -Dpackaging.type=jar && java -jar target/clinical-attribute-metadata-0.1.0.jar
+$ export set SERVER_PORT=8091; mvn package -Dpackaging.type=jar && java -jar target/cdd.jar
 ```
 
 

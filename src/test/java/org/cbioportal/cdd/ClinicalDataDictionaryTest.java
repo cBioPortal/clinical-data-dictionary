@@ -13,7 +13,7 @@
  * Center has been advised of the possibility of such damage.
  */
 
-package org.cbioportal.cam;
+package org.cbioportal.cdd;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,14 +34,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 
-
 /**
  * @author Manda Wilson 
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-@Import(ClinicalAttributeMetadataTestConfig.class)
-public class ClinicalAttributeMetadataTests {
+@Import(ClinicalDataDictionaryTestConfig.class)
+public class ClinicalDataDictionaryTest {
 
     // TODO this is using the real Google spreadsheet, mock that instead
 
@@ -79,7 +78,7 @@ public class ClinicalAttributeMetadataTests {
     public void getClinicalAttributeMetadataInvalidClinicalAttributeTest() throws Exception {
         // now test all clinical attributes are returned by GET /api/
         ResponseEntity<String> response = restTemplate.getForEntity("/api/fake_study_id?normalizedColumnHeaders=AGE,LAST_status,INVALID_ATTRIBUTE", String.class);
-        assertThat(response.getBody(), containsString("org.cbioportal.cam.service.exception.ClinicalAttributeNotFoundException"));
+        assertThat(response.getBody(), containsString("org.cbioportal.cdd.service.exception.ClinicalAttributeNotFoundException"));
         assertThat(response.getStatusCode(), equalTo(HttpStatus.NOT_FOUND));
     }
 
@@ -96,7 +95,7 @@ public class ClinicalAttributeMetadataTests {
     public void getClinicalAttributeInvalidClinicalAttributeTest() throws Exception {
         // now test all clinical attributes are returned by GET /api/
         ResponseEntity<String> response = restTemplate.getForEntity("/api/fake_study_id/INVALID_ATTRIBUTE", String.class);
-        assertThat(response.getBody(), containsString("org.cbioportal.cam.service.exception.ClinicalAttributeNotFoundException"));
+        assertThat(response.getBody(), containsString("org.cbioportal.cdd.service.exception.ClinicalAttributeNotFoundException"));
         assertThat(response.getStatusCode(), equalTo(HttpStatus.NOT_FOUND));
     }
 

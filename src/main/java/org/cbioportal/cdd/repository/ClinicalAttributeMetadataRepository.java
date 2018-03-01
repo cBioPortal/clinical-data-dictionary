@@ -13,25 +13,15 @@
  * Center has been advised of the possibility of such damage.
  */
 
-package org.cbioportal.cam;
+package org.cbioportal.cdd.repository;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.support.SpringBootServletInitializer;
+import java.util.List;
+
+import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
 
 /**
  * @author Manda Wilson 
  */
-@SpringBootApplication // shorthand for @Configuration, @EnableAutoConfiguration, @ComponentScan
-public class ClinicalAttributeMetadataApplication extends SpringBootServletInitializer {
-
-    @Override
-    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-        return application.sources(ClinicalAttributeMetadataApplication.class);
-    }
-
-    public static void main(String[] args) {
-        SpringApplication.run(ClinicalAttributeMetadataApplication.class, args);
-    }
+public interface ClinicalAttributeMetadataRepository {
+    List<ClinicalAttributeMetadata> getClinicalAttributeMetadata();
 }
