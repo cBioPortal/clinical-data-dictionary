@@ -24,6 +24,7 @@ import org.cbioportal.cdd.service.exception.ClinicalAttributeNotFoundException;
  * @author Manda Wilson 
  */
 public interface ClinicalDataDictionaryService {
+    List<String> getStudyIdsWithOverrides();
     List<ClinicalAttributeMetadata> getClinicalAttributeMetadata(String studyId);
     List<ClinicalAttributeMetadata> getMetadataByNormalizedColumnHeaders(String studyId, List<String> normalizedColumnHeaders) throws ClinicalAttributeNotFoundException;
     ClinicalAttributeMetadata getMetadataByNormalizedColumnHeader(String studyId, String normalizedColumnHeader) throws ClinicalAttributeNotFoundException;

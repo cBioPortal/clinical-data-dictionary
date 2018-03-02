@@ -30,8 +30,10 @@ public class ClinicalDataDictionaryTestConfig {
     @Bean
     public ClinicalAttributeMetadataCache clinicalAttributesCache() {
         Map<String, ClinicalAttributeMetadata> mockAttributeMap = makeMockAttributeMap();
+        Map<String, Map<String, ClinicalAttributeMetadata>> mockOverridesMap = makeMockOverridesMap();
         ClinicalAttributeMetadataCache cache = Mockito.mock(ClinicalAttributeMetadataCache.class);
         Mockito.when(cache.getClinicalAttributeMetadata()).thenReturn(mockAttributeMap);
+        Mockito.when(cache.getClinicalAttributeMetadataOverrides()).thenReturn(mockOverridesMap);
         return cache;
     }
 
@@ -50,4 +52,11 @@ public class ClinicalDataDictionaryTestConfig {
         return Collections.unmodifiableMap(attributeMap);
     }
 
+    private Map<String, Map<String, ClinicalAttributeMetadata>> makeMockOverridesMap() {
+        Map<String, ClinicalAttributeMetadata> attributeMap = new HashMap<> ();
+        Map<String, Map<String, ClinicalAttributeMetadata>> overridesMap = new HashMap<> ();
+        attributeMap.put("AGE", new ClinicalAttributeMetadata("AGE", "Diagnosis Age", "Age at which a condition or disease was first diagnosed.", "NUMBER", "PATIENT", "100"));
+        overridesMap.put("test_override_study", attributeMap);
+        return Collections.unmodifiableMap(overridesMap);
+    }
 }

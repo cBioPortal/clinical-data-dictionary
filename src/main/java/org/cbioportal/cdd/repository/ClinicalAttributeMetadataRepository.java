@@ -18,10 +18,12 @@ package org.cbioportal.cdd.repository;
 import java.util.List;
 
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
+import java.util.*;
 
 /**
  * @author Manda Wilson 
  */
 public interface ClinicalAttributeMetadataRepository {
     List<ClinicalAttributeMetadata> getClinicalAttributeMetadata();
+    Map<String, ArrayList<ClinicalAttributeMetadata>> getClinicalAttributeMetadataOverrides();
 }

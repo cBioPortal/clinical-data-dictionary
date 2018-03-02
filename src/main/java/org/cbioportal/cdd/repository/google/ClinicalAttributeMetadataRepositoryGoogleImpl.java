@@ -64,6 +64,8 @@ public class ClinicalAttributeMetadataRepositoryGoogleImpl implements ClinicalAt
     private String googleServicePrivateKeyFile;
     @Value ("${metadatarepository.google.clinical_attributes_worksheet}")
     private String clinicalAttributesWorksheet;
+    @Value ("${metadatarepository.google.clinical_attributes_overrides_worksheet}")
+    private String overridesAttributesWorksheet;
 
     private SpreadsheetService spreadsheetService;
 
@@ -86,6 +88,50 @@ public class ClinicalAttributeMetadataRepositoryGoogleImpl implements ClinicalAt
         // initialize array to store all metadata bojects
         List<ClinicalAttributeMetadata> clinicalAttributeMetadataList = getClinicalAttributeFromMatrix(clinicalAttributesMatrix);
         return clinicalAttributeMetadataList;
+    }
+
+    /**
+     * Gets a map of String to ClinicalAttributeMetadata.
+     * @return Map<String, ArrayList<ClinicalAttributeMetadata>> map
+     */
+    public Map<String, ArrayList<ClinicalAttributeMetadata>> getClinicalAttributeMetadataOverrides() {
+        // generate matrix representing each record in metadata worksheet
+        ArrayList<ArrayList<String>> clinicalOverridesAttributesMatrix = getWorksheetData(gdataSpreadsheet, overridesAttributesWorksheet);
+        // initialize array to store all metadata bojects
+        Map<String, ArrayList<ClinicalAttributeMetadata>> clinicalAttributeMetadataList = getClinicalAttributeOverridesFromMatrix(clinicalOverridesAttributesMatrix);
+        return clinicalAttributeMetadataList;
+    }
+
+    /**
+     * Constructs a collection of objects of the given classname from the given matrix.
+     *
+     * @param metadataMatrix ArrayList<ArrayList<String>>
+     * @return Map<String, ArrayList<ClinicalAttributeMetadata>> map
+     */
+    public Map<String, ArrayList<ClinicalAttributeMetadata>> getClinicalAttributeOverridesFromMatrix(ArrayList<ArrayList<String>> metadataMatrix) {
+        logger.debug("getClinicalAttributeFromMatrix() -- metadataMatrix.size(): " + metadataMatrix.size());
+
+	Map<String, ArrayList<ClinicalAttributeMetadata>> overrides = new HashMap<>();
+
+        List<ClinicalAttributeMetadata> clinicalAttributeMetadataList = new ArrayList<ClinicalAttributeMetadata>(metadataMatrix.size() - 1);
+        // we start at one and subtract 1 from metadataMatrix size because row 0 is the column headers
+        for (int row = 1; row < metadataMatrix.size(); row++) {
+            ArrayList<String> record = metadataMatrix.get(row);
+            ClinicalAttributeMetadata clinicalAttributeMetadata = new ClinicalAttributeMetadata(record.get(0),
+                record.get(1),
+                record.get(2),
+                record.get(3),
+                record.get(4),
+                record.get(5));
+            if (record.get(10) != null && !record.get(10).isEmpty()) {
+                if (!overrides.containsKey(record.get(10))) {
+                    ArrayList<ClinicalAttributeMetadata> clinicalAttributeList = new ArrayList<ClinicalAttributeMetadata>();
+                    overrides.put(record.get(10), clinicalAttributeList);
+                }
+                overrides.get(record.get(10)).add(clinicalAttributeMetadata);
+            }
+        }
+        return overrides;
     }
 
     /**

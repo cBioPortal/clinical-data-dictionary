@@ -55,6 +55,11 @@ public class ClinicalDataDictionaryController {
         return clinicalAttributesService.getMetadataByNormalizedColumnHeader(studyId, normalizedColumnHeader);
     }
 
+    @RequestMapping(method = RequestMethod.GET, value = "/overrides")
+    public Iterable<String> getStudyIdsWithOverrides() {
+        return clinicalAttributesService.getStudyIdsWithOverrides();
+    }
+    
     @ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "Clinical attribute not found")
     @ExceptionHandler(ClinicalAttributeNotFoundException.class)
     public void handleClinicalAttributeNotFound() {}

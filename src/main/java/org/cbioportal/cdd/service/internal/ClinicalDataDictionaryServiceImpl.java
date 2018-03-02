@@ -46,7 +46,9 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
 
     @Override
     public List<ClinicalAttributeMetadata> getClinicalAttributeMetadata(String studyId) {
-        return new ArrayList(clinicalAttributesCache.getClinicalAttributeMetadata().values());
+        List<String> normalizedColumnHeaders = new ArrayList<>(clinicalAttributesCache.getClinicalAttributeMetadata().keySet());
+        List<ClinicalAttributeMetadata> clinicalAttributes = getMetadataByNormalizedColumnHeaders(studyId, normalizedColumnHeaders);
+        return clinicalAttributes; 
     }
 
     @Override
@@ -54,8 +56,26 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
         throws ClinicalAttributeNotFoundException {
         List<ClinicalAttributeMetadata> clinicalAttributes = new ArrayList<ClinicalAttributeMetadata>();
         Map<String, ClinicalAttributeMetadata> clinicalAttributeCache = clinicalAttributesCache.getClinicalAttributeMetadata();
+        Map<String, Map<String, ClinicalAttributeMetadata>> overridesCache = clinicalAttributesCache.getClinicalAttributeMetadataOverrides();
         for (String normalizedColumnHeader : normalizedColumnHeaders) {
-            clinicalAttributes.add(getMetadataByNormalizedColumnHeader(clinicalAttributeCache, studyId, normalizedColumnHeader));
+            if (overridesCache.containsKey(studyId) && overridesCache.get(studyId).containsKey(normalizedColumnHeader.toUpperCase())) {
+                clinicalAttributes.add(getMetadataByNormalizedColumnHeader(overridesCache.get(studyId), studyId, normalizedColumnHeader));
+            } else {
+                ClinicalAttributeMetadata cachedClinicalAttribute = getMetadataByNormalizedColumnHeader(clinicalAttributeCache, studyId, normalizedColumnHeader);
+                if (!studyId.equals("mskimpact")) {
+                    clinicalAttributes.add(cachedClinicalAttribute);
+                } else {
+                    // when studyId is 'mskimpact' - copy created so modification (i.e reset priority to 0) does not get applied to object stored in cache
+                    ClinicalAttributeMetadata resetClinicalAttribute = new ClinicalAttributeMetadata(cachedClinicalAttribute.getNormalizedColumnHeader(),
+                        cachedClinicalAttribute.getDisplayName(),
+                        cachedClinicalAttribute.getDescription(),
+                        cachedClinicalAttribute.getDatatype(),
+                        cachedClinicalAttribute.getAttributeType(),
+                        cachedClinicalAttribute.getPriority());
+                    resetClinicalAttribute.setPriority("0");
+                    clinicalAttributes.add(resetClinicalAttribute);
+                }
+            }
         }
         return clinicalAttributes;
     }
@@ -63,7 +83,12 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
     @Override
     public ClinicalAttributeMetadata getMetadataByNormalizedColumnHeader(String studyId, String normalizedColumnHeader)
         throws ClinicalAttributeNotFoundException {
-        return getMetadataByNormalizedColumnHeader(clinicalAttributesCache.getClinicalAttributeMetadata(), studyId, normalizedColumnHeader);
+        Map<String, ClinicalAttributeMetadata> clinicalAttributeCache = clinicalAttributesCache.getClinicalAttributeMetadata();
+        Map<String, Map<String, ClinicalAttributeMetadata>> overridesCache = clinicalAttributesCache.getClinicalAttributeMetadataOverrides();
+        if (overridesCache.containsKey(studyId) && overridesCache.get(studyId).containsKey(normalizedColumnHeader.toUpperCase())) {
+            return getMetadataByNormalizedColumnHeader(overridesCache.get(studyId), studyId, normalizedColumnHeader);
+        }
+        return getMetadataByNormalizedColumnHeader(clinicalAttributeCache, studyId, normalizedColumnHeader);
     }
 
     private ClinicalAttributeMetadata getMetadataByNormalizedColumnHeader(Map<String, ClinicalAttributeMetadata> clinicalAttributeCache, String studyId, String normalizedColumnHeader)
@@ -74,4 +99,13 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
         throw new ClinicalAttributeNotFoundException(normalizedColumnHeader);
     }
 
+    @Override
+    public List<String> getStudyIdsWithOverrides() {
+        List<String> studyIdsWithOverrides = new ArrayList<String>();
+        Map<String, Map<String, ClinicalAttributeMetadata>> overridesCache = clinicalAttributesCache.getClinicalAttributeMetadataOverrides();
+        for (String studyId : overridesCache.keySet()) {
+            studyIdsWithOverrides.add(studyId);
+        }
+        return studyIdsWithOverrides;
+    }
 }
