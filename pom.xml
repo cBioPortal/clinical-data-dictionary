@@ -2,12 +2,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <name>Clinical Attribute Service</name>
-    <description>RESTful API for cBioPortal clinical attribute metadata.</description>
-    <url>https://github.com/cBioPortal/clinical-attribute-metadata/</url>
-    <groupId>org.cbioportal.cam</groupId>
-    <artifactId>cam</artifactId>
-    <version>0.1.0</version>
+    <name>Clinical Data Dictionary</name>
+    <description>Clinical Attribute Web Service for retrieving clinical attribute names and metadata.</description>
+    <url>https://github.com/cBioPortal/clinical-data-dictionary/</url>
+    <groupId>org.cbioportal.cdd</groupId>
+    <artifactId>cdd</artifactId>
+    <version>0.2.0</version>
     <packaging>${packaging.type}</packaging>
 
     <!-- inherit defaults from spring boot -->
@@ -88,8 +88,8 @@
         <java.version>1.8</java.version>
     </properties>
 
-
     <build>
+        <finalName>cdd</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

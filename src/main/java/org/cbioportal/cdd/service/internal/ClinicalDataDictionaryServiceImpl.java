@@ -13,15 +13,15 @@
  * Center has been advised of the possibility of such damage.
  */
 
-package org.cbioportal.cam.service.internal;
+package org.cbioportal.cdd.service.internal;
 
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.List;
 
-import org.cbioportal.cam.model.ClinicalAttributeMetadata;
-import org.cbioportal.cam.service.ClinicalAttributeMetadataService;
-import org.cbioportal.cam.service.exception.ClinicalAttributeNotFoundException;
+import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
+import org.cbioportal.cdd.service.ClinicalDataDictionaryService;
+import org.cbioportal.cdd.service.exception.ClinicalAttributeNotFoundException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,12 +37,12 @@ import org.springframework.stereotype.Service;
  * @author Robert Sheridan, Manda Wilson
  */
 @Service
-public class ClinicalAttributeMetadataServiceImpl implements ClinicalAttributeMetadataService {
+public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionaryService {
 
     @Autowired
     private ClinicalAttributeMetadataCache clinicalAttributesCache; 
 
-    private static final Logger logger = LoggerFactory.getLogger(ClinicalAttributeMetadataServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClinicalDataDictionaryServiceImpl.class);
 
     @Override
     public List<ClinicalAttributeMetadata> getClinicalAttributeMetadata(String studyId) {

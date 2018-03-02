@@ -13,20 +13,19 @@
  * Center has been advised of the possibility of such damage.
  */
 
-package org.cbioportal.cam;
+package org.cbioportal.cdd;
 
 import java.util.*;
 import org.mockito.Mockito;
-import org.cbioportal.cam.model.ClinicalAttributeMetadata;
-import org.cbioportal.cam.repository.ClinicalAttributeMetadataRepository;
-import org.cbioportal.cam.service.internal.ClinicalAttributeMetadataCache;
-import org.cbioportal.cam.repository.google.ClinicalAttributeMetadataRepositoryImpl;
+import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
+import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
+import org.cbioportal.cdd.service.internal.ClinicalAttributeMetadataCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class ClinicalAttributeMetadataTestConfig {
+public class ClinicalDataDictionaryTestConfig {
 
     @Bean
     public ClinicalAttributeMetadataCache clinicalAttributesCache() {

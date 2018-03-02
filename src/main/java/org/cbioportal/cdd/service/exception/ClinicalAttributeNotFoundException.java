@@ -13,15 +13,19 @@
  * Center has been advised of the possibility of such damage.
  */
 
-package org.cbioportal.cam.repository;
+package org.cbioportal.cdd.service.exception;
 
-import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.cbioportal.cam.model.ClinicalAttributeMetadata;
+public class ClinicalAttributeNotFoundException extends RuntimeException {
 
-/**
- * @author Manda Wilson 
- */
-public interface ClinicalAttributeMetadataRepository {
-    List<ClinicalAttributeMetadata> getClinicalAttributeMetadata();
+    private static final Logger logger = LoggerFactory.getLogger(ClinicalAttributeNotFoundException.class);
+
+    public ClinicalAttributeNotFoundException(String normalizedColumnHeader) {
+        super("Could not find clinical attribute by normalized column header '" + normalizedColumnHeader + "'.");
+        logger.error("Could not find clinical attribute by normalized column header '" + normalizedColumnHeader + "'.");
+    }
+
 }
+
