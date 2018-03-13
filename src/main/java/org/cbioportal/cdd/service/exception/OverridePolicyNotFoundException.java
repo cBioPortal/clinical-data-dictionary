@@ -18,13 +18,13 @@ package org.cbioportal.cdd.service.exception;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ClinicalAttributeNotFoundException extends RuntimeException {
+public class OverridePolicyNotFoundException extends RuntimeException {
 
-    private static final Logger logger = LoggerFactory.getLogger(ClinicalAttributeNotFoundException.class);
+    private static final Logger logger = LoggerFactory.getLogger(OverridePolicyNotFoundException.class);
 
-    public ClinicalAttributeNotFoundException(String columnHeader) {
-        super("Could not find clinical attribute by column header '" + columnHeader + "'.");
-        logger.error("Could not find clinical attribute by column header '" + columnHeader + "'.");
+    public OverridePolicyNotFoundException(String overridePolicy) {
+        super("Could not find override policy '" + overridePolicy + "'.");
+        logger.error("Could not find override policy '" + overridePolicy + "'.");
     }
 
 }
