@@ -22,9 +22,9 @@ public class ClinicalAttributeNotFoundException extends RuntimeException {
 
     private static final Logger logger = LoggerFactory.getLogger(ClinicalAttributeNotFoundException.class);
 
-    public ClinicalAttributeNotFoundException(String columnHeader) {
-        super("Could not find clinical attribute by column header '" + columnHeader + "'.");
-        logger.error("Could not find clinical attribute by column header '" + columnHeader + "'.");
+    public ClinicalAttributeNotFoundException(String normalizedColumnHeader) {
+        super("Could not find clinical attribute by normalized column header '" + normalizedColumnHeader + "'.");
+        logger.error("Could not find clinical attribute by normalized column header '" + normalizedColumnHeader + "'.");
     }
 
 }

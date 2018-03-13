@@ -50,6 +50,10 @@ import org.springframework.beans.factory.annotation.Value;
 @Repository
 public class ClinicalAttributeMetadataRepositoryGoogleImpl implements ClinicalAttributeMetadataRepository {
 
+    @Value("${metadatarepository.google.id}")
+    private String googleId;
+    @Value("${metadatarepository.google.pw}")
+    private String googlePw;
     @Value("${metadatarepository.google.spreadsheet_service_appname}")
     private String appName;
     @Value("${metadatarepository.google.spreadsheet}")
@@ -60,14 +64,12 @@ public class ClinicalAttributeMetadataRepositoryGoogleImpl implements ClinicalAt
     private String googleServicePrivateKeyFile;
     @Value ("${metadatarepository.google.clinical_attributes_worksheet}")
     private String clinicalAttributesWorksheet;
-    @Value ("${metadatarepository.google.clinical_attributes_overrides_worksheet}")
-    private String overridesAttributesWorksheet;
 
     private SpreadsheetService spreadsheetService;
 
     private static final Logger logger = LoggerFactory.getLogger(ClinicalAttributeMetadataRepositoryGoogleImpl.class);
 
-    public SpreadsheetService getSpreadsheetService() throws IOException, GeneralSecurityException {
+    public SpreadsheetService getSpreadsheetService() {
         if (spreadsheetService == null) {
             initSpreadsheetService();
         }
@@ -87,50 +89,6 @@ public class ClinicalAttributeMetadataRepositoryGoogleImpl implements ClinicalAt
     }
 
     /**
-     * Gets a map of String to ClinicalAttributeMetadata.
-     * @return Map<String, ArrayList<ClinicalAttributeMetadata>> map
-     */
-    public Map<String, ArrayList<ClinicalAttributeMetadata>> getClinicalAttributeMetadataOverrides() {
-        // generate matrix representing each record in metadata worksheet
-        ArrayList<ArrayList<String>> clinicalOverridesAttributesMatrix = getWorksheetData(gdataSpreadsheet, overridesAttributesWorksheet);
-        // initialize array to store all metadata bojects
-        Map<String, ArrayList<ClinicalAttributeMetadata>> clinicalAttributeMetadataList = getClinicalAttributeOverridesFromMatrix(clinicalOverridesAttributesMatrix);
-        return clinicalAttributeMetadataList;
-    }
-
-    /**
-     * Constructs a collection of objects of the given classname from the given matrix.
-     *
-     * @param metadataMatrix ArrayList<ArrayList<String>>
-     * @return Map<String, ArrayList<ClinicalAttributeMetadata>> map
-     */
-    public Map<String, ArrayList<ClinicalAttributeMetadata>> getClinicalAttributeOverridesFromMatrix(ArrayList<ArrayList<String>> metadataMatrix) {
-        logger.debug("getClinicalAttributeFromMatrix() -- metadataMatrix.size(): " + metadataMatrix.size());
-
-        Map<String, ArrayList<ClinicalAttributeMetadata>> overrides = new HashMap<>();
-
-        List<ClinicalAttributeMetadata> clinicalAttributeMetadataList = new ArrayList<ClinicalAttributeMetadata>();
-        // we start at one and subtract 1 from metadataMatrix size because row 0 is the column headers
-        for (int row = 1; row < metadataMatrix.size(); row++) {
-            ArrayList<String> record = metadataMatrix.get(row);
-            ClinicalAttributeMetadata clinicalAttributeMetadata = new ClinicalAttributeMetadata(record.get(0),
-                record.get(1),
-                record.get(2),
-                record.get(3),
-                record.get(4),
-                record.get(5));
-            if (record.get(10) != null && !record.get(10).isEmpty()) {
-                if (!overrides.containsKey(record.get(10))) {
-                    ArrayList<ClinicalAttributeMetadata> clinicalAttributeList = new ArrayList<ClinicalAttributeMetadata>();
-                    overrides.put(record.get(10), clinicalAttributeList);
-                }
-                overrides.get(record.get(10)).add(clinicalAttributeMetadata);
-            }
-        }
-        return overrides;
-    }
-
-    /**
      * Constructs a collection of objects of the given classname from the given matrix.
      *
      * @param metadataMatrix ArrayList<ArrayList<String>>
@@ -138,7 +96,7 @@ public class ClinicalAttributeMetadataRepositoryGoogleImpl implements ClinicalAt
      */
     private List<ClinicalAttributeMetadata> getClinicalAttributeFromMatrix(ArrayList<ArrayList<String>> metadataMatrix) {
         logger.debug("getClinicalAttributeFromMatrix() -- metadataMatrix.size(): " + metadataMatrix.size());
-        List<ClinicalAttributeMetadata> clinicalAttributeMetadataList = new ArrayList<ClinicalAttributeMetadata>();
+        List<ClinicalAttributeMetadata> clinicalAttributeMetadataList = new ArrayList<ClinicalAttributeMetadata>(metadataMatrix.size() - 1);
         // we start at one and subtract 1 from metadataMatrix size because row 0 is the column headers
         for (int row = 1; row < metadataMatrix.size(); row++) {
             ArrayList<String> record = metadataMatrix.get(row);
@@ -153,19 +111,25 @@ public class ClinicalAttributeMetadataRepositoryGoogleImpl implements ClinicalAt
         return clinicalAttributeMetadataList;
     }
 
-    private void initSpreadsheetService() throws IOException, GeneralSecurityException {
-        HttpTransport httpTransport = new NetHttpTransport();
-        JacksonFactory jsonFactory = new JacksonFactory();
-        String[] SCOPESArray = {"https://spreadsheets.google.com/feeds", "https://docs.google.com/feeds"};
-        final List SCOPES = Arrays.asList(SCOPESArray);
-        GoogleCredential credential = new GoogleCredential.Builder()
-            .setTransport(httpTransport)
-            .setJsonFactory(jsonFactory)
-            .setServiceAccountId(googleServiceEmail)
-            .setServiceAccountScopes(SCOPES)
-            .setServiceAccountPrivateKeyFromP12File(new File(googleServicePrivateKeyFile)).build();
-        spreadsheetService = new SpreadsheetService("data");
-        spreadsheetService.setOAuth2Credentials(credential);
+    private void initSpreadsheetService() {
+        try {
+            HttpTransport httpTransport = new NetHttpTransport();
+            JacksonFactory jsonFactory = new JacksonFactory();
+            String[] SCOPESArray = {"https://spreadsheets.google.com/feeds", "https://docs.google.com/feeds"};
+            final List SCOPES = Arrays.asList(SCOPESArray);
+            GoogleCredential credential = new GoogleCredential.Builder()
+                .setTransport(httpTransport)
+                .setJsonFactory(jsonFactory)
+                .setServiceAccountId(googleServiceEmail)
+                .setServiceAccountScopes(SCOPES)
+                .setServiceAccountPrivateKeyFromP12File(new File(googleServicePrivateKeyFile)).build();
+            spreadsheetService = new SpreadsheetService("data");
+            spreadsheetService.setOAuth2Credentials(credential);
+        } catch (IOException | GeneralSecurityException e) {
+            // we don't throw the exception, we will just return no data
+            // TODO we should probably throw an exception the user must catch
+            logger.error("initSpreadsheetService():", e);
+        }
     }
 
     /**
@@ -229,7 +193,7 @@ public class ClinicalAttributeMetadataRepositoryGoogleImpl implements ClinicalAt
     }
 
     /**
-     * Helper function to retrieve the given google worksheet data matrix as a
+     * Helper function to retrieve the given google worksheet data matrix. as a
      * list of string lists.
      *
      * @param spreadsheetName String
@@ -237,10 +201,11 @@ public class ClinicalAttributeMetadataRepositoryGoogleImpl implements ClinicalAt
      * @return ArrayList<ArrayList<String>>
      */
     private ArrayList<ArrayList<String>> getWorksheetData(String spreadsheetName, String worksheetName) {
-        logger.info("getWorksheetData(): " + spreadsheetName + ", " + worksheetName);
+        this.spreadsheetService = getSpreadsheetService();
         ArrayList<ArrayList<String>> toReturn = new ArrayList<ArrayList<String>>();
+        logger.info("getWorksheetData(): " + spreadsheetName + ", " + worksheetName);
         try {
-            this.spreadsheetService = getSpreadsheetService();
+            //login();
             WorksheetEntry worksheet = getWorksheet(spreadsheetName, worksheetName);
             if (worksheet != null) {
                 ListFeed feed = spreadsheetService.getFeed(worksheet.getListFeedUrl(), ListFeed.class);
@@ -267,7 +232,7 @@ public class ClinicalAttributeMetadataRepositoryGoogleImpl implements ClinicalAt
                 }
             }
         } catch (Exception e) {
-            logger.error("Problem connecting to " + spreadsheetName + ":" + worksheetName);
+            System.err.println("Problem connecting to " + spreadsheetName + ":" + worksheetName);
             throw new RuntimeException(e);
         }
         return toReturn;
