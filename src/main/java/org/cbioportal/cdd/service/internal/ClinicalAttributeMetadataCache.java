@@ -35,14 +35,18 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
- * @author Robert Sheridan, Manda Wilson
+ * @author Robert Sheridan, Avery Wang, Manda Wilson
  */
 @Component
 @EnableScheduling
 public class ClinicalAttributeMetadataCache {
 
-    private static HashMap<String, ClinicalAttributeMetadata> clinicalAttributeCache = new HashMap<String, ClinicalAttributeMetadata>();
-    private static HashMap<String, Map<String, ClinicalAttributeMetadata>> overridesCache = new HashMap<String, Map<String, ClinicalAttributeMetadata>>();
+    // if clinicalAttributeCache is null it means we could not populate it, there was an error
+    private static HashMap<String, ClinicalAttributeMetadata> clinicalAttributeCache;
+    // if overridesCache is null it means we could not populate it, there was an error
+    private static HashMap<String, Map<String, ClinicalAttributeMetadata>> overridesCache;
+    private static int consecutiveFailedAttempts = 0;
+    private static final int MAX_FAILED_ATTEMPTS = 3;
 
     private static final Logger logger = LoggerFactory.getLogger(ClinicalAttributeMetadataCache.class);
 
@@ -50,48 +54,72 @@ public class ClinicalAttributeMetadataCache {
     private ClinicalAttributeMetadataRepository clinicalAttributesRepository;
 
     public Map<String, ClinicalAttributeMetadata> getClinicalAttributeMetadata() {
-        return Collections.unmodifiableMap(clinicalAttributeCache);
+        if (clinicalAttributeCache != null) {
+            return Collections.unmodifiableMap(clinicalAttributeCache);
+        }
+        return null;
     }
-    
+
     public Map<String, Map<String, ClinicalAttributeMetadata>> getClinicalAttributeMetadataOverrides() {
-        return Collections.unmodifiableMap(overridesCache);
+        if (overridesCache != null) {
+            return Collections.unmodifiableMap(overridesCache);
+        }
+        return null;
     }
-    
+
     @PostConstruct // call when constructed
     @Scheduled(cron="0 */5 * * * *") // call every 5 minutes
-    private void resetCache() {
+    private void scheduleResetCache() {
         // TODO make sure we don't have two scheduled calls run simultaneously
-        logger.info("resetCache(): refilling clinical attribute cache");
-        List<ClinicalAttributeMetadata> latestClinicalAttributeMetadata = clinicalAttributesRepository.getClinicalAttributeMetadata();
-        HashMap<String, ClinicalAttributeMetadata> latestClinicalAttributeMetadataCache = new HashMap<String, ClinicalAttributeMetadata>();
-        if (latestClinicalAttributeMetadata.size() > 0) {
-            for (ClinicalAttributeMetadata clinicalAttributeMetadata : latestClinicalAttributeMetadata) {
-                latestClinicalAttributeMetadataCache.put(clinicalAttributeMetadata.getNormalizedColumnHeader(), clinicalAttributeMetadata);
-            }
-            clinicalAttributeCache = latestClinicalAttributeMetadataCache;
-            logger.info("resetCache(): refillled cache with " + latestClinicalAttributeMetadata.size() + " clinical attributes");
-        } else {
-            // what if cache never gets updated because we break something?
-            logger.error("resetCache(): failed to pull clinical attributes from repository, not updating cache");
-        }
-   
-        // latestOverrides is a map of study-id to list of overridden ClinicalAttributeMetadata objects
-        // latestOverridesCache is a map of study-id to map of clinical attribute name to overridden ClinicalAttributeMetadata object 
-        Map<String, ArrayList<ClinicalAttributeMetadata>> latestOverrides = clinicalAttributesRepository.getClinicalAttributeMetadataOverrides();
-        HashMap<String, Map<String,ClinicalAttributeMetadata>> latestOverridesCache = new HashMap<String, Map<String, ClinicalAttributeMetadata>>();
-        if (latestOverrides.size() > 0) {
-            for (Map.Entry<String, ArrayList<ClinicalAttributeMetadata>> entry : latestOverrides.entrySet()) {
-		HashMap<String, ClinicalAttributeMetadata> clinicalAttributesMetadataMapping = new HashMap<String, ClinicalAttributeMetadata>();
-		for (ClinicalAttributeMetadata clinicalAttributeMetadata : entry.getValue()) {
-			clinicalAttributesMetadataMapping.put(clinicalAttributeMetadata.getNormalizedColumnHeader(), clinicalAttributeMetadata);
-		}
-                latestOverridesCache.put(entry.getKey(), clinicalAttributesMetadataMapping);
-            }
-            overridesCache = latestOverridesCache;
-            logger.info("resetCache(): refilled overrides cache with " + latestOverrides.size() + " overrides");
-        } else {
-            logger.error("resetCache(): failed to pull overrides from repository, not updating cache");
-        }
+        resetCache();
     }
-} 
 
+    /**
+    * This method does not need to be called, it will automatically be called by scheduleResetCache().
+    * It is a public method so that it can be easily tested.
+    */
+    public void resetCache() {
+        logger.info("resetCache(): refilling clinical attribute cache");
+        List<ClinicalAttributeMetadata> latestClinicalAttributeMetadata = null;
+        // latestOverrides is a map of study-id to list of overridden ClinicalAttributeMetadata objects
+        Map<String, ArrayList<ClinicalAttributeMetadata>> latestOverrides = null;
+        try {
+            latestClinicalAttributeMetadata = clinicalAttributesRepository.getClinicalAttributeMetadata();
+            latestOverrides = clinicalAttributesRepository.getClinicalAttributeMetadataOverrides();
+        } catch (RuntimeException e) {
+            if (latestClinicalAttributeMetadata == null) {
+                logger.error("resetCache(): failed to pull clinical attributes from repository");
+            } else {
+                logger.error("resetCache(): failed to pull overrides from repository");
+            }
+            consecutiveFailedAttempts += 1;
+            if (consecutiveFailedAttempts >= MAX_FAILED_ATTEMPTS) {
+                logger.error("resetCache(): failed to pull from repository " + consecutiveFailedAttempts +  " times, emptying caches");
+                clinicalAttributeCache = null;
+                overridesCache = null;
+            }
+            return;
+        }
+        // we succeeded, reset consecutiveFailedAttempts
+        consecutiveFailedAttempts = 0;
+        HashMap<String, ClinicalAttributeMetadata> latestClinicalAttributeMetadataCache = new HashMap<String, ClinicalAttributeMetadata>();
+        for (ClinicalAttributeMetadata clinicalAttributeMetadata : latestClinicalAttributeMetadata) {
+            latestClinicalAttributeMetadataCache.put(clinicalAttributeMetadata.getColumnHeader(), clinicalAttributeMetadata);
+        }
+
+        // latestOverridesCache is a map of study-id to map of clinical attribute name to overridden ClinicalAttributeMetadata object
+        HashMap<String, Map<String,ClinicalAttributeMetadata>> latestOverridesCache = new HashMap<String, Map<String, ClinicalAttributeMetadata>>();
+        for (Map.Entry<String, ArrayList<ClinicalAttributeMetadata>> entry : latestOverrides.entrySet()) {
+            HashMap<String, ClinicalAttributeMetadata> clinicalAttributesMetadataMapping = new HashMap<String, ClinicalAttributeMetadata>();
+            for (ClinicalAttributeMetadata clinicalAttributeMetadata : entry.getValue()) {
+                clinicalAttributesMetadataMapping.put(clinicalAttributeMetadata.getColumnHeader(), clinicalAttributeMetadata);
+            }
+            latestOverridesCache.put(entry.getKey(), clinicalAttributesMetadataMapping);
+        }
+
+        clinicalAttributeCache = latestClinicalAttributeMetadataCache;
+        logger.info("resetCache(): refilled cache with " + latestClinicalAttributeMetadata.size() + " clinical attributes");
+        overridesCache = latestOverridesCache;
+        logger.info("resetCache(): refilled overrides cache with " + latestOverrides.size() + " overrides");
+    }
+}

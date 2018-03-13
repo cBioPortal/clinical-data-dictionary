@@ -21,18 +21,21 @@ import com.fasterxml.jackson.annotation.JsonView;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.List;
 
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
+import org.cbioportal.cdd.model.OverridePolicy;
 import org.cbioportal.cdd.service.ClinicalDataDictionaryService;
 import org.cbioportal.cdd.service.exception.ClinicalAttributeNotFoundException;
+import org.cbioportal.cdd.service.exception.ClinicalMetadataSourceUnresponsiveException;
+import org.cbioportal.cdd.service.exception.OverridePolicyNotFoundException;
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
 /**
- * @author Manda Wilson 
+ * @author Avery Wang, Manda Wilson 
  */
 @RestController // shorthand for @Controller, @ResponseBody
 @RequestMapping(value = "/api/")
@@ -41,27 +44,35 @@ public class ClinicalDataDictionaryController {
     @Autowired
     private ClinicalDataDictionaryService clinicalAttributesService;
 
-    @RequestMapping(method = RequestMethod.GET, value="/{studyId}")
-    public Iterable<ClinicalAttributeMetadata> getClinicalAttributeMetadata(@PathVariable String studyId, @RequestParam(value = "normalizedColumnHeaders", required = false) String normalizedColumnHeaders) {
-        if (normalizedColumnHeaders != null) {
-            return clinicalAttributesService.getMetadataByNormalizedColumnHeaders(studyId, Arrays.asList(normalizedColumnHeaders.split(",")));
-        }
-        // otherwise return all clinical attributes
-        return clinicalAttributesService.getClinicalAttributeMetadata(studyId);
+    @RequestMapping(method = RequestMethod.GET, value="/")
+    public Iterable<ClinicalAttributeMetadata> getClinicalAttributeMetadata(@RequestParam(value = "overridePolicy", required = false) String overridePolicyName) {
+        return clinicalAttributesService.getClinicalAttributeMetadata(overridePolicyName);
     }
 
-    @RequestMapping(value = "/{studyId}/{normalizedColumnHeader}", method = RequestMethod.GET)
-    public ClinicalAttributeMetadata getClinicalAttribute(@PathVariable String studyId, @PathVariable String normalizedColumnHeader) {
-        return clinicalAttributesService.getMetadataByNormalizedColumnHeader(studyId, normalizedColumnHeader);
+    @RequestMapping(method = RequestMethod.POST, value="/")
+    public Iterable<ClinicalAttributeMetadata> getClinicalAttributeMetadata(@RequestParam(value = "overridePolicy", required = false) String overridePolicyName, @RequestBody List<String> columnHeaders) {
+        return clinicalAttributesService.getMetadataByColumnHeaders(overridePolicyName, columnHeaders);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/overrides")
-    public Iterable<String> getStudyIdsWithOverrides() {
-        return clinicalAttributesService.getStudyIdsWithOverrides();
+    @RequestMapping(value = "/{columnHeader}", method = RequestMethod.GET)
+    public ClinicalAttributeMetadata getClinicalAttribute(@RequestParam(value = "overridePolicy", required = false) String overridePolicyName, @PathVariable String columnHeader) {
+        return clinicalAttributesService.getMetadataByColumnHeader(overridePolicyName, columnHeader);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/overridePolicies")
+    public Iterable<OverridePolicy> getOverridePolicies() {
+        return clinicalAttributesService.getOverridePolicies();
     }
     
     @ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "Clinical attribute not found")
     @ExceptionHandler(ClinicalAttributeNotFoundException.class)
     public void handleClinicalAttributeNotFound() {}
-}
 
+    @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE, reason = "Clinical attribute metadata source unavailable")
+    @ExceptionHandler(ClinicalMetadataSourceUnresponsiveException.class)
+    public void handleClinicalMetadataSourceUnresponsive() {}
+
+    @ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "Override policy not found")
+    @ExceptionHandler(OverridePolicyNotFoundException.class)
+    public void handleOverridePolicyNotFound() {}
+}

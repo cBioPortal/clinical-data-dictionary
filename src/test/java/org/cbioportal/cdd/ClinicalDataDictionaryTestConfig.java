@@ -28,35 +28,47 @@ import org.springframework.context.annotation.Configuration;
 public class ClinicalDataDictionaryTestConfig {
 
     @Bean
-    public ClinicalAttributeMetadataCache clinicalAttributesCache() {
-        Map<String, ClinicalAttributeMetadata> mockAttributeMap = makeMockAttributeMap();
-        Map<String, Map<String, ClinicalAttributeMetadata>> mockOverridesMap = makeMockOverridesMap();
-        ClinicalAttributeMetadataCache cache = Mockito.mock(ClinicalAttributeMetadataCache.class);
-        Mockito.when(cache.getClinicalAttributeMetadata()).thenReturn(mockAttributeMap);
-        Mockito.when(cache.getClinicalAttributeMetadataOverrides()).thenReturn(mockOverridesMap);
-        return cache;
-    }
-
-    @Bean
     public ClinicalAttributeMetadataRepository clinicalAttributesRepository() {
-        return Mockito.mock(ClinicalAttributeMetadataRepository.class);
+        ClinicalAttributeMetadataRepository clinicalAttributesRepository = Mockito.mock(ClinicalAttributeMetadataRepository.class);
+        resetWorkingClinicalAttributesRepository(clinicalAttributesRepository);
+        return clinicalAttributesRepository;
     }
 
-    private Map<String, ClinicalAttributeMetadata> makeMockAttributeMap() {
-        Map<String, ClinicalAttributeMetadata> attributeMap = new HashMap<>();
-        attributeMap.put("AGE", new ClinicalAttributeMetadata("AGE", "Diagnosis Age", "Age at which a condition or disease was first diagnosed.", "NUMBER", "PATIENT", "1"));
-        attributeMap.put("BONE_MARROW_SAMPLE_HISTOLOGY", new ClinicalAttributeMetadata("BONE_MARROW_SAMPLE_HISTOLOGY", "Bone Marrow Sample Histology", "Bone Marrow Sample Histology", "STRING", "SAMPLE", "1"));
-        attributeMap.put("CLIN_M_STAGE", new ClinicalAttributeMetadata("CLIN_M_STAGE", "Neoplasm American Joint Committee on Cancer Clinical Distant Metastasis M Stage", "Extent of the distant metastasis for the cancer based on evidence obtained from clinical assessment parameters determined prior to treatment.", "STRING", "PATIENT", "1"));
-        attributeMap.put("DISEASE_STAGE", new ClinicalAttributeMetadata("DISEASE_STAGE", "Disease Stage", "Disease Stage", "STRING", "SAMPLE", "1"));
-        attributeMap.put("LAST_STATUS", new ClinicalAttributeMetadata("LAST_STATUS", "Last Status", "Last Status.", "STRING", "PATIENT", "1"));
-        return Collections.unmodifiableMap(attributeMap);
+    public void resetWorkingClinicalAttributesRepository(ClinicalAttributeMetadataRepository clinicalAttributesRepository) {
+        Mockito.reset(clinicalAttributesRepository);
+        Mockito.when(clinicalAttributesRepository.getClinicalAttributeMetadata()).thenReturn(makeMockAttributeList());
+        Mockito.when(clinicalAttributesRepository.getClinicalAttributeMetadataOverrides()).thenReturn(makeMockOverridesMap());
     }
 
-    private Map<String, Map<String, ClinicalAttributeMetadata>> makeMockOverridesMap() {
-        Map<String, ClinicalAttributeMetadata> attributeMap = new HashMap<> ();
-        Map<String, Map<String, ClinicalAttributeMetadata>> overridesMap = new HashMap<> ();
-        attributeMap.put("AGE", new ClinicalAttributeMetadata("AGE", "Diagnosis Age", "Age at which a condition or disease was first diagnosed.", "NUMBER", "PATIENT", "100"));
-        overridesMap.put("test_override_study", attributeMap);
+    public void resetNotWorkingClinicalAttributesRepository(ClinicalAttributeMetadataRepository clinicalAttributesRepository) {
+        Mockito.reset(clinicalAttributesRepository);
+        Mockito.when(clinicalAttributesRepository.getClinicalAttributeMetadata()).thenThrow(new RuntimeException("faking a problem getting the clinical attribute data"));
+        Mockito.when(clinicalAttributesRepository.getClinicalAttributeMetadataOverrides()).thenThrow(new RuntimeException("faking a problem getting the clinical attribute data"));
+    }
+
+    private List<ClinicalAttributeMetadata> makeMockAttributeList() {
+        List<ClinicalAttributeMetadata> attributeList = new ArrayList<>();
+        attributeList.add(new ClinicalAttributeMetadata("AGE", "Diagnosis Age", "Age at which a condition or disease was first diagnosed.", "NUMBER", "PATIENT", "1"));
+        attributeList.add(new ClinicalAttributeMetadata("BONE_MARROW_SAMPLE_HISTOLOGY", "Bone Marrow Sample Histology", "Bone Marrow Sample Histology", "STRING", "SAMPLE", "1"));
+        attributeList.add(new ClinicalAttributeMetadata("CLIN_M_STAGE", "Neoplasm American Joint Committee on Cancer Clinical Distant Metastasis M Stage", "Extent of the distant metastasis for the cancer based on evidence obtained from clinical assessment parameters determined prior to treatment.", "STRING", "PATIENT", "1"));
+        attributeList.add(new ClinicalAttributeMetadata("DISEASE_STAGE", "Disease Stage", "Disease Stage", "STRING", "SAMPLE", "1"));
+        attributeList.add(new ClinicalAttributeMetadata("LAST_STATUS", "Last Status", "Last Status.", "STRING", "PATIENT", "1"));
+        return Collections.unmodifiableList(attributeList);
+    }
+
+    private Map<String, ArrayList<ClinicalAttributeMetadata>> makeMockOverridesMap() {
+        ArrayList<ClinicalAttributeMetadata> testPolicyAttributeList = new ArrayList<> ();
+        testPolicyAttributeList.add(new ClinicalAttributeMetadata("AGE", "Diagnosis Age", "Age at which a condition or disease was first diagnosed.", "NUMBER", "PATIENT", "100"));
+        testPolicyAttributeList.add(new ClinicalAttributeMetadata("DISEASE_STAGE", "Disease Stage", "Disease Stage", "STRING", "PATIENT", "10"));
+
+        // there are special rules for mskimpact
+        ArrayList<ClinicalAttributeMetadata> impactPolicyAttributeList = new ArrayList<> ();
+        impactPolicyAttributeList.add(new ClinicalAttributeMetadata("LAST_STATUS", "Last Status", "Last Status.", "STRING", "PATIENT", "1"));
+
+        Map<String, ArrayList<ClinicalAttributeMetadata>> overridesMap = new HashMap<> ();
+        overridesMap.put("test_override_study", testPolicyAttributeList);
+        overridesMap.put("mskimpact", impactPolicyAttributeList);
         return Collections.unmodifiableMap(overridesMap);
     }
+
 }
