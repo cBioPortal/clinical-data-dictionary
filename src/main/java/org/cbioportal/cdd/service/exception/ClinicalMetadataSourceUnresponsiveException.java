@@ -18,13 +18,13 @@ package org.cbioportal.cdd.service.exception;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ClinicalAttributeNotFoundException extends RuntimeException {
+public class ClinicalMetadataSourceUnresponsiveException extends RuntimeException {
 
-    private static final Logger logger = LoggerFactory.getLogger(ClinicalAttributeNotFoundException.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClinicalMetadataSourceUnresponsiveException.class);
 
-    public ClinicalAttributeNotFoundException(String columnHeader) {
-        super("Could not find clinical attribute by column header '" + columnHeader + "'.");
-        logger.error("Could not find clinical attribute by column header '" + columnHeader + "'.");
+    public ClinicalMetadataSourceUnresponsiveException(String error) {
+        super(error);
+        logger.error(error);
     }
 
 }
