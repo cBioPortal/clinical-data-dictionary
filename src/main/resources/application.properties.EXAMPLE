@@ -1,4 +1,6 @@
 # properties to allow retrieval of metadata from a google spreadsheet
+metadatarepository.google.id=
+metadatarepository.google.pw=
 metadatarepository.google.service.private.key.file=
 metadatarepository.google.service.email=
 metadatarepository.google.spreadsheet_service_appname=

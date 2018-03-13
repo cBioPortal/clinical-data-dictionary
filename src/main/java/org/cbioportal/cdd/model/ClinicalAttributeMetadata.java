@@ -30,7 +30,7 @@ import java.util.*;
  */
 @JsonInclude(Include.NON_NULL)
 @JsonPropertyOrder({
-    "column_header",
+    "normalized_column_header",
     "display_name",
     "description",
     "datatype",
@@ -39,8 +39,8 @@ import java.util.*;
 })
 public class ClinicalAttributeMetadata {
 
-    @JsonProperty("column_header")
-    private String columnHeader;
+    @JsonProperty("normalized_column_header")
+    private String normalizedColumnHeader;
     @JsonProperty("display_name")
     private String displayName;
     @JsonProperty("description")
@@ -63,15 +63,15 @@ public class ClinicalAttributeMetadata {
 
     /**
     *
-    * @param columnHeader
+    * @param normalizedColumnHeader
     * @param priority
     * @param attributeType
     * @param datatype
     * @param displayName
     * @param description
     */
-    public ClinicalAttributeMetadata(String columnHeader, String displayName, String description, String datatype, String attributeType, String priority) {
-        this.columnHeader = columnHeader;
+    public ClinicalAttributeMetadata(String normalizedColumnHeader, String displayName, String description, String datatype, String attributeType, String priority) {
+        this.normalizedColumnHeader = normalizedColumnHeader;
         this.displayName = displayName;
         this.description = description;
         this.datatype = datatype;
@@ -82,11 +82,11 @@ public class ClinicalAttributeMetadata {
     /**
     *
     * @return
-    * The columnHeader
+    * The normalizedColumnHeader
     */
-    @JsonProperty("column_header")
-    public String getColumnHeader() {
-        return columnHeader;
+    @JsonProperty("normalized_column_header")
+    public String getNormalizedColumnHeader() {
+        return normalizedColumnHeader;
     }
 
     /**
@@ -96,7 +96,7 @@ public class ClinicalAttributeMetadata {
     */
     @JsonProperty("normalized_column_header")
     public void setNormalizedColumnHeader(String normalizedColumnHeader) {
-        this.columnHeader = normalizedColumnHeader;
+        this.normalizedColumnHeader = normalizedColumnHeader;
     }
 
     /**
