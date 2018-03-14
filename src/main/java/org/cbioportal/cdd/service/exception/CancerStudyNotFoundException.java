@@ -18,13 +18,13 @@ package org.cbioportal.cdd.service.exception;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OverridePolicyNotFoundException extends RuntimeException {
+public class CancerStudyNotFoundException extends RuntimeException {
 
-    private static final Logger logger = LoggerFactory.getLogger(OverridePolicyNotFoundException.class);
+    private static final Logger logger = LoggerFactory.getLogger(CancerStudyNotFoundException.class);
 
-    public OverridePolicyNotFoundException(String overridePolicy) {
-        super("Could not find override policy '" + overridePolicy + "'.");
-        logger.error("Could not find override policy '" + overridePolicy + "'.");
+    public CancerStudyNotFoundException(String cancerStudy) {
+        super("Could not find cancer study '" + cancerStudy + "'.");
+        logger.error("Could not find cancer study '" + cancerStudy + "'.");
     }
 
 }

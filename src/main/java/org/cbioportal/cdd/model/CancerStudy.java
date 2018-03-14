@@ -32,7 +32,7 @@ import java.util.*;
 @JsonPropertyOrder({
     "name",
 })
-public class OverridePolicy {
+public class CancerStudy {
 
     @JsonProperty("name")
     private String name;
@@ -43,14 +43,14 @@ public class OverridePolicy {
     * No args constructor for use in serialization
     *
     */
-    private OverridePolicy() {}
+    private CancerStudy() {}
 
 
     /**
     *
     * @param name
     */
-    public OverridePolicy(String name) {
+    public CancerStudy(String name) {
         this.name = name;
     }
 

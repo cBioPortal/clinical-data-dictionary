@@ -20,11 +20,11 @@ import java.util.Map;
 import java.util.List;
 
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
-import org.cbioportal.cdd.model.OverridePolicy;
+import org.cbioportal.cdd.model.CancerStudy;
 import org.cbioportal.cdd.service.ClinicalDataDictionaryService;
 import org.cbioportal.cdd.service.exception.ClinicalAttributeNotFoundException;
 import org.cbioportal.cdd.service.exception.ClinicalMetadataSourceUnresponsiveException;
-import org.cbioportal.cdd.service.exception.OverridePolicyNotFoundException;
+import org.cbioportal.cdd.service.exception.CancerStudyNotFoundException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,38 +48,38 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
     private static final Logger logger = LoggerFactory.getLogger(ClinicalDataDictionaryServiceImpl.class);
 
     @Override
-    public List<ClinicalAttributeMetadata> getClinicalAttributeMetadata(String overridePolicy)
-        throws ClinicalMetadataSourceUnresponsiveException, OverridePolicyNotFoundException {
+    public List<ClinicalAttributeMetadata> getClinicalAttributeMetadata(String cancerStudy)
+        throws ClinicalMetadataSourceUnresponsiveException, CancerStudyNotFoundException {
         assertCacheIsValid();
-        assertOverridePolicyIsValid(overridePolicy);
+        assertCancerStudyIsValid(cancerStudy);
         List<String> columnHeaders = new ArrayList<>(clinicalAttributesCache.getClinicalAttributeMetadata().keySet());
-        List<ClinicalAttributeMetadata> clinicalAttributes = getMetadataByColumnHeaders(overridePolicy, columnHeaders);
+        List<ClinicalAttributeMetadata> clinicalAttributes = getMetadataByColumnHeaders(cancerStudy, columnHeaders);
         return clinicalAttributes; 
     }
 
     @Override
-    public List<ClinicalAttributeMetadata> getMetadataByColumnHeaders(String overridePolicy, List<String> columnHeaders)
-        throws ClinicalAttributeNotFoundException, ClinicalMetadataSourceUnresponsiveException, OverridePolicyNotFoundException {
+    public List<ClinicalAttributeMetadata> getMetadataByColumnHeaders(String cancerStudy, List<String> columnHeaders)
+        throws ClinicalAttributeNotFoundException, ClinicalMetadataSourceUnresponsiveException, CancerStudyNotFoundException {
         assertCacheIsValid();
-        assertOverridePolicyIsValid(overridePolicy);
+        assertCancerStudyIsValid(cancerStudy);
         List<ClinicalAttributeMetadata> clinicalAttributes = new ArrayList<ClinicalAttributeMetadata>();
         Map<String, ClinicalAttributeMetadata> defaultClinicalAttributeCache = clinicalAttributesCache.getClinicalAttributeMetadata();
         Map<String, Map<String, ClinicalAttributeMetadata>> overridesCache = clinicalAttributesCache.getClinicalAttributeMetadataOverrides();
         Map<String, ClinicalAttributeMetadata> overrideClinicalAttributeCache = null;
-        if (overridePolicy != null) { // override policy has already been validated
-            overrideClinicalAttributeCache = overridesCache.get(overridePolicy);
+        if (cancerStudy != null) { // cancer study has already been validated
+            overrideClinicalAttributeCache = overridesCache.get(cancerStudy);
         }
         for (String columnHeader : columnHeaders) {
             // first check in our overrideClinicalAttributeCache for column header
-            if (overridePolicy != null && overrideClinicalAttributeCache.containsKey(columnHeader.toUpperCase())) {
+            if (cancerStudy != null && overrideClinicalAttributeCache.containsKey(columnHeader.toUpperCase())) {
                 clinicalAttributes.add(getMetadataByColumnHeader(overrideClinicalAttributeCache, columnHeader));
             } else {
                 // otherwise use the defaultClinicalAttributeCache
                 ClinicalAttributeMetadata cachedClinicalAttribute = getMetadataByColumnHeader(defaultClinicalAttributeCache, columnHeader);
-                if (overridePolicy == null || !overridePolicy.equals("mskimpact")) {
+                if (cancerStudy == null || !cancerStudy.equals("mskimpact")) {
                     clinicalAttributes.add(cachedClinicalAttribute);
                 } else {
-                    // when overridePolicy is 'mskimpact' - copy created so modification (i.e reset priority to 0) does not get applied to object stored in cache
+                    // when cancerStudy is 'mskimpact' - copy created so modification (i.e reset priority to 0) does not get applied to object stored in cache
                     ClinicalAttributeMetadata resetClinicalAttribute = new ClinicalAttributeMetadata(cachedClinicalAttribute.getColumnHeader(),
                         cachedClinicalAttribute.getDisplayName(),
                         cachedClinicalAttribute.getDescription(),
@@ -94,14 +94,14 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
     }
 
     @Override
-    public ClinicalAttributeMetadata getMetadataByColumnHeader(String overridePolicy, String columnHeader)
-        throws ClinicalAttributeNotFoundException, ClinicalMetadataSourceUnresponsiveException, OverridePolicyNotFoundException {
+    public ClinicalAttributeMetadata getMetadataByColumnHeader(String cancerStudy, String columnHeader)
+        throws ClinicalAttributeNotFoundException, ClinicalMetadataSourceUnresponsiveException, CancerStudyNotFoundException {
         assertCacheIsValid();
-        assertOverridePolicyIsValid(overridePolicy);
+        assertCancerStudyIsValid(cancerStudy);
         Map<String, ClinicalAttributeMetadata> clinicalAttributeCache = clinicalAttributesCache.getClinicalAttributeMetadata();
         Map<String, Map<String, ClinicalAttributeMetadata>> overridesCache = clinicalAttributesCache.getClinicalAttributeMetadataOverrides();
-        if (overridePolicy != null && overridesCache.get(overridePolicy).containsKey(columnHeader.toUpperCase())) {
-            return getMetadataByColumnHeader(overridesCache.get(overridePolicy), columnHeader);
+        if (cancerStudy != null && overridesCache.get(cancerStudy).containsKey(columnHeader.toUpperCase())) {
+            return getMetadataByColumnHeader(overridesCache.get(cancerStudy), columnHeader);
         }
         return getMetadataByColumnHeader(clinicalAttributeCache, columnHeader);
     }
@@ -115,14 +115,14 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
     }
 
     @Override
-    public List<OverridePolicy> getOverridePolicies() throws ClinicalMetadataSourceUnresponsiveException {
+    public List<CancerStudy> getCancerStudies() throws ClinicalMetadataSourceUnresponsiveException {
         assertCacheIsValid();
-        List<OverridePolicy> overridePolicies = new ArrayList<OverridePolicy>();
+        List<CancerStudy> cancerStudies = new ArrayList<CancerStudy>();
         Map<String, Map<String, ClinicalAttributeMetadata>> overridesCache = clinicalAttributesCache.getClinicalAttributeMetadataOverrides();
-        for (String overridePolicyName : overridesCache.keySet()) {
-            overridePolicies.add(new OverridePolicy(overridePolicyName));
+        for (String cancerStudyName : overridesCache.keySet()) {
+            cancerStudies.add(new CancerStudy(cancerStudyName));
         }
-        return overridePolicies;
+        return cancerStudies;
     }
 
     private void assertCacheIsValid() throws ClinicalMetadataSourceUnresponsiveException {
@@ -133,12 +133,12 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
         logger.debug("assertCacheIsValid() -- cache is valid");
     }
 
-    private void assertOverridePolicyIsValid(String overridePolicy) throws OverridePolicyNotFoundException {
-        if (overridePolicy != null && !clinicalAttributesCache.getClinicalAttributeMetadataOverrides().containsKey(overridePolicy)) {
-            logger.debug("assertOverridePolicyIsValid() -- override policy '" + overridePolicy + "' is invalid");
-            throw new OverridePolicyNotFoundException(overridePolicy);
+    private void assertCancerStudyIsValid(String cancerStudy) throws CancerStudyNotFoundException {
+        if (cancerStudy != null && !clinicalAttributesCache.getClinicalAttributeMetadataOverrides().containsKey(cancerStudy)) {
+            logger.debug("assertCancerStudyIsValid() -- cancer study '" + cancerStudy + "' is invalid");
+            throw new CancerStudyNotFoundException(cancerStudy);
         }
         // null is valid
-        logger.debug("assertOverridePolicyIsValid() -- override policy '" + overridePolicy + "' is valid");
+        logger.debug("assertCancerStudyIsValid() -- cancer study '" + cancerStudy + "' is valid");
     }
 }
