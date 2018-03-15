@@ -30,7 +30,6 @@ public class ClinicalDataDictionaryTestConfig {
     @Bean
     public ClinicalAttributeMetadataRepository clinicalAttributesRepository() {
         ClinicalAttributeMetadataRepository clinicalAttributesRepository = Mockito.mock(ClinicalAttributeMetadataRepository.class);
-        resetWorkingClinicalAttributesRepository(clinicalAttributesRepository);
         return clinicalAttributesRepository;
     }
 
@@ -38,6 +37,12 @@ public class ClinicalDataDictionaryTestConfig {
         Mockito.reset(clinicalAttributesRepository);
         Mockito.when(clinicalAttributesRepository.getClinicalAttributeMetadata()).thenReturn(makeMockAttributeList());
         Mockito.when(clinicalAttributesRepository.getClinicalAttributeMetadataOverrides()).thenReturn(makeMockOverridesMap());
+    }
+
+    public void resetUpdatedClinicalAttributesRepository(ClinicalAttributeMetadataRepository clinicalAttributesRepository) {
+        Mockito.reset(clinicalAttributesRepository);
+        Mockito.when(clinicalAttributesRepository.getClinicalAttributeMetadata()).thenReturn(makeUpdatedMockAttributeList());
+        Mockito.when(clinicalAttributesRepository.getClinicalAttributeMetadataOverrides()).thenReturn(makeUpdatedMockOverridesMap());
     }
 
     public void resetNotWorkingClinicalAttributesRepository(ClinicalAttributeMetadataRepository clinicalAttributesRepository) {
@@ -56,6 +61,13 @@ public class ClinicalDataDictionaryTestConfig {
         return Collections.unmodifiableList(attributeList);
     }
 
+    private List<ClinicalAttributeMetadata> makeUpdatedMockAttributeList() {
+        List<ClinicalAttributeMetadata> attributeList = new ArrayList<>();
+        attributeList.add(new ClinicalAttributeMetadata("AGE", "Diagnosis Age", "Age at which a condition or disease was first diagnosed.", "NUMBER", "PATIENT", "1"));
+        attributeList.add(new ClinicalAttributeMetadata("NECROSIS", "Necrosis", "Death of cells in organ/tissue due to lack of blood supply", "STRING", "SAMPLE", "1"));
+        return Collections.unmodifiableList(attributeList);
+    }
+
     private Map<String, ArrayList<ClinicalAttributeMetadata>> makeMockOverridesMap() {
         ArrayList<ClinicalAttributeMetadata> testPolicyAttributeList = new ArrayList<> ();
         testPolicyAttributeList.add(new ClinicalAttributeMetadata("AGE", "Diagnosis Age", "Age at which a condition or disease was first diagnosed.", "NUMBER", "PATIENT", "100"));
@@ -71,4 +83,12 @@ public class ClinicalDataDictionaryTestConfig {
         return Collections.unmodifiableMap(overridesMap);
     }
 
+    private Map<String, ArrayList<ClinicalAttributeMetadata>> makeUpdatedMockOverridesMap() {
+        ArrayList<ClinicalAttributeMetadata> updatedPolicyList = new ArrayList<> ();
+        updatedPolicyList.add(new ClinicalAttributeMetadata("OS_MONTHS", "Overall Survival Status", "Overall survival status in months.", "NUMBER", "PATIENT", "250"));
+
+        Map<String, ArrayList<ClinicalAttributeMetadata>> overridesMap = new HashMap<> ();
+        overridesMap.put("updated_override_study", updatedPolicyList);
+        return Collections.unmodifiableMap(overridesMap);
+    }
 }

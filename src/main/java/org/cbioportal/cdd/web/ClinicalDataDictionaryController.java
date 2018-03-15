@@ -35,7 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
 /**
- * @author Avery Wang, Manda Wilson 
+ * @author Avery Wang, Manda Wilson
  */
 @CrossOrigin // enable CORS on all endpoints (by default @CrossOrigin allows all origins and the HTTP methods specified in the @RequestMapping annotation
 @RestController // shorthand for @Controller, @ResponseBody
@@ -64,7 +64,12 @@ public class ClinicalDataDictionaryController {
     public Iterable<CancerStudy> getCancerStudies() {
         return clinicalAttributesService.getCancerStudies();
     }
-    
+
+    @RequestMapping(method = RequestMethod.GET, value = "/refreshCache")
+    public void forceResetCache() {
+        clinicalAttributesService.forceResetCache();
+    }
+
     @ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "Clinical attribute not found")
     @ExceptionHandler(ClinicalAttributeNotFoundException.class)
     public void handleClinicalAttributeNotFound() {}

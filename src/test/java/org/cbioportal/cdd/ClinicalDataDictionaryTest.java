@@ -26,10 +26,12 @@ import org.cbioportal.cdd.service.internal.ClinicalAttributeMetadataCache;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-
+import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertThat;
 import org.junit.runner.RunWith;
 import org.junit.Test;
+import org.junit.Before;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -41,7 +43,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
- * @author Manda Wilson 
+ * @author Manda Wilson, Avery Wang
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -56,6 +58,14 @@ public class ClinicalDataDictionaryTest {
 
     @Autowired
     private ClinicalAttributeMetadataCache clinicalAttributesCache;
+
+    @Before
+    // make sure repository is working version before each test
+    public void resetToWorkingRepository() {
+        ClinicalDataDictionaryTestConfig config = new ClinicalDataDictionaryTestConfig();
+        config.resetWorkingClinicalAttributesRepository(clinicalAttributesRepository);
+        ResponseEntity<String> response = restTemplate.getForEntity("/api/refreshCache", String.class);
+    }
 
     @Test
     public void getClinicalAttributeMetadataTest() throws Exception {
@@ -109,6 +119,31 @@ public class ClinicalDataDictionaryTest {
         ResponseEntity<String> response = restTemplate.getForEntity("/api/INVALID_ATTRIBUTE", String.class);
         assertThat(response.getBody(), containsString("org.cbioportal.cdd.service.exception.ClinicalAttributeNotFoundException"));
         assertThat(response.getStatusCode(), equalTo(HttpStatus.NOT_FOUND));
+    }
+
+    @Test
+    public void forceResetCacheTest() throws Exception {
+        // test that cache is updated after GET /api/refreshCache
+        ClinicalDataDictionaryTestConfig config = new ClinicalDataDictionaryTestConfig();
+        // change repository to version with 2 attributes/1 override
+        config.resetUpdatedClinicalAttributesRepository(clinicalAttributesRepository);
+        ResponseEntity<String> response = restTemplate.getForEntity("/api/refreshCache", String.class);
+        assertThat(response.getBody(), equalTo(null));
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+        assertThat(clinicalAttributesRepository.getClinicalAttributeMetadata().size(), equalTo(2));
+        assertThat(clinicalAttributesRepository.getClinicalAttributeMetadataOverrides(), hasKey("updated_override_study"));
+        assertThat(clinicalAttributesRepository.getClinicalAttributeMetadataOverrides().size(), equalTo(1));
+        // change repository to non-working version
+        config.resetNotWorkingClinicalAttributesRepository(clinicalAttributesRepository);
+        response = restTemplate.getForEntity("/api/refreshCache", String.class);
+        assertThat(response.getBody(), containsString("org.cbioportal.cdd.service.exception.ClinicalMetadataSourceUnresponsiveException"));
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.SERVICE_UNAVAILABLE));
+        // change repository to version with 5 attributes/2 overrides
+        config.resetWorkingClinicalAttributesRepository(clinicalAttributesRepository);
+        restTemplate.getForEntity("/api/refreshCache", String.class);
+        assertThat(clinicalAttributesRepository.getClinicalAttributeMetadata().size(), equalTo(5));
+        assertThat(clinicalAttributesRepository.getClinicalAttributeMetadataOverrides().size(), equalTo(2));
+        assertThat(clinicalAttributesRepository.getClinicalAttributeMetadataOverrides(), not(hasKey("updated_override_study")));
     }
 
     @Test
