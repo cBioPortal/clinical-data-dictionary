@@ -76,10 +76,10 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
             } else {
                 // otherwise use the defaultClinicalAttributeCache
                 ClinicalAttributeMetadata cachedClinicalAttribute = getMetadataByColumnHeader(defaultClinicalAttributeCache, columnHeader);
-                if (cancerStudy == null || !cancerStudy.equals("mskimpact")) {
+                if (cancerStudy == null || !cancerStudy.equals("mskimpact") || !cancerStudy.equals("sclc_mskimpact_2017")) {
                     clinicalAttributes.add(cachedClinicalAttribute);
                 } else {
-                    // when cancerStudy is 'mskimpact' - copy created so modification (i.e reset priority to 0) does not get applied to object stored in cache
+                    // when cancerStudy is 'mskimpact' or 'sclc_mskimpact_2017' - copy created so modification (i.e reset priority to 0) does not get applied to object stored in cache
                     ClinicalAttributeMetadata resetClinicalAttribute = new ClinicalAttributeMetadata(cachedClinicalAttribute.getColumnHeader(),
                         cachedClinicalAttribute.getDisplayName(),
                         cachedClinicalAttribute.getDescription(),
