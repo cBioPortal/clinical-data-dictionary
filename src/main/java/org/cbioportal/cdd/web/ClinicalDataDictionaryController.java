@@ -37,6 +37,7 @@ import org.springframework.http.HttpStatus;
 /**
  * @author Avery Wang, Manda Wilson 
  */
+@CrossOrigin // enable CORS on all endpoints (by default @CrossOrigin allows all origins and the HTTP methods specified in the @RequestMapping annotation
 @RestController // shorthand for @Controller, @ResponseBody
 @RequestMapping(value = "/api/")
 public class ClinicalDataDictionaryController {
