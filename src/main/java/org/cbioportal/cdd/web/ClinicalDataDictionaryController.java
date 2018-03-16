@@ -24,11 +24,11 @@ import java.io.IOException;
 import java.util.List;
 
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
-import org.cbioportal.cdd.model.OverridePolicy;
+import org.cbioportal.cdd.model.CancerStudy;
 import org.cbioportal.cdd.service.ClinicalDataDictionaryService;
 import org.cbioportal.cdd.service.exception.ClinicalAttributeNotFoundException;
 import org.cbioportal.cdd.service.exception.ClinicalMetadataSourceUnresponsiveException;
-import org.cbioportal.cdd.service.exception.OverridePolicyNotFoundException;
+import org.cbioportal.cdd.service.exception.CancerStudyNotFoundException;
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,23 +46,23 @@ public class ClinicalDataDictionaryController {
     private ClinicalDataDictionaryService clinicalAttributesService;
 
     @RequestMapping(method = RequestMethod.GET, value="/")
-    public Iterable<ClinicalAttributeMetadata> getClinicalAttributeMetadata(@RequestParam(value = "overridePolicy", required = false) String overridePolicyName) {
-        return clinicalAttributesService.getClinicalAttributeMetadata(overridePolicyName);
+    public Iterable<ClinicalAttributeMetadata> getClinicalAttributeMetadata(@RequestParam(value = "cancerStudy", required = false) String cancerStudyName) {
+        return clinicalAttributesService.getClinicalAttributeMetadata(cancerStudyName);
     }
 
     @RequestMapping(method = RequestMethod.POST, value="/")
-    public Iterable<ClinicalAttributeMetadata> getClinicalAttributeMetadata(@RequestParam(value = "overridePolicy", required = false) String overridePolicyName, @RequestBody List<String> columnHeaders) {
-        return clinicalAttributesService.getMetadataByColumnHeaders(overridePolicyName, columnHeaders);
+    public Iterable<ClinicalAttributeMetadata> getClinicalAttributeMetadata(@RequestParam(value = "cancerStudy", required = false) String cancerStudyName, @RequestBody List<String> columnHeaders) {
+        return clinicalAttributesService.getMetadataByColumnHeaders(cancerStudyName, columnHeaders);
     }
 
     @RequestMapping(value = "/{columnHeader}", method = RequestMethod.GET)
-    public ClinicalAttributeMetadata getClinicalAttribute(@RequestParam(value = "overridePolicy", required = false) String overridePolicyName, @PathVariable String columnHeader) {
-        return clinicalAttributesService.getMetadataByColumnHeader(overridePolicyName, columnHeader);
+    public ClinicalAttributeMetadata getClinicalAttribute(@RequestParam(value = "cancerStudy", required = false) String cancerStudyName, @PathVariable String columnHeader) {
+        return clinicalAttributesService.getMetadataByColumnHeader(cancerStudyName, columnHeader);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/overridePolicies")
-    public Iterable<OverridePolicy> getOverridePolicies() {
-        return clinicalAttributesService.getOverridePolicies();
+    @RequestMapping(method = RequestMethod.GET, value = "/cancerStudies")
+    public Iterable<CancerStudy> getCancerStudies() {
+        return clinicalAttributesService.getCancerStudies();
     }
     
     @ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "Clinical attribute not found")
@@ -73,7 +73,7 @@ public class ClinicalDataDictionaryController {
     @ExceptionHandler(ClinicalMetadataSourceUnresponsiveException.class)
     public void handleClinicalMetadataSourceUnresponsive() {}
 
-    @ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "Override policy not found")
-    @ExceptionHandler(OverridePolicyNotFoundException.class)
-    public void handleOverridePolicyNotFound() {}
+    @ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "Cancer study not found")
+    @ExceptionHandler(CancerStudyNotFoundException.class)
+    public void handleCancerStudyNotFound() {}
 }

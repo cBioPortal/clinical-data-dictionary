@@ -140,9 +140,9 @@ public class ClinicalDataDictionaryTest {
     }
 
     @Test
-    public void getOverridePoliciesTest() throws Exception {
-        // test all override policies are returned by GET /api/overridePolicies
-        ResponseEntity<String> response = restTemplate.getForEntity("/api/overridePolicies", String.class);
+    public void getCancerStudiesTest() throws Exception {
+        // test all cancer studies are returned by GET /api/cancerStudies
+        ResponseEntity<String> response = restTemplate.getForEntity("/api/cancerStudies", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
 
         ObjectMapper mapper = new ObjectMapper();
@@ -155,7 +155,7 @@ public class ClinicalDataDictionaryTest {
 
     @Test
     public void getClinicalAttributeMetadataWithOverrideTest() throws Exception {
-        // test override policiy is applied correctly by GET /api/?overridePolicy=test_override_study
+        // test cancer study is applied correctly by GET /api/?cancerStudy=test_override_study
         ResponseEntity<String> response = restTemplate.getForEntity("/api/", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
 
@@ -166,7 +166,7 @@ public class ClinicalDataDictionaryTest {
         assertThat(getPriority(responseJSON, "DISEASE_STAGE"), equalTo("1"));
 
         // now get the same information with overrides
-        response = restTemplate.getForEntity("/api/?overridePolicy=test_override_study", String.class);
+        response = restTemplate.getForEntity("/api/?cancerStudy=test_override_study", String.class);
         responseJSON = mapper.readTree(response.getBody());
 
         assertThat(getPriority(responseJSON, "AGE"), equalTo("100"));
@@ -176,7 +176,7 @@ public class ClinicalDataDictionaryTest {
 
     @Test
     public void getClinicalAttributeMetadataWithOverrideForMskimpactTest() throws Exception {
-        // test override policiy is applied correctly by GET /api/?overridePolicy=mskimpact
+        // test cancer study is applied correctly by GET /api/?cancerStudy=mskimpact
         ResponseEntity<String> response = restTemplate.getForEntity("/api/", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
 
@@ -187,19 +187,19 @@ public class ClinicalDataDictionaryTest {
         assertThat(getPriority(responseJSON, "DISEASE_STAGE"), equalTo("1"));
 
         // now get the same information with overrides
-        response = restTemplate.getForEntity("/api/?overridePolicy=mskimpact", String.class);
+        response = restTemplate.getForEntity("/api/?cancerStudy=mskimpact", String.class);
         responseJSON = mapper.readTree(response.getBody());
 
         assertThat(getPriority(responseJSON, "LAST_STATUS"), equalTo("1"));
-        // for mskimpact all attributes that are not assigned a priority explicitly by the OverridePolicy are set to priority 0
+        // for mskimpact all attributes that are not assigned a priority explicitly by the CancerStudy are set to priority 0
         assertThat(getPriority(responseJSON, "DISEASE_STAGE"), equalTo("0"));
     }
 
     @Test
-    public void getClinicalAttributeMetadataInvalidOverridePolicyTest() throws Exception {
-        // test an invalid override policy in GET /api/?overridePolicy=INVALID_POLICY
-        ResponseEntity<String> response = restTemplate.getForEntity("/api/?overridePolicy=INVALID_POLICY", String.class);
-        assertThat(response.getBody(), containsString("org.cbioportal.cdd.service.exception.OverridePolicyNotFoundException"));
+    public void getClinicalAttributeMetadataInvalidCancerStudyTest() throws Exception {
+        // test an invalid cancer study in GET /api/?cancerStudy=INVALID_POLICY
+        ResponseEntity<String> response = restTemplate.getForEntity("/api/?cancerStudy=INVALID_POLICY", String.class);
+        assertThat(response.getBody(), containsString("org.cbioportal.cdd.service.exception.CancerStudyNotFoundException"));
         assertThat(response.getStatusCode(), equalTo(HttpStatus.NOT_FOUND));
     }
 

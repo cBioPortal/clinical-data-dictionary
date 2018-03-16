@@ -18,15 +18,15 @@ package org.cbioportal.cdd.service;
 import java.util.List;
 
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
-import org.cbioportal.cdd.model.OverridePolicy;
+import org.cbioportal.cdd.model.CancerStudy;
 import org.cbioportal.cdd.service.exception.ClinicalAttributeNotFoundException;
 
 /**
  * @author Manda Wilson 
  */
 public interface ClinicalDataDictionaryService {
-    List<OverridePolicy> getOverridePolicies();
-    List<ClinicalAttributeMetadata> getClinicalAttributeMetadata(String overridePolicy);
-    List<ClinicalAttributeMetadata> getMetadataByColumnHeaders(String overridePolicy, List<String> columnHeaders) throws ClinicalAttributeNotFoundException;
-    ClinicalAttributeMetadata getMetadataByColumnHeader(String overridePolicy, String columnHeader) throws ClinicalAttributeNotFoundException;
+    List<CancerStudy> getCancerStudies();
+    List<ClinicalAttributeMetadata> getClinicalAttributeMetadata(String cancerStudy);
+    List<ClinicalAttributeMetadata> getMetadataByColumnHeaders(String cancerStudy, List<String> columnHeaders) throws ClinicalAttributeNotFoundException;
+    ClinicalAttributeMetadata getMetadataByColumnHeader(String cancerStudy, String columnHeader) throws ClinicalAttributeNotFoundException;
 }
