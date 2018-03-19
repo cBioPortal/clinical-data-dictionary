@@ -29,4 +29,5 @@ public interface ClinicalDataDictionaryService {
     List<ClinicalAttributeMetadata> getClinicalAttributeMetadata(String cancerStudy);
     List<ClinicalAttributeMetadata> getMetadataByColumnHeaders(String cancerStudy, List<String> columnHeaders) throws ClinicalAttributeNotFoundException;
     ClinicalAttributeMetadata getMetadataByColumnHeader(String cancerStudy, String columnHeader) throws ClinicalAttributeNotFoundException;
+    void forceResetCache();
 }

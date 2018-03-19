@@ -76,7 +76,7 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
             } else {
                 // otherwise use the defaultClinicalAttributeCache
                 ClinicalAttributeMetadata cachedClinicalAttribute = getMetadataByColumnHeader(defaultClinicalAttributeCache, columnHeader);
-                if (cancerStudy == null || !cancerStudy.equals("mskimpact") || !cancerStudy.equals("sclc_mskimpact_2017")) {
+                if (cancerStudy == null || (!cancerStudy.equals("mskimpact") && !cancerStudy.equals("sclc_mskimpact_2017"))) {
                     clinicalAttributes.add(cachedClinicalAttribute);
                 } else {
                     // when cancerStudy is 'mskimpact' or 'sclc_mskimpact_2017' - copy created so modification (i.e reset priority to 0) does not get applied to object stored in cache
@@ -124,6 +124,12 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
         }
         return cancerStudies;
     }
+    
+    @Override
+    public void forceResetCache() throws ClinicalMetadataSourceUnresponsiveException {
+        clinicalAttributesCache.resetCache(true);
+        assertCacheIsValid(); 
+    }
 
     private void assertCacheIsValid() throws ClinicalMetadataSourceUnresponsiveException {
         if (clinicalAttributesCache.getClinicalAttributeMetadata() == null || clinicalAttributesCache.getClinicalAttributeMetadataOverrides() == null) {
@@ -141,4 +147,5 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
         // null is valid
         logger.debug("assertCancerStudyIsValid() -- cancer study '" + cancerStudy + "' is valid");
     }
+
 }

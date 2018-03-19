@@ -68,7 +68,7 @@ public class ClinicalAttributeMetadataCache {
     }
 
     @PostConstruct // call when constructed
-    @Scheduled(cron="0 */5 * * * *") // call every 5 minutes
+    @Scheduled(cron="0 15,30,45 12 * * MON") // call three times in 15 minute intervals once per week
     private void scheduleResetCache() {
         // TODO make sure we don't have two scheduled calls run simultaneously
         resetCache();
@@ -79,6 +79,14 @@ public class ClinicalAttributeMetadataCache {
     * It is a public method so that it can be easily tested.
     */
     public void resetCache() {
+        resetCache(false);
+    }
+
+    /**
+    * This method does not need to be called, it will automatically be called by scheduleResetCache().
+    * It is a public method so that it can be easily tested.
+    */
+    public void resetCache(boolean force) {
         logger.info("resetCache(): refilling clinical attribute cache");
         List<ClinicalAttributeMetadata> latestClinicalAttributeMetadata = null;
         // latestOverrides is a map of study-id to list of overridden ClinicalAttributeMetadata objects
@@ -93,10 +101,14 @@ public class ClinicalAttributeMetadataCache {
                 logger.error("resetCache(): failed to pull overrides from repository");
             }
             consecutiveFailedAttempts += 1;
-            if (consecutiveFailedAttempts >= MAX_FAILED_ATTEMPTS) {
-                logger.error("resetCache(): failed to pull from repository " + consecutiveFailedAttempts +  " times, emptying caches");
+            if (consecutiveFailedAttempts >= MAX_FAILED_ATTEMPTS || force) {
                 clinicalAttributeCache = null;
                 overridesCache = null;
+                if (consecutiveFailedAttempts >= MAX_FAILED_ATTEMPTS) {
+                    logger.error("resetCache(): failed to pull from repository " + consecutiveFailedAttempts +  " times, Emptying caches");
+                } else {
+                    logger.error("resetCache(force = true): failed to pull from repository, Emptying caches");
+                }
             }
             return;
         }
