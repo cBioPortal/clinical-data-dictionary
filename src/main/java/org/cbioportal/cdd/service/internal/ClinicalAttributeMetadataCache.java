@@ -104,10 +104,10 @@ public class ClinicalAttributeMetadataCache {
             if (consecutiveFailedAttempts >= MAX_FAILED_ATTEMPTS || force) {
                 clinicalAttributeCache = null;
                 overridesCache = null;
-                if (consecutiveFailedAttempts >= MAX_FAILED_ATTEMPTS) {
-                    logger.error("resetCache(): failed to pull from repository " + consecutiveFailedAttempts +  " times, Emptying caches");
-                } else {
+                if (force) {
                     logger.error("resetCache(force = true): failed to pull from repository, Emptying caches");
+                } else {
+                    logger.error("resetCache(): failed to pull from repository " + consecutiveFailedAttempts +  " times, Emptying caches");
                 }
             }
             return;
