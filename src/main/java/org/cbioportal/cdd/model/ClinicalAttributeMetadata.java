@@ -23,6 +23,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.*;
 
 /**
@@ -39,16 +41,22 @@ import java.util.*;
 })
 public class ClinicalAttributeMetadata {
 
+    @ApiModelProperty(value = "The column header")
     @JsonProperty("column_header")
     private String columnHeader;
+    @ApiModelProperty(value = "The name to be displayed in the cBio Portal")
     @JsonProperty("display_name")
     private String displayName;
+    @ApiModelProperty(value = "The description")
     @JsonProperty("description")
     private String description;
+    @ApiModelProperty(value = "The data type", allowableValues = "NUMBER,STRING")
     @JsonProperty("datatype")
     private String datatype;
+    @ApiModelProperty(value = "The attribute type", allowableValues = "PATIENT,SAMPLE")
     @JsonProperty("attribute_type")
     private String attributeType;
+    @ApiModelProperty(value = "Higher priority attributes are given prominence in the cBio Portal, zero priority attributes are hidden")
     @JsonProperty("priority")
     private String priority;
     @JsonIgnore
