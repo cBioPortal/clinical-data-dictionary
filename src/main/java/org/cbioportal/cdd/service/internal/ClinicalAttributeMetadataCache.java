@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
 import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
 
+import com.google.common.base.Strings;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,6 +126,7 @@ public class ClinicalAttributeMetadataCache {
         for (Map.Entry<String, ArrayList<ClinicalAttributeMetadata>> entry : latestOverrides.entrySet()) {
             HashMap<String, ClinicalAttributeMetadata> clinicalAttributesMetadataMapping = new HashMap<String, ClinicalAttributeMetadata>();
             for (ClinicalAttributeMetadata clinicalAttributeMetadata : entry.getValue()) {
+                fillOverrideAttributeWithDefaultValues(clinicalAttributeMetadata, latestClinicalAttributeMetadataCache.get(clinicalAttributeMetadata.getColumnHeader()));
                 clinicalAttributesMetadataMapping.put(clinicalAttributeMetadata.getColumnHeader(), clinicalAttributeMetadata);
             }
             latestOverridesCache.put(entry.getKey(), clinicalAttributesMetadataMapping);
@@ -134,4 +137,24 @@ public class ClinicalAttributeMetadataCache {
         overridesCache = latestOverridesCache;
         logger.info("resetCache(): refilled overrides cache with " + latestOverrides.size() + " overrides");
     }
+
+    private void fillOverrideAttributeWithDefaultValues(ClinicalAttributeMetadata overrideClinicalAttribute, ClinicalAttributeMetadata defaultClinicalAttribute) {
+        logger.debug("fillOverrideAttributeWithDefaultValues()");
+        if (Strings.isNullOrEmpty(overrideClinicalAttribute.getDisplayName())) {
+            overrideClinicalAttribute.setDisplayName(defaultClinicalAttribute.getDisplayName());
+        }
+        if (Strings.isNullOrEmpty(overrideClinicalAttribute.getDescription())) {
+            overrideClinicalAttribute.setDescription(defaultClinicalAttribute.getDescription());
+        }
+        if (Strings.isNullOrEmpty(overrideClinicalAttribute.getDatatype())) {
+            overrideClinicalAttribute.setDatatype(defaultClinicalAttribute.getDatatype());
+        }
+        if (Strings.isNullOrEmpty(overrideClinicalAttribute.getAttributeType())) {
+            overrideClinicalAttribute.setAttributeType(defaultClinicalAttribute.getAttributeType());
+        }
+        if (Strings.isNullOrEmpty(overrideClinicalAttribute.getPriority())) {
+            overrideClinicalAttribute.setPriority(defaultClinicalAttribute.getPriority());
+        }
+    }
+
 }
