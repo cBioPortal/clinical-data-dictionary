@@ -41,6 +41,7 @@ import java.util.*;
 })
 public class ClinicalAttributeMetadata {
 
+    private String studyId;
     @ApiModelProperty(value = "The column header")
     @JsonProperty("column_header")
     private String columnHeader;
@@ -85,6 +86,26 @@ public class ClinicalAttributeMetadata {
         this.datatype = datatype;
         this.attributeType = attributeType;
         this.priority = priority;
+    }
+
+    /**
+    *
+    * @return
+    * The studyId
+    */
+    @JsonIgnore
+    public String getStudyId() {
+        return studyId;
+    }
+
+    /**
+    *
+    * @param studyId
+    * The studyId
+    */
+    @JsonProperty("study_id")
+    public void setStudyId(String studyId) {
+        this.studyId = studyId;
     }
 
     /**
@@ -143,7 +164,7 @@ public class ClinicalAttributeMetadata {
     * The description
     */
     @JsonProperty("description")
-    public void setDescriptions(String description) {
+    public void setDescription(String description) {
         this.description = description;
     }
 

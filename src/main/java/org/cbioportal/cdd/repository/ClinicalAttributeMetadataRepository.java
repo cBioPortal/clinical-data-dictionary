@@ -21,7 +21,7 @@ import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
 import java.util.*;
 
 /**
- * @author Manda Wilson 
+ * @author Manda Wilson
  */
 public interface ClinicalAttributeMetadataRepository {
     List<ClinicalAttributeMetadata> getClinicalAttributeMetadata();
