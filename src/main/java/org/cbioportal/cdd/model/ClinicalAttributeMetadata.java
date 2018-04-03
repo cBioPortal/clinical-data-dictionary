@@ -22,13 +22,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-
 import io.swagger.annotations.ApiModelProperty;
-
 import java.util.*;
 
 /**
- * @author Avery Wang, Manda Wilson 
+ * @author Avery Wang, Manda Wilson
  */
 @JsonInclude(Include.NON_NULL)
 @JsonPropertyOrder({
@@ -69,8 +67,7 @@ public class ClinicalAttributeMetadata {
     */
     private ClinicalAttributeMetadata() {}
 
-
-    /**
+    /** Primitive Arguments Constructor
     *
     * @param columnHeader
     * @param priority
@@ -86,6 +83,27 @@ public class ClinicalAttributeMetadata {
         this.datatype = datatype;
         this.attributeType = attributeType;
         this.priority = priority;
+    }
+
+    /** Copy Constructor
+    *
+    * @param clinicalAttributeMetadata
+    */
+    public ClinicalAttributeMetadata(ClinicalAttributeMetadata otherObject) {
+        this.studyId = otherObject.getStudyId();
+        this.columnHeader = otherObject.getColumnHeader();
+        this.displayName = otherObject.getDisplayName();
+        this.description = otherObject.getDescription();
+        this.datatype = otherObject.getDatatype();
+        this.attributeType = otherObject.getAttributeType();
+        this.priority = otherObject.getPriority();
+        Map<String, Object> otherObjectAdditionalProperties = otherObject.getAdditionalProperties();
+        if (otherObjectAdditionalProperties != null) {
+            for (String key : otherObjectAdditionalProperties.keySet()) {
+                Object value = otherObjectAdditionalProperties.get(key);
+                this.setAdditionalProperty(key, value);
+            }
+        }
     }
 
     /**
