@@ -16,19 +16,19 @@
 package org.cbioportal.cdd.service.internal;
 
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-
-import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
+import java.util.Map;
+import java.util.Set;
 import org.cbioportal.cdd.model.CancerStudy;
+import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
 import org.cbioportal.cdd.service.ClinicalDataDictionaryService;
+import org.cbioportal.cdd.service.exception.CancerStudyNotFoundException;
 import org.cbioportal.cdd.service.exception.ClinicalAttributeNotFoundException;
 import org.cbioportal.cdd.service.exception.ClinicalMetadataSourceUnresponsiveException;
-import org.cbioportal.cdd.service.exception.CancerStudyNotFoundException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,9 +43,17 @@ import org.springframework.stereotype.Service;
 public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionaryService {
 
     @Autowired
-    private ClinicalAttributeMetadataCache clinicalAttributesCache; 
+    private ClinicalAttributeMetadataCache clinicalAttributesCache;
 
     private static final Logger logger = LoggerFactory.getLogger(ClinicalDataDictionaryServiceImpl.class);
+
+    private static final Set<String> CANCER_STUDIES_WITH_ALTERED_DEFAULT_METADATA;
+    static {
+        Set<String> cancerStudySet = new HashSet<>();
+        cancerStudySet.add("mskimpact");
+        cancerStudySet.add("sclc_mskimpact_2017");
+        CANCER_STUDIES_WITH_ALTERED_DEFAULT_METADATA = Collections.unmodifiableSet(cancerStudySet);
+    }
 
     @Override
     public List<ClinicalAttributeMetadata> getClinicalAttributeMetadata(String cancerStudy)
@@ -54,7 +62,7 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
         assertCancerStudyIsValid(cancerStudy);
         List<String> columnHeaders = new ArrayList<>(clinicalAttributesCache.getClinicalAttributeMetadata().keySet());
         List<ClinicalAttributeMetadata> clinicalAttributes = getMetadataByColumnHeaders(cancerStudy, columnHeaders);
-        return clinicalAttributes; 
+        return clinicalAttributes;
     }
 
     @Override
@@ -70,25 +78,23 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
             overrideClinicalAttributeCache = overridesCache.get(cancerStudy);
         }
         for (String columnHeader : columnHeaders) {
-            // first check in our overrideClinicalAttributeCache for column header
-            if (cancerStudy != null && overrideClinicalAttributeCache.containsKey(columnHeader.toUpperCase())) {
-                clinicalAttributes.add(getMetadataByColumnHeader(overrideClinicalAttributeCache, columnHeader));
-            } else {
-                // otherwise use the defaultClinicalAttributeCache
-                ClinicalAttributeMetadata cachedClinicalAttribute = getMetadataByColumnHeader(defaultClinicalAttributeCache, columnHeader);
-                if (cancerStudy == null || (!cancerStudy.equals("mskimpact") && !cancerStudy.equals("sclc_mskimpact_2017"))) {
-                    clinicalAttributes.add(cachedClinicalAttribute);
-                } else {
-                    // when cancerStudy is 'mskimpact' or 'sclc_mskimpact_2017' - copy created so modification (i.e reset priority to 0) does not get applied to object stored in cache
-                    ClinicalAttributeMetadata resetClinicalAttribute = new ClinicalAttributeMetadata(cachedClinicalAttribute.getColumnHeader(),
-                        cachedClinicalAttribute.getDisplayName(),
-                        cachedClinicalAttribute.getDescription(),
-                        cachedClinicalAttribute.getDatatype(),
-                        cachedClinicalAttribute.getAttributeType(),
-                        "0");
-                    clinicalAttributes.add(resetClinicalAttribute);
-                }
+            ClinicalAttributeMetadata defaultClinicalAttributeMetadataForColumnHeader = getMetadataByColumnHeader(defaultClinicalAttributeCache, columnHeader);
+            // if there is no cancerStudyArgument, simply add the default metaData for each columnHeader
+            if (cancerStudy == null) {
+                clinicalAttributes.add(defaultClinicalAttributeMetadataForColumnHeader);
+                continue;
             }
+            // if there is an explicit override for a columnHeader in this study, add the explicit override
+            if (overrideClinicalAttributeCache.containsKey(columnHeader.toUpperCase())) {
+                clinicalAttributes.add(getMetadataByColumnHeader(overrideClinicalAttributeCache, columnHeader));
+                continue;
+            }
+            // without an explicit override for the study, use the default metadata or a modified version for certain special studies
+            ClinicalAttributeMetadata clinicalAttributeMetadataForColumnHeader = defaultClinicalAttributeMetadataForColumnHeader;
+            if (CANCER_STUDIES_WITH_ALTERED_DEFAULT_METADATA.contains(cancerStudy)) {
+                clinicalAttributeMetadataForColumnHeader = getAlteredDefaultMetadataByColumnHeader(defaultClinicalAttributeCache, columnHeader);
+            }
+            clinicalAttributes.add(clinicalAttributeMetadataForColumnHeader);
         }
         return clinicalAttributes;
     }
@@ -96,14 +102,9 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
     @Override
     public ClinicalAttributeMetadata getMetadataByColumnHeader(String cancerStudy, String columnHeader)
         throws ClinicalAttributeNotFoundException, ClinicalMetadataSourceUnresponsiveException, CancerStudyNotFoundException {
-        assertCacheIsValid();
-        assertCancerStudyIsValid(cancerStudy);
-        Map<String, ClinicalAttributeMetadata> clinicalAttributeCache = clinicalAttributesCache.getClinicalAttributeMetadata();
-        Map<String, Map<String, ClinicalAttributeMetadata>> overridesCache = clinicalAttributesCache.getClinicalAttributeMetadataOverrides();
-        if (cancerStudy != null && overridesCache.get(cancerStudy).containsKey(columnHeader.toUpperCase())) {
-            return getMetadataByColumnHeader(overridesCache.get(cancerStudy), columnHeader);
-        }
-        return getMetadataByColumnHeader(clinicalAttributeCache, columnHeader);
+        List<String> columnHeaders = Collections.singletonList(columnHeader);
+        List<ClinicalAttributeMetadata> clinicalAttributeMetadataList = getMetadataByColumnHeaders(cancerStudy, columnHeaders);
+        return clinicalAttributeMetadataList.get(0);
     }
 
     private ClinicalAttributeMetadata getMetadataByColumnHeader(Map<String, ClinicalAttributeMetadata> clinicalAttributeCache, String columnHeader)
@@ -112,6 +113,14 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
             return clinicalAttributeCache.get(columnHeader.toUpperCase());
         }
         throw new ClinicalAttributeNotFoundException(columnHeader);
+    }
+
+    private ClinicalAttributeMetadata getAlteredDefaultMetadataByColumnHeader(Map<String, ClinicalAttributeMetadata> clinicalAttributeCache, String columnHeader)
+        throws ClinicalAttributeNotFoundException {
+            ClinicalAttributeMetadata defaultClinicalAttribute = getMetadataByColumnHeader(clinicalAttributeCache, columnHeader);
+            ClinicalAttributeMetadata alteredClinicalAttribute = new ClinicalAttributeMetadata(defaultClinicalAttribute);
+            alteredClinicalAttribute.setPriority("0");
+            return alteredClinicalAttribute;
     }
 
     @Override
@@ -124,11 +133,11 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
         }
         return cancerStudies;
     }
-    
+
     @Override
     public void forceResetCache() throws ClinicalMetadataSourceUnresponsiveException {
         clinicalAttributesCache.resetCache(true);
-        assertCacheIsValid(); 
+        assertCacheIsValid();
     }
 
     private void assertCacheIsValid() throws ClinicalMetadataSourceUnresponsiveException {

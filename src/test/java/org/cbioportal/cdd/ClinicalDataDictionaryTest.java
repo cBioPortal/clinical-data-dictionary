@@ -96,6 +96,22 @@ public class ClinicalDataDictionaryTest {
     }
 
     @Test
+    public void getClinicalAttributeMetadataFilteredWithOverrideForMskimpactTest() throws Exception {
+        // test that an attribute not overridden by cancerStudy mskimpact has default priority 1
+        List<String> columnHeaders = Arrays.asList("DISEASE_STAGE");
+        ResponseEntity<String> response = restTemplate.postForEntity("/api/", columnHeaders, String.class);
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode responseJSON = mapper.readTree(response.getBody());
+        assertThat(response.getBody(), containsString("\"priority\":\"1\""));
+        // query again with cancerStudy mskimpact and look for default priority 0
+        response = restTemplate.postForEntity("/api/?cancerStudy=mskimpact", columnHeaders, String.class);
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+        responseJSON = mapper.readTree(response.getBody());
+        assertThat(response.getBody(), containsString("\"priority\":\"0\""));
+    }
+
+    @Test
     public void getClinicalAttributeMetadataInvalidClinicalAttributeTest() throws Exception {
         // test an invalid clinical attribute throws an exception in POST /api/
         List<String> columnHeaders = Arrays.asList("AGE", "LAST_status", "INVALID_ATTRIBUTE");
@@ -109,8 +125,20 @@ public class ClinicalDataDictionaryTest {
         // test we can get one clinical attribute returned by GET /api/AGE/
         ResponseEntity<String> response = restTemplate.getForEntity("/api/AGE/", String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
-
         assertThat(response.getBody(), equalTo("{\"column_header\":\"AGE\",\"display_name\":\"Diagnosis Age\",\"description\":\"Age at which a condition or disease was first diagnosed.\",\"datatype\":\"NUMBER\",\"attribute_type\":\"PATIENT\",\"priority\":\"1\"}"));
+    }
+
+    @Test
+    public void getClinicalAttributeWithOverrideForMskimpactTest() throws Exception {
+        // test that an attribute not overridden in mskimpact has default priority 1 normally
+        String testAttribute = "DISEASE_STAGE";
+        ResponseEntity<String> response = restTemplate.getForEntity("/api/" + testAttribute, String.class);
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+        assertThat(response.getBody(), containsString(",\"priority\":\"1\""));
+        // query again with cancerStudy mskimpact and look for default priority 0
+        response = restTemplate.getForEntity("/api/" + testAttribute + "?cancerStudy=mskimpact", String.class);
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+        assertThat(response.getBody(), containsString(",\"priority\":\"0\""));
     }
 
     @Test
