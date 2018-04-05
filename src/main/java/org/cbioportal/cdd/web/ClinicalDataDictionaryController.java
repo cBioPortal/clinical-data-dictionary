@@ -23,6 +23,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -117,6 +118,7 @@ public class ClinicalDataDictionaryController {
         @ApiResponse(code = 503, message = "Clinical attribute metadata source unavailable")
         }
     )
+    @ApiIgnore
     @RequestMapping(method = RequestMethod.GET, value = "/refreshCache", produces = MediaType.APPLICATION_JSON_VALUE)
     public void forceResetCache() {
         clinicalAttributesService.forceResetCache();
