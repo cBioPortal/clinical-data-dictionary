@@ -48,7 +48,7 @@ public class ClinicalAttributeMetadataRepositoryTopBraidImpl extends TopBraidRep
         "        ?node skos:broader ?parent. " +
         "        ?parent cdd:StudyId ?study_id. " +
         "        ?parent skos:broader ?grandparent. " +
-        "        ?grandparent rdfs:label ?column_header. " +
+        "        ?grandparent skos:prefLabel ?column_header. " +
         "        OPTIONAL{?node cdd:PriorityValue ?PriorityValue}. " +
         "        OPTIONAL{?node cdd:AttributeTypeValue ?AttributeTypeValue}. " +
         "        OPTIONAL{?node cdd:DatatypeValue ?DatatypeValue}. " +
@@ -66,7 +66,7 @@ public class ClinicalAttributeMetadataRepositoryTopBraidImpl extends TopBraidRep
         "SELECT ?column_header ?display_name ?attribute_type ?datatype ?description ?priority " +
         "WHERE { " +
         "    GRAPH <urn:x-evn-master:clinical_data_dictionary> { " +
-        "        ?subject rdfs:label ?column_header. " +
+        "        ?subject skos:prefLabel ?column_header. " +
         "        ?subject cdd:AttributeType ?attribute_type. " +
         "        ?subject cdd:Datatype ?datatype. " +
         "        ?subject cdd:Description ?description. " +
