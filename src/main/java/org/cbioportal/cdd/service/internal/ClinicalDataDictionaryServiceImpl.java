@@ -15,6 +15,7 @@
 
 package org.cbioportal.cdd.service.internal;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -135,9 +136,11 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
     }
 
     @Override
-    public void forceResetCache() throws ClinicalMetadataSourceUnresponsiveException {
+    public List<String> forceResetCache() throws ClinicalMetadataSourceUnresponsiveException {
+        List<String> successMessage = Arrays.asList("Cache successfully refreshed");
         clinicalAttributesCache.resetCache(true);
         assertCacheIsValid();
+        return successMessage;
     }
 
     private void assertCacheIsValid() throws ClinicalMetadataSourceUnresponsiveException {

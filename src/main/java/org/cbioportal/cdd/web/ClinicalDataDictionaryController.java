@@ -120,8 +120,8 @@ public class ClinicalDataDictionaryController {
     )
     @ApiIgnore
     @RequestMapping(method = RequestMethod.GET, value = "/refreshCache", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void forceResetCache() {
-        clinicalAttributesService.forceResetCache();
+    public Iterable<String> forceResetCache() {
+        return clinicalAttributesService.forceResetCache();
     }
 
     @ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "Clinical attribute not found")
