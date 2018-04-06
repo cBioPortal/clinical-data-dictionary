@@ -16,6 +16,7 @@
 package org.cbioportal.cdd.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
 import org.cbioportal.cdd.model.CancerStudy;
@@ -29,5 +30,5 @@ public interface ClinicalDataDictionaryService {
     List<ClinicalAttributeMetadata> getClinicalAttributeMetadata(String cancerStudy);
     List<ClinicalAttributeMetadata> getMetadataByColumnHeaders(String cancerStudy, List<String> columnHeaders) throws ClinicalAttributeNotFoundException;
     ClinicalAttributeMetadata getMetadataByColumnHeader(String cancerStudy, String columnHeader) throws ClinicalAttributeNotFoundException;
-    List<String> forceResetCache();
+    Map<String, String> forceResetCache();
 }
