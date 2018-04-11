@@ -125,9 +125,11 @@ public class ClinicalDataDictionaryController {
         return clinicalAttributesService.forceResetCache();
     }
 
-    @ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "Clinical attribute not found")
-    @ExceptionHandler(ClinicalAttributeNotFoundException.class)
-    public void handleClinicalAttributeNotFound() {}
+    @ExceptionHandler
+    public void handleClinicalAttributeNotFound(ClinicalAttributeNotFoundException e, HttpServletResponse response)
+        throws IOException {
+        response.sendError(HttpStatus.NOT_FOUND.value(), e.getMessage());
+    }
 
     @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE, reason = "Clinical attribute metadata source unavailable")
     @ExceptionHandler(ClinicalMetadataSourceUnresponsiveException.class)

@@ -15,6 +15,10 @@
 
 package org.cbioportal.cdd.service.exception;
 
+import com.google.common.base.Joiner;
+
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,8 +27,12 @@ public class ClinicalAttributeNotFoundException extends RuntimeException {
     private static final Logger logger = LoggerFactory.getLogger(ClinicalAttributeNotFoundException.class);
 
     public ClinicalAttributeNotFoundException(String columnHeader) {
-        super("Could not find clinical attribute by column header '" + columnHeader + "'.");
-        logger.error("Could not find clinical attribute by column header '" + columnHeader + "'.");
+        super("Could not find clinical attribute(s): " + columnHeader);
+        logger.error("Could not find clinical attribute(s): " + columnHeader);
+    }
+
+    public ClinicalAttributeNotFoundException(List<String> columnHeaders) {
+        this(Joiner.on(", ").join(columnHeaders));
     }
 
 }
