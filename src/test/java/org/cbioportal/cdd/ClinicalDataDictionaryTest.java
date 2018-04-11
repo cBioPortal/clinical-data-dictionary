@@ -156,7 +156,7 @@ public class ClinicalDataDictionaryTest {
         // change repository to version with 2 attributes/1 override
         config.resetUpdatedClinicalAttributesRepository(clinicalAttributesRepository);
         ResponseEntity<String> response = restTemplate.getForEntity("/api/refreshCache", String.class);
-        assertThat(response.getBody(), equalTo("[\"Cache successfully refreshed\"]"));
+        assertThat(response.getBody(), equalTo("{\"response\":\"Success!\"}"));
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
         assertThat(clinicalAttributesRepository.getClinicalAttributeMetadata().size(), equalTo(2));
         assertThat(clinicalAttributesRepository.getClinicalAttributeMetadataOverrides(), hasKey("updated_override_study"));

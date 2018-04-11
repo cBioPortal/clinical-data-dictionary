@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
 import org.cbioportal.cdd.model.CancerStudy;
@@ -120,7 +121,7 @@ public class ClinicalDataDictionaryController {
     )
     @ApiIgnore
     @RequestMapping(method = RequestMethod.GET, value = "/refreshCache", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Iterable<String> forceResetCache() {
+    public Map<String, String> forceResetCache() {
         return clinicalAttributesService.forceResetCache();
     }
 
