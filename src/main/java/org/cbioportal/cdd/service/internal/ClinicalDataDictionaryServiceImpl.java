@@ -78,24 +78,32 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
         if (cancerStudy != null) { // cancer study has already been validated
             overrideClinicalAttributeCache = overridesCache.get(cancerStudy);
         }
+        List<String> invalidClinicalAttributes = new ArrayList<String>();
         for (String columnHeader : columnHeaders) {
-            ClinicalAttributeMetadata defaultClinicalAttributeMetadataForColumnHeader = getMetadataByColumnHeader(defaultClinicalAttributeCache, columnHeader);
-            // if there is no cancerStudyArgument, simply add the default metaData for each columnHeader
-            if (cancerStudy == null) {
-                clinicalAttributes.add(defaultClinicalAttributeMetadataForColumnHeader);
-                continue;
+            try {
+                ClinicalAttributeMetadata defaultClinicalAttributeMetadataForColumnHeader = getMetadataByColumnHeader(defaultClinicalAttributeCache, columnHeader);
+                // if there is no cancerStudyArgument, simply add the default metaData for each columnHeader
+                if (cancerStudy == null) {
+                    clinicalAttributes.add(defaultClinicalAttributeMetadataForColumnHeader);
+                    continue;
+                }
+                // if there is an explicit override for a columnHeader in this study, add the explicit override
+                if (overrideClinicalAttributeCache.containsKey(columnHeader.toUpperCase())) {
+                    clinicalAttributes.add(getMetadataByColumnHeader(overrideClinicalAttributeCache, columnHeader));
+                    continue;
+                }
+                // without an explicit override for the study, use the default metadata or a modified version for certain special studies
+                ClinicalAttributeMetadata clinicalAttributeMetadataForColumnHeader = defaultClinicalAttributeMetadataForColumnHeader;
+                if (CANCER_STUDIES_WITH_ALTERED_DEFAULT_METADATA.contains(cancerStudy)) {
+                    clinicalAttributeMetadataForColumnHeader = getAlteredDefaultMetadataByColumnHeader(defaultClinicalAttributeCache, columnHeader);
+                }
+                clinicalAttributes.add(clinicalAttributeMetadataForColumnHeader);
+            } catch (ClinicalAttributeNotFoundException e) {
+                invalidClinicalAttributes.add(columnHeader);
             }
-            // if there is an explicit override for a columnHeader in this study, add the explicit override
-            if (overrideClinicalAttributeCache.containsKey(columnHeader.toUpperCase())) {
-                clinicalAttributes.add(getMetadataByColumnHeader(overrideClinicalAttributeCache, columnHeader));
-                continue;
-            }
-            // without an explicit override for the study, use the default metadata or a modified version for certain special studies
-            ClinicalAttributeMetadata clinicalAttributeMetadataForColumnHeader = defaultClinicalAttributeMetadataForColumnHeader;
-            if (CANCER_STUDIES_WITH_ALTERED_DEFAULT_METADATA.contains(cancerStudy)) {
-                clinicalAttributeMetadataForColumnHeader = getAlteredDefaultMetadataByColumnHeader(defaultClinicalAttributeCache, columnHeader);
-            }
-            clinicalAttributes.add(clinicalAttributeMetadataForColumnHeader);
+        }
+        if (invalidClinicalAttributes.size() > 0) {
+            throw new ClinicalAttributeNotFoundException(invalidClinicalAttributes);
         }
         return clinicalAttributes;
     }
