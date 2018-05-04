@@ -37,6 +37,7 @@ import org.cbioportal.cdd.service.ClinicalDataDictionaryService;
 import org.cbioportal.cdd.service.exception.ClinicalAttributeNotFoundException;
 import org.cbioportal.cdd.service.exception.ClinicalMetadataSourceUnresponsiveException;
 import org.cbioportal.cdd.service.exception.CancerStudyNotFoundException;
+import org.cbioportal.cdd.service.exception.FailedCacheRefreshException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -131,6 +132,10 @@ public class ClinicalDataDictionaryController {
         response.sendError(HttpStatus.NOT_FOUND.value(), e.getMessage());
     }
 
+    @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE, reason = "Failed to refresh metadata cache")
+    @ExceptionHandler(FailedCacheRefreshException.class)
+    public void handleFailedCacheRefreshException() {}
+    
     @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE, reason = "Clinical attribute metadata source unavailable")
     @ExceptionHandler(ClinicalMetadataSourceUnresponsiveException.class)
     public void handleClinicalMetadataSourceUnresponsive() {}

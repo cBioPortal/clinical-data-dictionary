@@ -28,6 +28,7 @@ import org.cbioportal.cdd.service.ClinicalDataDictionaryService;
 import org.cbioportal.cdd.service.exception.CancerStudyNotFoundException;
 import org.cbioportal.cdd.service.exception.ClinicalAttributeNotFoundException;
 import org.cbioportal.cdd.service.exception.ClinicalMetadataSourceUnresponsiveException;
+import org.cbioportal.cdd.service.exception.FailedCacheRefreshException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -144,9 +145,8 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
     }
 
     @Override
-    public Map<String, String> forceResetCache() throws ClinicalMetadataSourceUnresponsiveException {
-        clinicalAttributesCache.resetCache(true);
-        assertCacheIsValid();
+    public Map<String, String> forceResetCache() throws FailedCacheRefreshException {
+        clinicalAttributesCache.resetCache();
         return Collections.singletonMap("response", "Success!");
     }
 

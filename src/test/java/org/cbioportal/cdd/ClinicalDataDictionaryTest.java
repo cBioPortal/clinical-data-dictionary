@@ -20,15 +20,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Calendar;
+import java.util.Date;
 
 import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
 import org.cbioportal.cdd.service.internal.ClinicalAttributeMetadataCache;
+import org.cbioportal.cdd.service.exception.*;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertFalse;
 import org.junit.runner.RunWith;
 import org.junit.Test;
 import org.junit.Before;
@@ -93,6 +97,41 @@ public class ClinicalDataDictionaryTest {
         assertThat(responseJSON.size(), equalTo(2));
         assertThat(response.getBody(), containsString("{\"column_header\":\"LAST_STATUS\",\"display_name\":\"Last Status\",\"description\":\"Last Status.\",\"datatype\":\"STRING\",\"attribute_type\":\"PATIENT\",\"priority\":\"1\"}"));
         assertThat(response.getBody(), containsString("{\"column_header\":\"AGE\",\"display_name\":\"Diagnosis Age\",\"description\":\"Age at which a condition or disease was first diagnosed.\",\"datatype\":\"NUMBER\",\"attribute_type\":\"PATIENT\",\"priority\":\"1\"}"));
+    }
+
+    @Test
+    public void validateCacheTest() throws Exception {
+        Calendar currentDate = Calendar.getInstance();
+
+        // test condition where cache is not stale
+        // set cache age to a valid age (current date - MAXIMUM_CACHE_AGE_IN_DAYS + 1)
+        // cache is not stale so resetCache should not be called -- cache age should remain the smae
+        currentDate.add(Calendar.DATE, -(clinicalAttributesCache.MAXIMUM_CACHE_AGE_IN_DAYS - 1));
+        Date validDateOfLastCacheRefresh = currentDate.getTime();
+        clinicalAttributesCache.setDateOfLastCacheRefresh(validDateOfLastCacheRefresh);
+        if (clinicalAttributesCache.cacheIsStale()) {
+            clinicalAttributesCache.resetCache();
+        }
+        assertThat(clinicalAttributesCache.getDateOfLastCacheRefresh().toString(), equalTo(validDateOfLastCacheRefresh.toString()));
+ 
+        // test condition where cache is stale
+        // set cache age to a invalid age (current date - MAXIMUM_CACHE_AGE_IN_DAYS - 1)  
+        // cache is stale so resetCache should be called -- cache age should change
+        currentDate.add(Calendar.DATE, -2);
+        Date expiredDateOfLastCacheRefresh = currentDate.getTime();
+        clinicalAttributesCache.setDateOfLastCacheRefresh(expiredDateOfLastCacheRefresh);
+        if (clinicalAttributesCache.cacheIsStale()) {
+            clinicalAttributesCache.resetCache();
+        }
+        assertThat(clinicalAttributesCache.getDateOfLastCacheRefresh().toString(), not(equalTo(validDateOfLastCacheRefresh.toString())));
+    }
+ 
+    @Test(expected = FailedCacheRefreshException.class)
+    public void failedCacheRefreshTest() throws Exception {
+        // resetting cache with a broken repository should throw a FailedCacheRefreshException 
+        ClinicalDataDictionaryTestConfig config = new ClinicalDataDictionaryTestConfig();
+        config.resetNotWorkingClinicalAttributesRepository(clinicalAttributesRepository);
+        clinicalAttributesCache.resetCache();
     }
 
     @Test
@@ -164,7 +203,7 @@ public class ClinicalDataDictionaryTest {
         // change repository to non-working version
         config.resetNotWorkingClinicalAttributesRepository(clinicalAttributesRepository);
         response = restTemplate.getForEntity("/api/refreshCache", String.class);
-        assertThat(response.getBody(), containsString("org.cbioportal.cdd.service.exception.ClinicalMetadataSourceUnresponsiveException"));
+        assertThat(response.getBody(), containsString("org.cbioportal.cdd.service.exception.FailedCacheRefreshException"));
         assertThat(response.getStatusCode(), equalTo(HttpStatus.SERVICE_UNAVAILABLE));
         // change repository to version with 5 attributes/2 overrides
         config.resetWorkingClinicalAttributesRepository(clinicalAttributesRepository);
@@ -172,34 +211,6 @@ public class ClinicalDataDictionaryTest {
         assertThat(clinicalAttributesRepository.getClinicalAttributeMetadata().size(), equalTo(5));
         assertThat(clinicalAttributesRepository.getClinicalAttributeMetadataOverrides().size(), equalTo(2));
         assertThat(clinicalAttributesRepository.getClinicalAttributeMetadataOverrides(), not(hasKey("updated_override_study")));
-    }
-
-    @Test
-    public void expiredCacheTest() throws Exception {
-        // test that if the repository throws an exception, we expire the cache
-        ResponseEntity<String> response;
-
-        // now have the repository start thowing exceptions, we should be OK for 2 resetCache calls
-        // the third resetCache call invalidates the cache
-        ClinicalDataDictionaryTestConfig config = new ClinicalDataDictionaryTestConfig();
-        config.resetNotWorkingClinicalAttributesRepository(clinicalAttributesRepository);
-        for (int i = 0; i < 3; i++) {
-            // we should tolerate two failures
-            response = restTemplate.getForEntity("/api/", String.class);
-            assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
-            clinicalAttributesCache.resetCache();
-        }
-
-        // the third reset failure should have expired the cache
-        response = restTemplate.getForEntity("/api/", String.class);
-        assertThat(response.getBody(), containsString("org.cbioportal.cdd.service.exception.ClinicalMetadataSourceUnresponsiveException"));
-        assertThat(response.getStatusCode(), equalTo(HttpStatus.SERVICE_UNAVAILABLE));
-
-        config.resetWorkingClinicalAttributesRepository(clinicalAttributesRepository);
-        clinicalAttributesCache.resetCache();
-        // repositiory should work again
-        response = restTemplate.getForEntity("/api/", String.class);
-        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
     }
 
     @Test

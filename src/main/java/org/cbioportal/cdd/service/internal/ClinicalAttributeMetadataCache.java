@@ -18,19 +18,29 @@ package org.cbioportal.cdd.service.internal;
 import javax.annotation.PostConstruct;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
+import java.time.ZonedDateTime;
+
+import org.apache.http.*;
+import org.apache.http.client.*;
+import org.apache.http.entity.*;
+import org.apache.http.impl.client.*;
+import org.apache.http.client.methods.*;
 
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
 import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
+import org.cbioportal.cdd.service.exception.FailedCacheRefreshException;
 
 import com.google.common.base.Strings;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -43,17 +53,28 @@ import org.springframework.stereotype.Component;
 @EnableScheduling
 public class ClinicalAttributeMetadataCache {
 
+    @Value("${slack.url}")
+    private String slackURL;
+
     // if clinicalAttributeCache is null it means we could not populate it, there was an error
     private static HashMap<String, ClinicalAttributeMetadata> clinicalAttributeCache;
     // if overridesCache is null it means we could not populate it, there was an error
     private static HashMap<String, Map<String, ClinicalAttributeMetadata>> overridesCache;
-    private static int consecutiveFailedAttempts = 0;
-    private static final int MAX_FAILED_ATTEMPTS = 3;
-
+    private static Date dateOfLastCacheRefresh = new Date();
+    
+    public static final Integer MAXIMUM_CACHE_AGE_IN_DAYS = 3;
     private static final Logger logger = LoggerFactory.getLogger(ClinicalAttributeMetadataCache.class);
 
     @Autowired
     private ClinicalAttributeMetadataRepository clinicalAttributesRepository;
+
+    public Date getDateOfLastCacheRefresh() {
+        return dateOfLastCacheRefresh;
+    }
+    
+    public void setDateOfLastCacheRefresh(Date date) {
+        this.dateOfLastCacheRefresh = date;
+    }
 
     public Map<String, ClinicalAttributeMetadata> getClinicalAttributeMetadata() {
         if (clinicalAttributeCache != null) {
@@ -68,28 +89,40 @@ public class ClinicalAttributeMetadataCache {
         }
         return null;
     }
+    
+    private void sendStaleCacheSlackNotification() {
+        String payload = "payload={\"channel\": \"#msk-pipeline-logs\", \"username\": \"cbioportal_importer\", \"text\": \"*URGENT: CDD Error* - an attempt to refresh an outdated or null cache failed.\", \"icon_emoji\": \":rotating_light:\"}";
+        StringEntity entity = new StringEntity(payload, ContentType.APPLICATION_FORM_URLENCODED);
+        HttpClient httpClient = HttpClientBuilder.create().build();
+        HttpPost request = new HttpPost(slackURL);
+        request.setEntity(entity);
+        HttpResponse response = null;
+        try {
+            response = httpClient.execute(request);
+        } catch (Exception e) {
+            logger.error("failed to send slack notification -- cache is outdated and failed to refresh");
+        }
+    }
 
     @PostConstruct // call when constructed
-    @Scheduled(cron="0 15,30,45 12 * * MON") // call three times in 15 minute intervals once per week
-    private void scheduleResetCache() {
-        // TODO make sure we don't have two scheduled calls run simultaneously
-        resetCache();
+    @Scheduled(cron="0 */10 * * * *") // call every 10 minutes
+    private void validateAndResetCache() {
+        if (cacheIsStale() || clinicalAttributeCache == null || overridesCache == null) {
+            try {
+                resetCache();
+            } catch (FailedCacheRefreshException e) {
+                sendStaleCacheSlackNotification();
+            }
+        }
     }
 
     /**
-    * This method does not need to be called, it will automatically be called by scheduleResetCache().
+    * This method does not need to be called, it will automatically be called by validateAndResetCache().
     * It is a public method so that it can be easily tested.
     */
     public void resetCache() {
-        resetCache(false);
-    }
-
-    /**
-    * This method does not need to be called, it will automatically be called by scheduleResetCache().
-    * It is a public method so that it can be easily tested.
-    */
-    public void resetCache(boolean force) {
         logger.info("resetCache(): refilling clinical attribute cache");
+        Date dateOfCurrentCacheRefresh = new Date();
         List<ClinicalAttributeMetadata> latestClinicalAttributeMetadata = null;
         // latestOverrides is a map of study-id to list of overridden ClinicalAttributeMetadata objects
         Map<String, ArrayList<ClinicalAttributeMetadata>> latestOverrides = null;
@@ -102,20 +135,8 @@ public class ClinicalAttributeMetadataCache {
             } else {
                 logger.error("resetCache(): failed to pull overrides from repository");
             }
-            consecutiveFailedAttempts += 1;
-            if (consecutiveFailedAttempts >= MAX_FAILED_ATTEMPTS || force) {
-                clinicalAttributeCache = null;
-                overridesCache = null;
-                if (force) {
-                    logger.error("resetCache(force = true): failed to pull from repository, Emptying caches");
-                } else {
-                    logger.error("resetCache(): failed to pull from repository " + consecutiveFailedAttempts +  " times, Emptying caches");
-                }
-            }
-            return;
+            throw new FailedCacheRefreshException("Failed to refresh cache");
         }
-        // we succeeded, reset consecutiveFailedAttempts
-        consecutiveFailedAttempts = 0;
         HashMap<String, ClinicalAttributeMetadata> latestClinicalAttributeMetadataCache = new HashMap<String, ClinicalAttributeMetadata>();
         for (ClinicalAttributeMetadata clinicalAttributeMetadata : latestClinicalAttributeMetadata) {
             latestClinicalAttributeMetadataCache.put(clinicalAttributeMetadata.getColumnHeader(), clinicalAttributeMetadata);
@@ -136,8 +157,20 @@ public class ClinicalAttributeMetadataCache {
         logger.info("resetCache(): refilled cache with " + latestClinicalAttributeMetadata.size() + " clinical attributes");
         overridesCache = latestOverridesCache;
         logger.info("resetCache(): refilled overrides cache with " + latestOverrides.size() + " overrides");
+        dateOfLastCacheRefresh = dateOfCurrentCacheRefresh;
+        logger.info("resetCache(): cache last refreshed on: " + dateOfLastCacheRefresh.toString());
     }
-
+        
+    public boolean cacheIsStale() {
+        ZonedDateTime currentDate = ZonedDateTime.now();
+        ZonedDateTime dateOfCacheExpiration = currentDate.plusDays(- MAXIMUM_CACHE_AGE_IN_DAYS);
+        if (dateOfLastCacheRefresh.toInstant().isBefore(dateOfCacheExpiration.toInstant())) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
     private void fillOverrideAttributeWithDefaultValues(ClinicalAttributeMetadata overrideClinicalAttribute, ClinicalAttributeMetadata defaultClinicalAttribute) {
         logger.debug("fillOverrideAttributeWithDefaultValues()");
         if (Strings.isNullOrEmpty(overrideClinicalAttribute.getDisplayName())) {
