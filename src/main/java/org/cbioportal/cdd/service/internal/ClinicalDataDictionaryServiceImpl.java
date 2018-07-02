@@ -54,6 +54,10 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
         Set<String> cancerStudySet = new HashSet<>();
         cancerStudySet.add("mskimpact");
         cancerStudySet.add("sclc_mskimpact_2017");
+        cancerStudySet.add("mskarcher");
+        cancerStudySet.add("mskraindance");
+        cancerStudySet.add("mskimpact_heme");
+        cancerStudySet.add("msk_solid_heme");
         CANCER_STUDIES_WITH_ALTERED_DEFAULT_METADATA = Collections.unmodifiableSet(cancerStudySet);
     }
 
