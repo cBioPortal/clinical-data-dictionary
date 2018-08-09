@@ -1,6 +1,6 @@
 # Compares concept URIs in docs/resource_uri_to_clinical_attribute_mapping.txt to the current concept URIs defined in Topbraid.
 #
-# ./validate_topbraid_uris.py --curated-file resource_uri_to_clinical_attribute_mapping_file --topbraid-file topbriad_clinical_attribute_sparql_file
+# ./validate_topbraid_uris.py --curated-file resource_uri_to_clinical_attribute_mapping_file --properties-file application.properties
 #
 # Author: Manda Wilson
 
@@ -9,14 +9,15 @@ import os.path
 import sys
 import csv
 import re
+import ConfigParser
+import requests
 
-"""
-Download the current concept URIs for clinical attributes in Topbraid as a TSV file from https://evn.mskcc.org/edg/tbl/swp?_viewClass=endpoint:HomePage:
 
+TOPBRAID_QUERY = """
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
         PREFIX cdd:<http://data.mskcc.org/ontologies/clinical_data_dictionary/>
         PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
-        SELECT ?column_header ?display_name ?attribute_type ?datatype ?description ?priority
+        SELECT ?subject ?column_header ?display_name ?attribute_type ?datatype ?description ?priority
         WHERE {
             GRAPH <urn:x-evn-master:clinical_data_dictionary> {
                 ?subject skos:prefLabel ?column_header.
@@ -28,22 +29,67 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
             }
         }
 """
-
 NUM_FIELDS_IN_CURATED_FILE = 2
 URI_PATTERN_STR = "^C[0-9]{6}$" # e.g. C000000
 URI_PATTERN = re.compile(URI_PATTERN_STR)
 COLUMN_HEADER_PATTERN_STR = "^(\")?[A-Z][A-Z_0-9]{0,99}(\"@en)?$" # e.g. "DELIVERED_DOSE"@en or PLATINUM_OS_MONTHS
 COLUMN_HEADER_PATTERN = re.compile(COLUMN_HEADER_PATTERN_STR)
 MULTIPLE_UNDERSCORES_PATTERN = re.compile("_{2,}")
+TOPBRAID_URL_PROPERTY_NAME = "topbraid.url"
+TOPBRAID_USERNAME_PROPERTY_NAME = "topbraid.username"
+TOPBRAID_PASSWORD_PROPERTY_NAME = "topbraid.password"
+DEFAULT_SECTION_HEAD_FOR_PROPERTIES_FILE = "DEFAULT"
+JSESSION_ID_COOKIE_NAME = "JSESSIONID"
 errors = []
 warnings = []
 
-def validate_uri(uri, filename):
+# from https://stackoverflow.com/questions/2819696/parsing-properties-file-in-python/2819788#2819788
+class DefaultSectionHeadOnPropertiesFile:
+
+    def __init__(self, fp):
+        self.fp = fp
+        self.section_head = "[%s]\n" % (DEFAULT_SECTION_HEAD_FOR_PROPERTIES_FILE)
+
+    def readline(self):
+        if self.section_head:
+            try:
+                return self.section_head
+            finally:
+                self.section_head = None
+        else:
+            return self.fp.readline()
+
+def get_logged_in_session_id(topbraid_url, topbraid_username, topbraid_password):
+    # first we just hit the page and get a session id
+    session = requests.Session()
+    response = session.get(topbraid_url)
+    if response.status_code != 200:
+        print >> sys.stderr, "ERROR: Initial connection to '%s' failed, response status code is '%d', body is '%s'" % (topbraid_url, response.status_code, response.text)
+        sys.exit(2)
+    initial_jsession_id = session.cookies.get_dict()[JSESSION_ID_COOKIE_NAME]
+    # now we login using that session id
+    response = session.get(topbraid_url + "/j_security_check?j_username=" + topbraid_username + "&j_password=" + topbraid_password, cookies={ JSESSION_ID_COOKIE_NAME : initial_jsession_id })
+    if response.status_code != 200:
+        print >> sys.stderr, "ERROR: Failed to log into '%s', response status code is '%d', body is '%s'" % (topbraid_url, response.status_code, response.text)
+        sys.exit(2)
+    logged_in_session_id = session.cookies.get_dict()[JSESSION_ID_COOKIE_NAME]
+    return logged_in_session_id
+
+def query_topbraid(topbraid_url, logged_in_session_id):
+    session = requests.Session()
+    data = {"format" : "json-simple", "query" : TOPBRAID_QUERY}
+    response = session.post(topbraid_url, cookies={ JSESSION_ID_COOKIE_NAME : logged_in_session_id}, data=data)
+    if response.status_code != 200:
+        print >> sys.stderr, "ERROR: Failed to query '%s', response status code is '%d', body is '%s'" % (topbraid_url, response.status_code, response.text)
+        sys.exit(2)
+    return response.json()
+
+def validate_uri(uri, source):
     """Adds error to errors array if uri does not match expected pattern"""
     if not URI_PATTERN.match(uri):
-        errors.append("'%s' does not match expected pattern '%s' in file '%s'" % (uri, URI_PATTERN_STR, filename))
+        errors.append("'%s' does not match expected pattern '%s' in '%s'" % (uri, URI_PATTERN_STR, source))
 
-def validate_column_header(str, filename):
+def validate_column_header(str, source):
     """Adds error to errors array if str does not match expected pattern"""
     # validate
     #   has no whitespace
@@ -55,9 +101,9 @@ def validate_column_header(str, filename):
     #   underscore character
     #   do not have 2 underscores in a row
     if not COLUMN_HEADER_PATTERN.match(str):
-        errors.append("'%s' does not match expected pattern '%s' in file '%s'" % (str, COLUMN_HEADER_PATTERN_STR, filename))
+        errors.append("'%s' does not match expected pattern '%s' in '%s'" % (str, COLUMN_HEADER_PATTERN_STR, source))
     if MULTIPLE_UNDERSCORES_PATTERN.search(str):
-        warnings.append("'%s' contains multiple underscores in file '%s'" % (str, filename))
+        warnings.append("'%s' contains multiple underscores in '%s'" % (str, source))
 
 def read_curated_uris(curated_filename):
     # validate that file is tab delimited
@@ -76,16 +122,14 @@ def read_curated_uris(curated_filename):
                 validate_column_header(fields[1], curated_filename)
     return uris
 
-def read_topbraid_uris(topbraid_filename):
+def read_topbraid_uris(topbraid_results):
     uris = {}
-    with open(topbraid_filename) as topbraid_file:
-        reader = csv.DictReader(topbraid_file, dialect='excel-tab',)
-        for row in reader:
-            # subject looks like 'cdd:C001745'
-            uri = row['subject'].split(":")[1]
-            uris[uri] = row['column_header']
-            validate_uri(uri, topbraid_filename)
-            validate_column_header(row['column_header'], topbraid_filename)
+    for clinical_attribute in topbraid_results:
+        # subject looks like 'http://data.mskcc.org/ontologies/clinical_data_dictionary/C002753'
+        uri = clinical_attribute['subject'].split("/")[-1]
+        uris[uri] = clinical_attribute['column_header']
+        validate_uri(uri, "Topbraid")
+        validate_column_header(clinical_attribute['column_header'], "Topbraid")
     return uris
 
 def compare_uris(curated_uris, topbraid_uris):
@@ -107,37 +151,50 @@ def compare_uris(curated_uris, topbraid_uris):
             errors.append("column_header for key '%s' does not match between curated '%s' and Topbraid '%s'" % (key, curated_uris[key], topbraid_uris[key]))
 
 def usage():
-    print 'python validate_topbraid_uris.py --curated-file [path/to/curated/file] --topbraid-file [path/to/topbraid/file]'
+    print 'python validate_topbraid_uris.py --curated-file [path/to/curated/file] --properties-file [path/to/properties/file]'
 
 def main():
     # get command line stuff
     parser = optparse.OptionParser()
     parser.add_option('-c', '--curated-file', action = 'store', dest = 'curated_filename')
-    parser.add_option('-t', '--topbraid-file', action = 'store', dest = 'topbraid_filename')
+    parser.add_option('-p', '--properties-file', action = 'store', dest = 'properties_filename')
 
     (options, args) = parser.parse_args()
     curated_filename = options.curated_filename
-    topbraid_filename = options.topbraid_filename
+    properties_filename = options.properties_filename
 
     if not curated_filename:
         print 'Curated file is required'
         usage()
         sys.exit(2)
-    if not topbraid_filename:
-        print 'Topbraid file is required'
+    if not properties_filename:
+        print 'Properties file is required'
         usage()
         sys.exit(2)
     if not os.path.exists(curated_filename):
         print 'No such file:', curated_filename
         usage()
         sys.exit(2)
-    if not os.path.exists(topbraid_filename):
-        print 'No such file:', topbraid_filename
+    if not os.path.exists(properties_filename):
+        print 'No such file:', properties_filename
         usage()
         sys.exit(2)
 
+    config = ConfigParser.RawConfigParser()
+    config.readfp(DefaultSectionHeadOnPropertiesFile(open(properties_filename)))
+    try:
+        topbraid_url = config.get(DEFAULT_SECTION_HEAD_FOR_PROPERTIES_FILE, TOPBRAID_URL_PROPERTY_NAME)
+        topbraid_username = config.get(DEFAULT_SECTION_HEAD_FOR_PROPERTIES_FILE, TOPBRAID_USERNAME_PROPERTY_NAME)
+        topbraid_password = config.get(DEFAULT_SECTION_HEAD_FOR_PROPERTIES_FILE, TOPBRAID_PASSWORD_PROPERTY_NAME)
+    except ConfigParser.NoOptionError as noe:
+        print >> sys.stderr, "ERROR:", noe, "in properties file"
+        sys.exit(2)
+
+    jsession_id = get_logged_in_session_id(topbraid_url, topbraid_username, topbraid_password)
+    topbraid_results = query_topbraid(topbraid_url, jsession_id)
+
     curated_uris = read_curated_uris(curated_filename)
-    topbraid_uris = read_topbraid_uris(topbraid_filename)
+    topbraid_uris = read_topbraid_uris(topbraid_results)
 
     compare_uris(curated_uris, topbraid_uris)
 
