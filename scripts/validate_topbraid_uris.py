@@ -42,6 +42,7 @@ DEFAULT_SECTION_HEAD_FOR_PROPERTIES_FILE = "DEFAULT"
 JSESSION_ID_COOKIE_NAME = "JSESSIONID"
 errors = []
 warnings = []
+information = []
 
 # from https://stackoverflow.com/questions/2819696/parsing-properties-file-in-python/2819788#2819788
 class DefaultSectionHeadOnPropertiesFile:
@@ -119,7 +120,9 @@ def read_curated_uris(curated_filename):
             else:
                 uris[fields[0]] = fields[1]
                 validate_uri(fields[0], curated_filename)
-                validate_column_header(fields[1], curated_filename)
+                # do not validate the column header
+                # if this is in Topbraid, it will be validated in that section
+                # if it isn't in Topbraid, don't worry about what it says
     return uris
 
 def read_topbraid_uris(topbraid_results):
@@ -139,7 +142,7 @@ def compare_uris(curated_uris, topbraid_uris):
 
     in_curated_only = curated_key_set - topbraid_key_set
     if in_curated_only:
-        errors.append("Curated URIs not found in Topbraid: '%s'" % (", ".join(sorted(in_curated_only))))
+        information.append("Curated URIs not found in Topbraid: '%s'" % (", ".join([ "%s %s)" % (key, curated_uris[key]) for key in sorted(in_curated_only)])))
 
     in_topbraid_only = topbraid_key_set - curated_key_set
     if in_topbraid_only:
@@ -197,6 +200,11 @@ def main():
     topbraid_uris = read_topbraid_uris(topbraid_results)
 
     compare_uris(curated_uris, topbraid_uris)
+
+    # print information to stdout and do not exit with failure error code
+    if information:
+        for info in information:
+            print "INFO:", info
 
     # print warnings to stdout and do not exit with failure error code
     if warnings:
