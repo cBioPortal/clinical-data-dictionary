@@ -87,6 +87,25 @@ public class ClinicalDataDictionaryController {
         return clinicalAttributesService.getMetadataByColumnHeaders(cancerStudyName, columnHeaders);
     }
 
+    @ApiOperation(value = "Get metadata for a search term", response = ClinicalAttributeMetadata.class, responseContainer = "List")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Successfully retrieved list of clinical attributes matching search term"),
+        @ApiResponse(code = 400, message = "Bad request"),
+        @ApiResponse(code = 404, message = "Could not find any clinical attributes matching search term"),
+        @ApiResponse(code = 503, message = "Clinical attribute metadata source unavailable")
+        }
+    )
+    @RequestMapping(method = RequestMethod.POST, value="/search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Iterable<ClinicalAttributeMetadata> getClinicalAttributeMetadataBySearchTerms(
+        @ApiParam(value = "Attribute type e.g. PATIENT or SAMPLE")
+        @RequestParam(value = "attributeType", required = false) String attributeType, 
+        @ApiParam(value = "Inclusive search - all search terms must be present when searching")
+        @RequestParam(value = "inclusiveSearch", defaultValue = "false", required = true) boolean inclusiveSearch, 
+        @ApiParam(value = "List of search terms that may be present in the description, display name, or column header. For example: [\"TMB\", \"mutation burden\"]")
+        @RequestBody(required = true) List<String> searchTerms) {
+        return clinicalAttributesService.getMetadataBySearchTerms(searchTerms, attributeType, inclusiveSearch);
+    }
+
     @ApiOperation(value = "Get metadata for one clinical attribute", response = ClinicalAttributeMetadata.class)
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Successfully retrieved clinical attribute"),
