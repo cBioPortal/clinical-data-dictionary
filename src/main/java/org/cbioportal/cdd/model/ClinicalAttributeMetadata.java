@@ -24,6 +24,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.*;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author Avery Wang, Manda Wilson
@@ -255,4 +257,37 @@ public class ClinicalAttributeMetadata {
     public void setAdditionalProperty(String name, Object value) {
         this.additionalProperties.put(name, value);
     }
+
+    public boolean containsSearchTerm(String searchTerm) {
+        return (StringUtils.containsIgnoreCase(this.columnHeader, searchTerm) ||
+            StringUtils.containsIgnoreCase(this.displayName, searchTerm) ||
+            StringUtils.containsIgnoreCase(this.description, searchTerm));   
+    }
+    
+    public boolean containsAllSearchTerms(List<String> searchTerms) {
+        for (String searchTerm : searchTerms) {
+            if (!containsSearchTerm(searchTerm)) {
+                return false;
+            }
+        }
+        return true;
+    }
+                
+    public Integer levenshteinDistanceFromSearchTerm(String searchTerm) {
+        Integer levenshteinDistance = Integer.MAX_VALUE;
+        if (StringUtils.containsIgnoreCase(this.columnHeader, searchTerm)) {
+            levenshteinDistance = Math.min(levenshteinDistance, StringUtils.getLevenshteinDistance(searchTerm, this.columnHeader));
+        } 
+        if (StringUtils.containsIgnoreCase(this.displayName, searchTerm)) {
+            levenshteinDistance = Math.min(levenshteinDistance, StringUtils.getLevenshteinDistance(searchTerm, this.displayName));
+        }
+        if (StringUtils.containsIgnoreCase(this.description, searchTerm)) {
+            levenshteinDistance = Math.min(levenshteinDistance, StringUtils.getLevenshteinDistance(searchTerm, this.description));
+        }
+        return levenshteinDistance;
+    } 
+
+    public boolean matchesAttributeType(String attributeType) {
+        return attributeType == null || attributeType.toUpperCase().equals(this.attributeType);
+    }   
 }

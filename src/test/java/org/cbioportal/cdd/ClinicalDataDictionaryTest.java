@@ -25,6 +25,7 @@ import java.util.Date;
 
 import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
 import org.cbioportal.cdd.service.internal.ClinicalAttributeMetadataCache;
+import org.cbioportal.cdd.service.internal.LevenshteinDistanceCache;
 import org.cbioportal.cdd.service.exception.*;
 
 import static org.hamcrest.Matchers.containsString;
@@ -63,6 +64,9 @@ public class ClinicalDataDictionaryTest {
     @Autowired
     private ClinicalAttributeMetadataCache clinicalAttributesCache;
 
+    @Autowired
+    private LevenshteinDistanceCache levenshteinDistanceCache;
+
     @Before
     // make sure repository is working version before each test
     public void resetToWorkingRepository() {
@@ -82,6 +86,49 @@ public class ClinicalDataDictionaryTest {
 
         assertThat(responseJSON.size(), equalTo(5));
         assertThat(response.getBody(), containsString("{\"column_header\":\"LAST_STATUS\",\"display_name\":\"Last Status\",\"description\":\"Last Status.\",\"datatype\":\"STRING\",\"attribute_type\":\"PATIENT\",\"priority\":\"1\"}"));
+    }
+    
+    @Test
+    public void getClinicalAttributeMetadataBySearchTermsTest() throws Exception {
+        //test we can get a list of clinical attributes by search term
+        List<String> searchTerms = Arrays.asList("Stage");
+        ResponseEntity<String> response = restTemplate.postForEntity("/api/search", searchTerms, String.class);
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+        
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode responseJSON = mapper.readTree(response.getBody());
+        assertThat(responseJSON.size(), equalTo(2));
+        assertThat(response.getBody(), containsString("{\"column_header\":\"CLIN_M_STAGE\",\"display_name\":\"Neoplasm American Joint Committee on Cancer Clinical Distant Metastasis M Stage\",\"description\":"
+            + "\"Extent of the distant metastasis for the cancer based on evidence obtained from clinical assessment parameters determined prior to treatment.\",\"datatype\":\"STRING\",\"attribute_type\":\"PATIENT\",\"priority\":\"1\"}"));
+        assertThat(response.getBody(), containsString("{\"column_header\":\"DISEASE_STAGE\",\"display_name\":\"Disease Stage\",\"description\":"
+            + "\"Disease Stage\",\"datatype\":\"STRING\",\"attribute_type\":\"SAMPLE\",\"priority\":\"1\"}"));
+        
+        searchTerms = Arrays.asList("Stage", "bone marrow");
+        response = restTemplate.postForEntity("/api/search", searchTerms, String.class);
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+        
+        responseJSON = mapper.readTree(response.getBody());
+        assertThat(responseJSON.size(), equalTo(3));
+        assertThat(response.getBody(), containsString("{\"column_header\":\"CLIN_M_STAGE\",\"display_name\":\"Neoplasm American Joint Committee on Cancer Clinical Distant Metastasis M Stage\",\"description\":"
+            + "\"Extent of the distant metastasis for the cancer based on evidence obtained from clinical assessment parameters determined prior to treatment.\",\"datatype\":\"STRING\",\"attribute_type\":\"PATIENT\",\"priority\":\"1\"}"));
+        assertThat(response.getBody(), containsString("{\"column_header\":\"DISEASE_STAGE\",\"display_name\":\"Disease Stage\",\"description\":"
+            + "\"Disease Stage\",\"datatype\":\"STRING\",\"attribute_type\":\"SAMPLE\",\"priority\":\"1\"}"));
+        assertThat(response.getBody(), containsString("{\"column_header\":\"BONE_MARROW_SAMPLE_HISTOLOGY\",\"display_name\":\"Bone Marrow Sample Histology\",\"description\":"
+            + "\"Bone Marrow Sample Histology\",\"datatype\":\"STRING\",\"attribute_type\":\"SAMPLE\",\"priority\":\"1\"}"));
+    }
+
+    @Test
+    public void getClinicalAttributeMetadataBySearchTermsTestPatientOnly() throws Exception {
+        //test we can get a list of clinical attributes by search term
+        List<String> searchTerms = Arrays.asList("Stage");
+        ResponseEntity<String> response = restTemplate.postForEntity("/api/search?attributeType=PATIENT", searchTerms, String.class);
+        assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
+        
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode responseJSON = mapper.readTree(response.getBody());
+        assertThat(responseJSON.size(), equalTo(1));
+        assertThat(response.getBody(), containsString("{\"column_header\":\"CLIN_M_STAGE\",\"display_name\":\"Neoplasm American Joint Committee on Cancer Clinical Distant Metastasis M Stage\",\"description\":"
+            + "\"Extent of the distant metastasis for the cancer based on evidence obtained from clinical assessment parameters determined prior to treatment.\",\"datatype\":\"STRING\",\"attribute_type\":\"PATIENT\",\"priority\":\"1\"}"));
     }
 
     @Test

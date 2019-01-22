@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,6 +47,9 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
 
     @Autowired
     private ClinicalAttributeMetadataCache clinicalAttributesCache;
+
+    @Autowired
+    private LevenshteinDistanceCache levenshteinDistanceCache;
 
     private static final Logger logger = LoggerFactory.getLogger(ClinicalDataDictionaryServiceImpl.class);
 
@@ -114,6 +118,59 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
     }
 
     @Override
+    public List<ClinicalAttributeMetadata> getMetadataBySearchTerms(List<String> searchTerms, String attributeType, boolean inclusiveSearch)
+        throws ClinicalAttributeNotFoundException, ClinicalMetadataSourceUnresponsiveException {
+        assertCacheIsValid();
+        Map<ClinicalAttributeMetadata, Integer> clinicalAttributesToLevenshteinDistance = new HashMap<ClinicalAttributeMetadata, Integer>();
+        List<ClinicalAttributeMetadata> defaultClinicalAttributeCache = new ArrayList<ClinicalAttributeMetadata>(clinicalAttributesCache.getClinicalAttributeMetadata().values());
+
+        // check each attribute for match - skip if doesn't match specified attribute type OR inclusive search that doesn't have all search terms present
+        for (ClinicalAttributeMetadata clinicalAttributeMetadata : defaultClinicalAttributeCache) {
+            if (!clinicalAttributeMetadata.matchesAttributeType(attributeType)) {
+                continue;
+            }
+            if (inclusiveSearch && !clinicalAttributeMetadata.containsAllSearchTerms(searchTerms)) {
+                continue;
+            }
+            mapMinimumLevenshteinDistanceFromClinicalAttributeMetadataToSearchTerms(clinicalAttributesToLevenshteinDistance, searchTerms, clinicalAttributeMetadata);
+        }
+        List<ClinicalAttributeMetadata> clinicalAttributes = new ArrayList<ClinicalAttributeMetadata>(clinicalAttributesToLevenshteinDistance.keySet());
+        Collections.sort(clinicalAttributes, (a, b) -> {
+            return clinicalAttributesToLevenshteinDistance.get(a).compareTo(clinicalAttributesToLevenshteinDistance.get(b));
+        });
+        if (clinicalAttributes.size() == 0) {
+            throw new ClinicalAttributeNotFoundException(String.join(", ", searchTerms));
+        }
+        return clinicalAttributes;
+    }
+
+    private void mapMinimumLevenshteinDistanceFromClinicalAttributeMetadataToSearchTerms(Map<ClinicalAttributeMetadata, Integer> clinicalAttributesToLevenshteinDistance, List<String> searchTerms, ClinicalAttributeMetadata clinicalAttributeMetadata) {
+        Integer levenshteinDistance;
+        // matching clinical attributes added to map with shortest levenshtein distance
+        for (String searchTerm : searchTerms) {
+            if (clinicalAttributeMetadata.containsSearchTerm(searchTerm)) {
+                // attempt to get levenshtein distance from cache - if not present, add to cache
+                if (!levenshteinDistanceCache.containsClinicalAttribute(clinicalAttributeMetadata)) {
+                    levenshteinDistanceCache.addClinicalAttribute(clinicalAttributeMetadata);
+                }
+                if (!levenshteinDistanceCache.containsClinicalAttributeToSearchTermMapping(clinicalAttributeMetadata, searchTerm)) {
+                    levenshteinDistanceCache.addClinicalAttributeToSearchTermMapping(clinicalAttributeMetadata, searchTerm);
+                }
+                levenshteinDistance = levenshteinDistanceCache.getLevenshteinDistanceForMapping(clinicalAttributeMetadata, searchTerm);
+                if (!clinicalAttributesToLevenshteinDistance.containsKey(clinicalAttributeMetadata)) {
+                    clinicalAttributesToLevenshteinDistance.put(clinicalAttributeMetadata, levenshteinDistance);
+                } else {
+                    clinicalAttributesToLevenshteinDistance.put(clinicalAttributeMetadata, Math.min(clinicalAttributesToLevenshteinDistance.get(clinicalAttributeMetadata), levenshteinDistance));
+                }
+            }
+        }
+        if (clinicalAttributeMetadata.containsAllSearchTerms(searchTerms)) {
+            levenshteinDistance = clinicalAttributeMetadata.levenshteinDistanceFromSearchTerm(String.join(" ", searchTerms));
+            clinicalAttributesToLevenshteinDistance.put(clinicalAttributeMetadata, Math.min(clinicalAttributesToLevenshteinDistance.get(clinicalAttributeMetadata), levenshteinDistance));
+        }
+    }
+
+    @Override
     public ClinicalAttributeMetadata getMetadataByColumnHeader(String cancerStudy, String columnHeader)
         throws ClinicalAttributeNotFoundException, ClinicalMetadataSourceUnresponsiveException, CancerStudyNotFoundException {
         List<String> columnHeaders = Collections.singletonList(columnHeader);
@@ -151,6 +208,7 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
     @Override
     public Map<String, String> forceResetCache() throws FailedCacheRefreshException {
         clinicalAttributesCache.resetCache();
+        levenshteinDistanceCache.resetCache();
         return Collections.singletonMap("response", "Success!");
     }
 
