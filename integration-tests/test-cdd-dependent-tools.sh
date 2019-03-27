@@ -118,10 +118,10 @@ if [ $CDD_DEPLOYMENT_SUCCESS -gt 0 ] ; then
     fi
 
     # create default file for testing metadata headers (SAMPLE_ID and PATIENT_ID should always be constant)
-    echo "SAMPLE_ID	PATIENT_ID" > $TESTING_DIRECTORY_TEMP/test_metadata_headers.txt
+    echo "SAMPLE_ID	PATIENT_ID" > $TESTING_DIRECTORY_TEMP/data_clinical_sample.txt
 
     # add headers using test CDD - failure means new CDD schema not compatible (i.e invalid endpoint, invalid returned json)
-    python $IMPORT_SCRIPTS_DIRECTORY/add_clinical_attribute_metadata_headers.py -f $TESTING_DIRECTORY_TEMP/test_metadata_headers.txt -c "$CDD_URL"
+    python $IMPORT_SCRIPTS_DIRECTORY/add_clinical_attribute_metadata_headers.py -f $TESTING_DIRECTORY_TEMP/data_clinical_sample.txt -c "$CDD_URL"
     if [ $? -gt 0 ] ; then
         echo "addition of metadata headers failed from test CDD failed -- new CDD code incompatible with CMO pipelines (add_clinical_attribute_metadata_headers.py)"
     else
@@ -129,7 +129,7 @@ if [ $CDD_DEPLOYMENT_SUCCESS -gt 0 ] ; then
     fi
 
     # compare added headers - difference means CDD schema has unintended consequence
-    diff $TESTING_DIRECTORY_TEMP/test_metadata_headers.txt $EXPECTED_METADATA_HEADERS
+    diff $TESTING_DIRECTORY_TEMP/data_clinical_sample.txt $EXPECTED_METADATA_HEADERS
     if [ $? -gt 0 ] ; then
         echo "added metadata headers differ between  production and test CDD -- new CDD code incompatibe with CMO pipelines (add_clinical_attribute_metadata_headers.py)"
     else
@@ -137,7 +137,7 @@ if [ $CDD_DEPLOYMENT_SUCCESS -gt 0 ] ; then
     fi
 
     # add headers using test CDD with fake study id - success means new CDD schema not compatible (i.e potential difference in cancer study id endpoint)
-    python $IMPORT_SCRIPTS_DIRECTORY/add_clinical_attribute_metadata_headers.py -f $TESTING_DIRECTORY_TEMP/test_metadata_headers.txt -c $CDD_URL -s fake_study_id
+    python $IMPORT_SCRIPTS_DIRECTORY/add_clinical_attribute_metadata_headers.py -f $TESTING_DIRECTORY_TEMP/data_clinical_sample.txt -c $CDD_URL -s fake_study_id
     if [ $? -eq 0 ] ; then
         echo "addition of metadata headers succeeded when it should have failed -- new CDD code incompatible with CMO pipelines (add_clinical_attribute_metadata_headers.py)"
     else
