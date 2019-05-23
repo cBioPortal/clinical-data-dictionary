@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2018-2019 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF
@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
 import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
+import org.springframework.cache.annotation.Cacheable;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Repository;
@@ -74,7 +75,7 @@ public class ClinicalAttributeMetadataRepositoryTopBraidImpl extends TopBraidRep
         "        ?subject cdd:Priority ?priority. " +
         "    } " +
         "}";
-
+    @Cacheable(value = "clinicalAttributeMetadataEHCache")
     public List<ClinicalAttributeMetadata> getClinicalAttributeMetadata() {
         try {
             return super.query(GET_CLINICAL_ATTRIBUTES_SPARQL_QUERY_STRING, new ParameterizedTypeReference<List<ClinicalAttributeMetadata>>(){});
@@ -84,6 +85,7 @@ public class ClinicalAttributeMetadataRepositoryTopBraidImpl extends TopBraidRep
         }
     }
 
+    @Cacheable(value = "clinicalAttributeMetadataOverridesEHCache")
     public Map<String, ArrayList<ClinicalAttributeMetadata>> getClinicalAttributeMetadataOverrides() {
         try {
             List<ClinicalAttributeMetadata> overridesList = super.query(GET_OVERRIDES_SPARQL_QUERY_STRING, new ParameterizedTypeReference<List<ClinicalAttributeMetadata>>(){});
