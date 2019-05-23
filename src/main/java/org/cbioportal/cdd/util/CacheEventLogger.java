@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2019 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF
@@ -16,22 +16,29 @@
  * has been advised of the possibility of such damage.
 */
 
-package org.cbioportal.cdd.repository.topbraid;
+package org.cbioportal.cdd.util;
 
+import org.ehcache.event.CacheEvent;
+import org.ehcache.event.CacheEventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-
 /**
  *
- * @author Manda Wilson
- **/
-public class TopBraidException extends RuntimeException {
+ * @author ochoaa
+ */
+public class CacheEventLogger implements CacheEventListener<Object, Object> {
 
-    private final static Logger logger = LoggerFactory.getLogger(TopBraidException.class);
+    private final static Logger logger = LoggerFactory.getLogger(CacheEventLogger.class);
 
-    public TopBraidException(String message, Throwable cause) {
-        super(message, cause);
-        logger.error(message + ": " + cause + " (Check that authentication is working)");
+    @Override
+    public void onEvent(CacheEvent cacheEvent) {
+        if (logger.isInfoEnabled()) {
+            logger.info("CACHE_EVENT:\n" +
+                     "\tTYPE: " + cacheEvent.getType() + "\n" +
+                     "\tKEY: " + cacheEvent.getKey() + "\n" +
+                     "\tVALUE: " + cacheEvent.getNewValue() + "\n" +
+                     "CACHE_EVENT<>\n");
+        }
     }
+
 }

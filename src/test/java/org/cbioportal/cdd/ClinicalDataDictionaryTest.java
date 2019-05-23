@@ -15,25 +15,20 @@
 
 package org.cbioportal.cdd;
 
+import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
+import org.cbioportal.cdd.service.internal.ClinicalAttributeMetadataCache;
+import org.cbioportal.cdd.service.exception.*;
+import org.cbioportal.cdd.config.CDDAppConfig;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Calendar;
-import java.util.Date;
-
-import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
-import org.cbioportal.cdd.service.internal.ClinicalAttributeMetadataCache;
-import org.cbioportal.cdd.service.internal.LevenshteinDistanceCache;
-import org.cbioportal.cdd.service.exception.*;
-
+import java.util.*;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertFalse;
 import org.junit.runner.RunWith;
 import org.junit.Test;
 import org.junit.Before;
@@ -52,7 +47,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-@Import(ClinicalDataDictionaryTestConfig.class)
+@Import({ClinicalDataDictionaryTestConfig.class, CDDAppConfig.class})
 public class ClinicalDataDictionaryTest {
 
     @Autowired
@@ -63,9 +58,6 @@ public class ClinicalDataDictionaryTest {
 
     @Autowired
     private ClinicalAttributeMetadataCache clinicalAttributesCache;
-
-    @Autowired
-    private LevenshteinDistanceCache levenshteinDistanceCache;
 
     @Before
     // make sure repository is working version before each test
@@ -87,14 +79,14 @@ public class ClinicalDataDictionaryTest {
         assertThat(responseJSON.size(), equalTo(5));
         assertThat(response.getBody(), containsString("{\"column_header\":\"LAST_STATUS\",\"display_name\":\"Last Status\",\"description\":\"Last Status.\",\"datatype\":\"STRING\",\"attribute_type\":\"PATIENT\",\"priority\":\"1\"}"));
     }
-    
+
     @Test
     public void getClinicalAttributeMetadataBySearchTermsTest() throws Exception {
         //test we can get a list of clinical attributes by search term
         List<String> searchTerms = Arrays.asList("Stage");
         ResponseEntity<String> response = restTemplate.postForEntity("/api/search", searchTerms, String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
-        
+
         ObjectMapper mapper = new ObjectMapper();
         JsonNode responseJSON = mapper.readTree(response.getBody());
         assertThat(responseJSON.size(), equalTo(2));
@@ -102,11 +94,11 @@ public class ClinicalDataDictionaryTest {
             + "\"Extent of the distant metastasis for the cancer based on evidence obtained from clinical assessment parameters determined prior to treatment.\",\"datatype\":\"STRING\",\"attribute_type\":\"PATIENT\",\"priority\":\"1\"}"));
         assertThat(response.getBody(), containsString("{\"column_header\":\"DISEASE_STAGE\",\"display_name\":\"Disease Stage\",\"description\":"
             + "\"Disease Stage\",\"datatype\":\"STRING\",\"attribute_type\":\"SAMPLE\",\"priority\":\"1\"}"));
-        
+
         searchTerms = Arrays.asList("Stage", "bone marrow");
         response = restTemplate.postForEntity("/api/search", searchTerms, String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
-        
+
         responseJSON = mapper.readTree(response.getBody());
         assertThat(responseJSON.size(), equalTo(3));
         assertThat(response.getBody(), containsString("{\"column_header\":\"CLIN_M_STAGE\",\"display_name\":\"Neoplasm American Joint Committee on Cancer Clinical Distant Metastasis M Stage\",\"description\":"
@@ -123,7 +115,7 @@ public class ClinicalDataDictionaryTest {
         List<String> searchTerms = Arrays.asList("Stage");
         ResponseEntity<String> response = restTemplate.postForEntity("/api/search?attributeType=PATIENT", searchTerms, String.class);
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
-        
+
         ObjectMapper mapper = new ObjectMapper();
         JsonNode responseJSON = mapper.readTree(response.getBody());
         assertThat(responseJSON.size(), equalTo(1));
@@ -160,9 +152,9 @@ public class ClinicalDataDictionaryTest {
             clinicalAttributesCache.resetCache();
         }
         assertThat(clinicalAttributesCache.getDateOfLastCacheRefresh().toString(), equalTo(validDateOfLastCacheRefresh.toString()));
- 
+
         // test condition where cache is stale
-        // set cache age to a invalid age (current date - MAXIMUM_CACHE_AGE_IN_DAYS - 1)  
+        // set cache age to a invalid age (current date - MAXIMUM_CACHE_AGE_IN_DAYS - 1)
         // cache is stale so resetCache should be called -- cache age should change
         currentDate.add(Calendar.DATE, -2);
         Date expiredDateOfLastCacheRefresh = currentDate.getTime();
@@ -172,10 +164,10 @@ public class ClinicalDataDictionaryTest {
         }
         assertThat(clinicalAttributesCache.getDateOfLastCacheRefresh().toString(), not(equalTo(validDateOfLastCacheRefresh.toString())));
     }
- 
+
     @Test(expected = FailedCacheRefreshException.class)
     public void failedCacheRefreshTest() throws Exception {
-        // resetting cache with a broken repository should throw a FailedCacheRefreshException 
+        // resetting cache with a broken repository should throw a FailedCacheRefreshException
         ClinicalDataDictionaryTestConfig config = new ClinicalDataDictionaryTestConfig();
         config.resetNotWorkingClinicalAttributesRepository(clinicalAttributesRepository);
         clinicalAttributesCache.resetCache();

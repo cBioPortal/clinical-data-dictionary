@@ -21,12 +21,11 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 
 /**
- * @author Manda Wilson 
+ * @author Manda Wilson
  */
 @SpringBootApplication // shorthand for @Configuration, @EnableAutoConfiguration, @ComponentScan
 public class ClinicalDataDictionaryApplication extends SpringBootServletInitializer {
 
-    @Override
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
         return application.sources(ClinicalDataDictionaryApplication.class);
     }

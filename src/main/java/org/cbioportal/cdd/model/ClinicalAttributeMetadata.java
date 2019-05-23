@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
+import java.io.Serializable;
 import java.util.*;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -39,7 +40,7 @@ import org.apache.commons.lang3.StringUtils;
     "attribute_type",
     "priority",
 })
-public class ClinicalAttributeMetadata {
+public class ClinicalAttributeMetadata implements Serializable {
 
     private String studyId;
     @ApiModelProperty(value = "The column header")
@@ -261,9 +262,9 @@ public class ClinicalAttributeMetadata {
     public boolean containsSearchTerm(String searchTerm) {
         return (StringUtils.containsIgnoreCase(this.columnHeader, searchTerm) ||
             StringUtils.containsIgnoreCase(this.displayName, searchTerm) ||
-            StringUtils.containsIgnoreCase(this.description, searchTerm));   
+            StringUtils.containsIgnoreCase(this.description, searchTerm));
     }
-    
+
     public boolean containsAllSearchTerms(List<String> searchTerms) {
         for (String searchTerm : searchTerms) {
             if (!containsSearchTerm(searchTerm)) {
@@ -272,12 +273,12 @@ public class ClinicalAttributeMetadata {
         }
         return true;
     }
-                
+
     public Integer levenshteinDistanceFromSearchTerm(String searchTerm) {
         Integer levenshteinDistance = Integer.MAX_VALUE;
         if (StringUtils.containsIgnoreCase(this.columnHeader, searchTerm)) {
             levenshteinDistance = Math.min(levenshteinDistance, StringUtils.getLevenshteinDistance(searchTerm, this.columnHeader));
-        } 
+        }
         if (StringUtils.containsIgnoreCase(this.displayName, searchTerm)) {
             levenshteinDistance = Math.min(levenshteinDistance, StringUtils.getLevenshteinDistance(searchTerm, this.displayName));
         }
@@ -285,9 +286,9 @@ public class ClinicalAttributeMetadata {
             levenshteinDistance = Math.min(levenshteinDistance, StringUtils.getLevenshteinDistance(searchTerm, this.description));
         }
         return levenshteinDistance;
-    } 
+    }
 
     public boolean matchesAttributeType(String attributeType) {
         return attributeType == null || attributeType.toUpperCase().equals(this.attributeType);
-    }   
+    }
 }

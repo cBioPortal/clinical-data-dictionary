@@ -1,0 +1,7 @@
+# ehcache unit test properties
+ehcache.dev.persistence.path=
+ehcache.dev.enable.statistics=false
+ehcache.dev.clinicalAttributeMetadataEHCache.maxBytesLocalDisk=
+ehcache.dev.clinicalAttributeMetadataEHCache.maxBytesLocalDiskUnits=
+ehcache.dev.clinicalAttributeMetadataOverridesEHCache.maxBytesLocalDisk=
+ehcache.dev.clinicalAttributeMetadataOverridesEHCache.maxBytesLocalDiskUnits=
