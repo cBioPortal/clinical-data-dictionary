@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2018-2019 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF
@@ -19,11 +19,13 @@
 package org.cbioportal.cdd.repository.topbraid;
 
 import java.util.*;
-
-import org.apache.log4j.Logger;
+import javax.annotation.Resource;
 
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
 import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Repository;
@@ -35,7 +37,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class ClinicalAttributeMetadataRepositoryTopBraidImpl extends TopBraidRepository<ClinicalAttributeMetadata> implements ClinicalAttributeMetadataRepository {
 
-    private final static Logger logger = Logger.getLogger(ClinicalAttributeMetadataRepositoryTopBraidImpl.class);
+    private final static Logger logger = LoggerFactory.getLogger(ClinicalAttributeMetadataRepositoryTopBraidImpl.class);
 
     private final static String GET_OVERRIDES_SPARQL_QUERY_STRING = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
         "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> " +
@@ -75,9 +77,11 @@ public class ClinicalAttributeMetadataRepositoryTopBraidImpl extends TopBraidRep
         "    } " +
         "}";
 
-    public List<ClinicalAttributeMetadata> getClinicalAttributeMetadata() {
+    public ArrayList<ClinicalAttributeMetadata> getClinicalAttributeMetadata() {
+        logger.info("Fetching clinical attribute metadata from TopBraid...");
         try {
-            return super.query(GET_CLINICAL_ATTRIBUTES_SPARQL_QUERY_STRING, new ParameterizedTypeReference<List<ClinicalAttributeMetadata>>(){});
+            ArrayList<ClinicalAttributeMetadata> list = new ArrayList<ClinicalAttributeMetadata>(super.query(GET_CLINICAL_ATTRIBUTES_SPARQL_QUERY_STRING, new ParameterizedTypeReference<List<ClinicalAttributeMetadata>>(){}));
+            return list;
         } catch (TopBraidException e) {
             logger.error("Problem connecting to TopBraid");
             throw new RuntimeException(e);
@@ -85,6 +89,7 @@ public class ClinicalAttributeMetadataRepositoryTopBraidImpl extends TopBraidRep
     }
 
     public Map<String, ArrayList<ClinicalAttributeMetadata>> getClinicalAttributeMetadataOverrides() {
+        logger.info("Fetch clinical attribute metadata overrides from TopBraid...");
         try {
             List<ClinicalAttributeMetadata> overridesList = super.query(GET_OVERRIDES_SPARQL_QUERY_STRING, new ParameterizedTypeReference<List<ClinicalAttributeMetadata>>(){});
             Map<String, ArrayList<ClinicalAttributeMetadata>> overridesStudyMap = new HashMap<>();

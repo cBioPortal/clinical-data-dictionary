@@ -19,6 +19,7 @@ EXPECTED_METADATA_HEADERS=$CDD_DIRECTORY/integration-tests/expected_metadata_hea
 JENKINS_USER_HOME_DIRECTORY=/var/lib/jenkins
 JENKINS_PROPERTIES_DIRECTORY=$JENKINS_USER_HOME_DIRECTORY/pipelines-configuration/properties
 APPLICATION_PROPERTIES=application.properties
+TEST_APPLICATION_PROPERTIES=test.application.properties
 
 REDCAP_EXPORT_TEST_SUCCESS=0
 ADD_TEST_CDD_HEADERS_SUCCESS=0
@@ -62,7 +63,8 @@ function find_free_port {
 
 # Copy in CDD properties and build jar
 rsync $JENKINS_PROPERTIES_DIRECTORY/clinical-data-dictionary/$APPLICATION_PROPERTIES $CDD_DIRECTORY/src/main/resources
-cd $CDD_DIRECTORY ; mvn package -Dpackaging.type=jar
+rsync $JENKINS_PROPERTIES_DIRECTORY/clinical-data-dictionary/$TEST_APPLICATION_PROPERTIES $CDD_DIRECTORY/src/test/resources
+cd $CDD_DIRECTORY ; mvn package -DskipTests=true -Dpackaging.type=jar
 
 #start up CDD on some port on dashi-dev
 CDD_PORT=`find_free_port`

@@ -11,7 +11,7 @@ logs/
 
 # config files
 application.properties
-logback.xml
+log4j.properties
 
 # target directories
 target/
