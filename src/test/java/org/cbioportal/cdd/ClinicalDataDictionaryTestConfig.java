@@ -33,11 +33,11 @@ public class ClinicalDataDictionaryTestConfig {
         ClinicalAttributeMetadataRepository clinicalAttributesRepository = Mockito.mock(ClinicalAttributeMetadataRepository.class);
         return clinicalAttributesRepository;
     }
-
-    @Bean
-    public LevenshteinDistanceCache levenshteinDistanceCache() {
-        return new LevenshteinDistanceCache();
-    }
+    // TODO: REMOVE IF UNUSED
+//    @Bean
+//    public LevenshteinDistanceCache levenshteinDistanceCache() {
+//        return new LevenshteinDistanceCache();
+//    }
 
     public void resetWorkingClinicalAttributesRepository(ClinicalAttributeMetadataRepository clinicalAttributesRepository) {
         Mockito.reset(clinicalAttributesRepository);

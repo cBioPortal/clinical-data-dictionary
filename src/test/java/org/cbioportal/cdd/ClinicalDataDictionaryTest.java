@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Calendar;
 import java.util.Date;
+import org.cbioportal.cdd.config.CDDAppConfig;
 
 import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
 import org.cbioportal.cdd.service.internal.ClinicalAttributeMetadataCache;
@@ -43,6 +44,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.cache.jcache.JCacheCacheManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -52,7 +54,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-@Import(ClinicalDataDictionaryTestConfig.class)
+@Import({ClinicalDataDictionaryTestConfig.class, CDDAppConfig.class})
 public class ClinicalDataDictionaryTest {
 
     @Autowired
@@ -65,7 +67,11 @@ public class ClinicalDataDictionaryTest {
     private ClinicalAttributeMetadataCache clinicalAttributesCache;
 
     @Autowired
-    private LevenshteinDistanceCache levenshteinDistanceCache;
+    private JCacheCacheManager cacheManager;
+
+    // TODO: REMOVE IF UNUSED
+//    @Autowired
+//    private LevenshteinDistanceCache levenshteinDistanceCache;
 
     @Before
     // make sure repository is working version before each test
