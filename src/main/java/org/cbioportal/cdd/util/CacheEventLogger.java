@@ -18,21 +18,22 @@
 
 package org.cbioportal.cdd.util;
 
-import org.apache.log4j.Logger;
 import org.ehcache.event.CacheEvent;
 import org.ehcache.event.CacheEventListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 /**
  *
  * @author ochoaa
  */
 public class CacheEventLogger implements CacheEventListener<Object, Object> {
 
-    private static Logger LOG = Logger.getLogger(CacheEventLogger.class);
+    private final static Logger logger = LoggerFactory.getLogger(CacheEventLogger.class);
 
     @Override
     public void onEvent(CacheEvent cacheEvent) {
-        if (LOG.isInfoEnabled()) {
-            LOG.info("CACHE_EVENT:\n" +
+        if (logger.isInfoEnabled()) {
+            logger.info("CACHE_EVENT:\n" +
                      "\tTYPE: " + cacheEvent.getType() + "\n" +
                      "\tKEY: " + cacheEvent.getKey() + "\n" +
                      "\tVALUE: " + cacheEvent.getNewValue() + "\n" +

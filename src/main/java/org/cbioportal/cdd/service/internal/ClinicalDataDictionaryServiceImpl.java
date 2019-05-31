@@ -15,14 +15,7 @@
 
 package org.cbioportal.cdd.service.internal;
 
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import org.cbioportal.cdd.model.CancerStudy;
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
 import org.cbioportal.cdd.service.ClinicalDataDictionaryService;
@@ -33,8 +26,6 @@ import org.cbioportal.cdd.service.exception.FailedCacheRefreshException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.jcache.JCacheCacheManager;
 import org.springframework.stereotype.Service;
 
 /**

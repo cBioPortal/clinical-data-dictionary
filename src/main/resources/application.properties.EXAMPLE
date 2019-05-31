@@ -4,7 +4,6 @@ topbraid.password=
 
 slack.url=
 
-spring.cache.jcache.config=
 ehcache.persistence.path=
 ehcache.enable.statistics=false
 ehcache.clinicalAttributeMetadataByStudyCache.maxBytesLocalDiskUnits=

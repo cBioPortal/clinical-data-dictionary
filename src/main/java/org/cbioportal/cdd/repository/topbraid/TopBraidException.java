@@ -18,7 +18,9 @@
 
 package org.cbioportal.cdd.repository.topbraid;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  *
@@ -26,10 +28,10 @@ import org.apache.log4j.Logger;
  **/
 public class TopBraidException extends RuntimeException {
 
-    private final static Logger logger = Logger.getLogger(TopBraidException.class);
+    private final static Logger logger = LoggerFactory.getLogger(TopBraidException.class);
 
     public TopBraidException(String message, Throwable cause) {
         super(message, cause);
         logger.error(message + ": " + cause + " (Check that authentication is working)");
-    }   
+    }
 }

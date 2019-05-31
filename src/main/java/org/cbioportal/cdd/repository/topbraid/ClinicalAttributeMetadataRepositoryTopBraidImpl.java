@@ -19,12 +19,17 @@
 package org.cbioportal.cdd.repository.topbraid;
 
 import java.util.*;
-
-import org.apache.log4j.Logger;
+import javax.annotation.Resource;
 
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
 import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
+import javax.cache.Cache;
+import javax.cache.CacheManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.jcache.JCacheCacheManager;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Repository;
@@ -36,9 +41,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class ClinicalAttributeMetadataRepositoryTopBraidImpl extends TopBraidRepository<ClinicalAttributeMetadata> implements ClinicalAttributeMetadataRepository {
 
-    private final static Logger logger = Logger.getLogger(ClinicalAttributeMetadataRepositoryTopBraidImpl.class);
+    @Autowired
+    private JCacheCacheManager jCacheCacheManager;
 
-    private final static String GET_OVERRIDES_SPARQL_QUERY_STRING = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
+    private final static Logger logger = LoggerFactory.getLogger(ClinicalAttributeMetadataRepositoryTopBraidImpl.class);
+
+    public final static String GET_OVERRIDES_SPARQL_QUERY_STRING = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
         "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> " +
         "PREFIX cdd:<http://data.mskcc.org/ontologies/clinical_data_dictionary/> " +
         "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> " +
@@ -61,7 +69,7 @@ public class ClinicalAttributeMetadataRepositoryTopBraidImpl extends TopBraidRep
         "ORDER BY ?study_id ?column_header " +
         "VALUES ?type {cdd:ClinicalAttributeOverridePriorityValue cdd:ClinicalAttributeOverrideAttributeTypeValue cdd:ClinicalAttributeOverrideDatatypeValue cdd:ClinicalAttributeOverrideDescriptionValue cdd:ClinicalAttributeOverrideDisplayNameValue}";
 
-    private final static String GET_CLINICAL_ATTRIBUTES_SPARQL_QUERY_STRING = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
+    public final static String GET_CLINICAL_ATTRIBUTES_SPARQL_QUERY_STRING = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
         "PREFIX cdd:<http://data.mskcc.org/ontologies/clinical_data_dictionary/> " +
         "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> " +
         "SELECT ?column_header ?display_name ?attribute_type ?datatype ?description ?priority " +
@@ -75,19 +83,24 @@ public class ClinicalAttributeMetadataRepositoryTopBraidImpl extends TopBraidRep
         "        ?subject cdd:Priority ?priority. " +
         "    } " +
         "}";
-    @Cacheable(value = "clinicalAttributeMetadataEHCache")
-    public List<ClinicalAttributeMetadata> getClinicalAttributeMetadata() {
+    @Cacheable(value = "clinicalAttributeMetadataEHCache", key = "#root.target.GET_CLINICAL_ATTRIBUTES_SPARQL_QUERY_STRING")
+    public ArrayList<ClinicalAttributeMetadata> getClinicalAttributeMetadata() {
         try {
-            return super.query(GET_CLINICAL_ATTRIBUTES_SPARQL_QUERY_STRING, new ParameterizedTypeReference<List<ClinicalAttributeMetadata>>(){});
+            logger.info("CACHING SPARQL QUERY getClinicalAttributeMetadata");
+            ArrayList<ClinicalAttributeMetadata> list = new ArrayList<ClinicalAttributeMetadata>(super.query(GET_CLINICAL_ATTRIBUTES_SPARQL_QUERY_STRING, new ParameterizedTypeReference<List<ClinicalAttributeMetadata>>(){}));
+            jCacheCacheManager.getCache("clinicalAttributeMetadataEHCache").put(GET_OVERRIDES_SPARQL_QUERY_STRING, list);
+
+            return list;
         } catch (TopBraidException e) {
             logger.error("Problem connecting to TopBraid");
             throw new RuntimeException(e);
         }
     }
 
-    @Cacheable(value = "clinicalAttributeMetadataOverridesEHCache")
+    @Cacheable(value = "clinicalAttributeMetadataOverridesEHCache", key = "#root.target.GET_OVERRIDES_SPARQL_QUERY_STRING")
     public Map<String, ArrayList<ClinicalAttributeMetadata>> getClinicalAttributeMetadataOverrides() {
         try {
+            logger.info("CACHING SPARQL QUERY getClinicalAttributeMetadataOverrides");
             List<ClinicalAttributeMetadata> overridesList = super.query(GET_OVERRIDES_SPARQL_QUERY_STRING, new ParameterizedTypeReference<List<ClinicalAttributeMetadata>>(){});
             Map<String, ArrayList<ClinicalAttributeMetadata>> overridesStudyMap = new HashMap<>();
             for (ClinicalAttributeMetadata clinicalAttributeMetadata : overridesList) {
@@ -96,6 +109,8 @@ public class ClinicalAttributeMetadataRepositoryTopBraidImpl extends TopBraidRep
                 }
                 overridesStudyMap.get(clinicalAttributeMetadata.getStudyId()).add(clinicalAttributeMetadata);
             }
+            jCacheCacheManager.getCache("clinicalAttributeMetadataOverridesEHCache").put(GET_OVERRIDES_SPARQL_QUERY_STRING, overridesStudyMap);
+
             return overridesStudyMap;
         } catch (TopBraidException e) {
             logger.error("Problem connecting to TopBraid");
