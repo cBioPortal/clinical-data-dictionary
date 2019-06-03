@@ -4,7 +4,10 @@ topbraid.password=
 
 slack.url=
 
+# ehcache properties
 ehcache.persistence.path=
 ehcache.enable.statistics=false
 ehcache.clinicalAttributeMetadataByStudyCache.maxBytesLocalDiskUnits=
 ehcache.clinicalAttributeMetadataByStudyCache.maxBytesLocalDisk=
+ehcache.clinicalAttributeMetadataOverridesEHCache.maxBytesLocalDiskUnits=
+ehcache.clinicalAttributeMetadataOverridesEHCache.maxBytesLocalDisk=

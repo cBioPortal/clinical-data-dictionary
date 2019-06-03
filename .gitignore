@@ -12,7 +12,6 @@ logs/
 # config files
 application.properties
 log4j.properties
-logback.xml
 src/test/resources/ehcache.xml
 
 # target directories
