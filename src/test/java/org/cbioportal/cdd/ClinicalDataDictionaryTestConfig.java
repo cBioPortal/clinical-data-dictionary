@@ -19,9 +19,6 @@ import java.util.*;
 import org.mockito.Mockito;
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
 import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
-import org.cbioportal.cdd.service.internal.ClinicalAttributeMetadataCache;
-import org.cbioportal.cdd.service.internal.LevenshteinDistanceCache;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -33,11 +30,6 @@ public class ClinicalDataDictionaryTestConfig {
         ClinicalAttributeMetadataRepository clinicalAttributesRepository = Mockito.mock(ClinicalAttributeMetadataRepository.class);
         return clinicalAttributesRepository;
     }
-    // TODO: REMOVE IF UNUSED
-//    @Bean
-//    public LevenshteinDistanceCache levenshteinDistanceCache() {
-//        return new LevenshteinDistanceCache();
-//    }
 
     public void resetWorkingClinicalAttributesRepository(ClinicalAttributeMetadataRepository clinicalAttributesRepository) {
         Mockito.reset(clinicalAttributesRepository);

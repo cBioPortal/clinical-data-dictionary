@@ -18,22 +18,18 @@
 
 package org.cbioportal.cdd.repository.topbraid;
 
-import java.net.URI;
-import java.util.Calendar;
 import java.util.List;
-import java.util.Map;
 
-import org.apache.log4j.Logger;
-import org.apache.http.client.CookieStore;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.cookie.Cookie;
-import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -46,7 +42,7 @@ import org.springframework.http.HttpStatus;
 @Configuration
 public class TopBraidSessionConfiguration {
 
-    private final static Logger logger = Logger.getLogger(TopBraidSessionConfiguration.class);
+    private final static Logger logger = LoggerFactory.getLogger(TopBraidSessionConfiguration.class);
 
     @Value("${topbraid.url}")
     private String topBraidURL;
@@ -109,7 +105,7 @@ public class TopBraidSessionConfiguration {
 
             CloseableHttpClient client = HttpClients.createDefault();
             CloseableHttpResponse response = client.execute(new HttpHead(url), context);
-            StatusLine statusLine = response.getStatusLine(); 
+            StatusLine statusLine = response.getStatusLine();
             if (statusLine.getStatusCode() != HttpStatus.OK.value()) {
                 logger.error("Response status: '" + statusLine + "'");
                 return null;
@@ -123,7 +119,7 @@ public class TopBraidSessionConfiguration {
                     return cookie;
                 }
             }
-            
+
             // close stuff
             client.close();
             response.close();

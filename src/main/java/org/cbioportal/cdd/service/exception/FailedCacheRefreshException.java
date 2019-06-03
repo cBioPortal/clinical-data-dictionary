@@ -22,8 +22,8 @@ public class FailedCacheRefreshException extends RuntimeException {
 
     private static final Logger logger = LoggerFactory.getLogger(FailedCacheRefreshException.class);
 
-    public FailedCacheRefreshException(String error) {
-        super(error);
+    public FailedCacheRefreshException(String error, Throwable e) {
+        super(error, e);
         logger.error(error);
     }
 

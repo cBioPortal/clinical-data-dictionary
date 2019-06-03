@@ -18,11 +18,9 @@
 
 package org.cbioportal.cdd.repository.topbraid;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.ArrayList;
-
-import org.apache.log4j.Logger;
+import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +28,6 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -47,7 +44,7 @@ import org.springframework.web.client.RestTemplate;
 @Repository
 public abstract class TopBraidRepository<T> {
 
-    private final static Logger logger = Logger.getLogger(TopBraidRepository.class);
+    private final static Logger logger = LoggerFactory.getLogger(TopBraidRepository.class);
 
     @Value("${topbraid.url}")
     private String topBraidURL;
@@ -70,7 +67,7 @@ public abstract class TopBraidRepository<T> {
         // the default supported types for MappingJackson2HttpMessageConverter are:
         //   application/json and application/*+json
         // our response content type is application/sparql-results+json-simple
-        // NOTE: if the response content type was one of the default types we 
+        // NOTE: if the response content type was one of the default types we
         //   would not have to add the message converter to the rest template
         MappingJackson2HttpMessageConverter messageConverter = new MappingJackson2HttpMessageConverter();
         messageConverter.setSupportedMediaTypes(Collections.singletonList(

@@ -61,7 +61,7 @@ public class ClinicalAttributeMetadataCache {
     // if overridesCache is null it means we could not populate it, there was an error
     private static HashMap<String, Map<String, ClinicalAttributeMetadata>> overridesCache;
     private static Date dateOfLastCacheRefresh = new Date();
-    
+
     public static final Integer MAXIMUM_CACHE_AGE_IN_DAYS = 3;
     private static final Logger logger = LoggerFactory.getLogger(ClinicalAttributeMetadataCache.class);
 
@@ -71,7 +71,7 @@ public class ClinicalAttributeMetadataCache {
     public Date getDateOfLastCacheRefresh() {
         return dateOfLastCacheRefresh;
     }
-    
+
     public void setDateOfLastCacheRefresh(Date date) {
         this.dateOfLastCacheRefresh = date;
     }
@@ -89,7 +89,7 @@ public class ClinicalAttributeMetadataCache {
         }
         return null;
     }
-    
+
     private void sendStaleCacheSlackNotification() {
         String payload = "payload={\"channel\": \"#msk-pipeline-logs\", \"username\": \"cbioportal_importer\", \"text\": \"*URGENT: CDD Error* - an attempt to refresh an outdated or null cache failed.\", \"icon_emoji\": \":rotating_light:\"}";
         StringEntity entity = new StringEntity(payload, ContentType.APPLICATION_FORM_URLENCODED);
@@ -135,7 +135,7 @@ public class ClinicalAttributeMetadataCache {
             } else {
                 logger.error("resetCache(): failed to pull overrides from repository");
             }
-            throw new FailedCacheRefreshException("Failed to refresh cache");
+            throw new FailedCacheRefreshException("Failed to refresh cache", e);
         }
         HashMap<String, ClinicalAttributeMetadata> latestClinicalAttributeMetadataCache = new HashMap<String, ClinicalAttributeMetadata>();
         for (ClinicalAttributeMetadata clinicalAttributeMetadata : latestClinicalAttributeMetadata) {
@@ -160,7 +160,7 @@ public class ClinicalAttributeMetadataCache {
         dateOfLastCacheRefresh = dateOfCurrentCacheRefresh;
         logger.info("resetCache(): cache last refreshed on: " + dateOfLastCacheRefresh.toString());
     }
-        
+
     public boolean cacheIsStale() {
         ZonedDateTime currentDate = ZonedDateTime.now();
         ZonedDateTime dateOfCacheExpiration = currentDate.plusDays(- MAXIMUM_CACHE_AGE_IN_DAYS);
@@ -170,7 +170,7 @@ public class ClinicalAttributeMetadataCache {
             return false;
         }
     }
-    
+
     private void fillOverrideAttributeWithDefaultValues(ClinicalAttributeMetadata overrideClinicalAttribute, ClinicalAttributeMetadata defaultClinicalAttribute) {
         logger.debug("fillOverrideAttributeWithDefaultValues()");
         if (Strings.isNullOrEmpty(overrideClinicalAttribute.getDisplayName())) {

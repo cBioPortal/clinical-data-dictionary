@@ -19,13 +19,13 @@
 package org.cbioportal.cdd.config;
 
 import java.io.File;
-import java.io.IOException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.jcache.JCacheCacheManager;
 import org.springframework.cache.jcache.JCacheManagerFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.util.ResourceUtils;
 
 /**
  *
@@ -35,16 +35,21 @@ import org.springframework.core.io.ClassPathResource;
 @EnableCaching
 public class CDDAppConfig {
 
+    @Value("${ehcache.persistence.path}")
+    private String ehcachePersistencePath;
+
     @Bean
-    public JCacheCacheManager cacheManager() throws IOException {
-        JCacheCacheManager cacheManager = new JCacheCacheManager();
-        cacheManager.setCacheManager(ehCacheCacheManager().getObject());
-        return cacheManager;
-    }
-    @Bean
-    public JCacheManagerFactoryBean ehCacheCacheManager() throws IOException {
+    public JCacheManagerFactoryBean jCacheManagerFactory() throws Exception {
+        File file = ResourceUtils.getFile("classpath:ehcache.xml");
         JCacheManagerFactoryBean factory = new JCacheManagerFactoryBean();
-        factory.setCacheManagerUri(new File("/Users/ochoaa/cbio-projects/clinical-data-dictionary/src/main/resources/ehcache.xml").toURI());
+        factory.setCacheManagerUri(file.getAbsoluteFile().toURI());
         return factory;
+    }
+
+    @Bean
+    public JCacheCacheManager jCacheCacheManager() throws Exception {
+        JCacheCacheManager jCacheCacheManager = new JCacheCacheManager();
+        jCacheCacheManager.setCacheManager(jCacheManagerFactory().getObject());
+        return jCacheCacheManager;
     }
 }
