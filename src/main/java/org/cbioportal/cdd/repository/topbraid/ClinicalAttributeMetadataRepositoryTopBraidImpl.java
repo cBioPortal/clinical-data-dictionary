@@ -88,8 +88,6 @@ public class ClinicalAttributeMetadataRepositoryTopBraidImpl extends TopBraidRep
         try {
             logger.info("CACHING SPARQL QUERY getClinicalAttributeMetadata");
             ArrayList<ClinicalAttributeMetadata> list = new ArrayList<ClinicalAttributeMetadata>(super.query(GET_CLINICAL_ATTRIBUTES_SPARQL_QUERY_STRING, new ParameterizedTypeReference<List<ClinicalAttributeMetadata>>(){}));
-            jCacheCacheManager.getCache("clinicalAttributeMetadataEHCache").put(GET_OVERRIDES_SPARQL_QUERY_STRING, list);
-
             return list;
         } catch (TopBraidException e) {
             logger.error("Problem connecting to TopBraid");
@@ -109,8 +107,6 @@ public class ClinicalAttributeMetadataRepositoryTopBraidImpl extends TopBraidRep
                 }
                 overridesStudyMap.get(clinicalAttributeMetadata.getStudyId()).add(clinicalAttributeMetadata);
             }
-            jCacheCacheManager.getCache("clinicalAttributeMetadataOverridesEHCache").put(GET_OVERRIDES_SPARQL_QUERY_STRING, overridesStudyMap);
-
             return overridesStudyMap;
         } catch (TopBraidException e) {
             logger.error("Problem connecting to TopBraid");
