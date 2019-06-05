@@ -22,6 +22,7 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.jcache.JCacheCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import javax.cache.CacheManager;
 import javax.cache.spi.CachingProvider;
 import org.ehcache.jsr107.EhcacheCachingProvider;
 
@@ -33,11 +34,16 @@ import org.ehcache.jsr107.EhcacheCachingProvider;
 @EnableCaching
 public class CDDAppConfig {
 
+    @Bean(destroyMethod = "close")
+    public CacheManager cddCacheManager() throws Exception {
+        CachingProvider cachingProvider = new EhcacheCachingProvider();
+        return cachingProvider.getCacheManager(getClass().getClassLoader().getResource("ehcache.xml").toURI(),
+            getClass().getClassLoader());
+    }
+
     @Bean
     public JCacheCacheManager jCacheCacheManager() throws Exception {
-        CachingProvider cachingProvider = new EhcacheCachingProvider();
-        return new JCacheCacheManager(cachingProvider.getCacheManager(getClass().getClassLoader().getResource("ehcache.xml").toURI(),
-            getClass().getClassLoader()));
+        return new JCacheCacheManager(cddCacheManager());
     }
 
 }
