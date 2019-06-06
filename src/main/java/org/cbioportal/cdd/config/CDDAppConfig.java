@@ -18,14 +18,13 @@
 
 package org.cbioportal.cdd.config;
 
-import java.io.File;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.jcache.JCacheCacheManager;
-import org.springframework.cache.jcache.JCacheManagerFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.ResourceUtils;
+import javax.cache.CacheManager;
+import javax.cache.spi.CachingProvider;
+import org.ehcache.jsr107.EhcacheCachingProvider;
 
 /**
  *
@@ -35,21 +34,16 @@ import org.springframework.util.ResourceUtils;
 @EnableCaching
 public class CDDAppConfig {
 
-    @Value("${ehcache.persistence.path}")
-    private String ehcachePersistencePath;
-
-    @Bean
-    public JCacheManagerFactoryBean jCacheManagerFactory() throws Exception {
-        File file = ResourceUtils.getFile("classpath:ehcache.xml");
-        JCacheManagerFactoryBean factory = new JCacheManagerFactoryBean();
-        factory.setCacheManagerUri(file.getAbsoluteFile().toURI());
-        return factory;
+    @Bean(destroyMethod = "close")
+    public CacheManager cddCacheManager() throws Exception {
+        CachingProvider cachingProvider = new EhcacheCachingProvider();
+        return cachingProvider.getCacheManager(getClass().getClassLoader().getResource("ehcache.xml").toURI(),
+            getClass().getClassLoader());
     }
 
     @Bean
     public JCacheCacheManager jCacheCacheManager() throws Exception {
-        JCacheCacheManager jCacheCacheManager = new JCacheCacheManager();
-        jCacheCacheManager.setCacheManager(jCacheManagerFactory().getObject());
-        return jCacheCacheManager;
+        return new JCacheCacheManager(cddCacheManager());
     }
+
 }
