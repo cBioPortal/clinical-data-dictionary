@@ -174,6 +174,7 @@
     <finalName>cdd</finalName>
     <filters>
         <filter>src/main/resources/application.properties</filter>
+        <filter>src/test/resources/application.properties</filter>
     </filters>
     <resources>
       <resource>
@@ -190,7 +191,7 @@
     <!-- enable filtering on test resources -->
     <testResources>
       <testResource>
-        <directory>src/main/resources</directory>
+        <directory>src/test/resources</directory>
         <filtering>true</filtering>
         <includes>
             <include>**/application.properties</include>
