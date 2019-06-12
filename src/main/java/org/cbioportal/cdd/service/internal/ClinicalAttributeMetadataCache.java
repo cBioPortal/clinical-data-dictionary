@@ -45,6 +45,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.context.event.EventListener;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 
 /**
  * @author Robert Sheridan, Avery Wang, Manda Wilson
@@ -104,7 +106,7 @@ public class ClinicalAttributeMetadataCache {
         }
     }
 
-    @PostConstruct // call when constructed
+    @EventListener(ApplicationReadyEvent.class)
     @Scheduled(cron="0 */10 * * * *") // call every 10 minutes
     private void validateAndResetCache() {
         if (cacheIsStale() || clinicalAttributeCache == null || overridesCache == null) {
