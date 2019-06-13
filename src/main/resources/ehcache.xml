@@ -21,7 +21,10 @@
           <ehcache:event-firing-mode>ASYNCHRONOUS</ehcache:event-firing-mode>
           <ehcache:event-ordering-mode>UNORDERED</ehcache:event-ordering-mode>
           <ehcache:events-to-fire-on>CREATED</ehcache:events-to-fire-on>
+          <ehcache:events-to-fire-on>REMOVED</ehcache:events-to-fire-on>
           <ehcache:events-to-fire-on>UPDATED</ehcache:events-to-fire-on>
+          <ehcache:events-to-fire-on>EXPIRED</ehcache:events-to-fire-on>
+          <ehcache:events-to-fire-on>EVICTED</ehcache:events-to-fire-on>
         </ehcache:listener>
       </ehcache:listeners>
       <ehcache:resources>
@@ -39,7 +42,10 @@
           <ehcache:event-firing-mode>ASYNCHRONOUS</ehcache:event-firing-mode>
           <ehcache:event-ordering-mode>UNORDERED</ehcache:event-ordering-mode>
           <ehcache:events-to-fire-on>CREATED</ehcache:events-to-fire-on>
+          <ehcache:events-to-fire-on>REMOVED</ehcache:events-to-fire-on>
           <ehcache:events-to-fire-on>UPDATED</ehcache:events-to-fire-on>
+          <ehcache:events-to-fire-on>EXPIRED</ehcache:events-to-fire-on>
+          <ehcache:events-to-fire-on>EVICTED</ehcache:events-to-fire-on>
         </ehcache:listener>
       </ehcache:listeners>
       <ehcache:resources>
