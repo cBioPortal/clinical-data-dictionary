@@ -24,6 +24,6 @@ import java.util.*;
  * @author Manda Wilson
  */
 public interface ClinicalAttributeMetadataRepository {
-    List<ClinicalAttributeMetadata> getClinicalAttributeMetadata();
+    ArrayList<ClinicalAttributeMetadata> getClinicalAttributeMetadata();
     Map<String, ArrayList<ClinicalAttributeMetadata>> getClinicalAttributeMetadataOverrides();
 }

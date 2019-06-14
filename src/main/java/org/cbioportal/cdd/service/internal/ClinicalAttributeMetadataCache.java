@@ -68,7 +68,7 @@ public class ClinicalAttributeMetadataCache {
     private static final Logger logger = LoggerFactory.getLogger(ClinicalAttributeMetadataCache.class);
 
     @Autowired
-    private ClinicalAttributeMetadataRepository clinicalAttributesRepository;
+    private ClinicalAttributeMetadataPersistentCache clinicalAttributeMetadataPersistentCache;
 
     public Date getDateOfLastCacheRefresh() {
         return dateOfLastCacheRefresh;
@@ -124,21 +124,43 @@ public class ClinicalAttributeMetadataCache {
     */
     public void resetCache() {
         logger.info("resetCache(): refilling clinical attribute cache");
+
         Date dateOfCurrentCacheRefresh = new Date();
         List<ClinicalAttributeMetadata> latestClinicalAttributeMetadata = null;
         // latestOverrides is a map of study-id to list of overridden ClinicalAttributeMetadata objects
         Map<String, ArrayList<ClinicalAttributeMetadata>> latestOverrides = null;
+
+        // attempt to refresh ehcache stores seperately and store success status
+        boolean failedClinicalAttributeMetadataCacheRefresh = false;
+        boolean failedOverridesCacheRefresh = false;
         try {
-            latestClinicalAttributeMetadata = clinicalAttributesRepository.getClinicalAttributeMetadata();
-            latestOverrides = clinicalAttributesRepository.getClinicalAttributeMetadataOverrides();
+            clinicalAttributeMetadataPersistentCache.updateClinicalAttributeMetadataInPersistentCache();
         } catch (RuntimeException e) {
-            if (latestClinicalAttributeMetadata == null) {
-                logger.error("resetCache(): failed to pull clinical attributes from repository");
-            } else {
-                logger.error("resetCache(): failed to pull overrides from repository");
-            }
-            throw new FailedCacheRefreshException("Failed to refresh cache", e);
+            logger.error("resetCache(): failed to pull clinical attributes from repository. Error message returned: " + e.getMessage());
+            failedClinicalAttributeMetadataCacheRefresh = true;
         }
+
+        try {
+            clinicalAttributeMetadataPersistentCache.updateClinicalAttributeMetadataOverridesInPersistentCache();
+        } catch (RuntimeException e) {
+            logger.error("resetCache(): failed to pull overrides from repository. Error message returned: " + e.getMessage());
+            failedOverridesCacheRefresh = true;
+        }
+
+        // regardless of whether ehcache was updated with new data - use that data to populate modeled object caches
+        // ensures app starts up (between tomcat restarts) if TopBraid is down
+        logger.info("Loading modeled object cache from EHCache");
+        latestClinicalAttributeMetadata = clinicalAttributeMetadataPersistentCache.getClinicalAttributeMetadataFromPersistentCache();
+        latestOverrides = clinicalAttributeMetadataPersistentCache.getClinicalAttributeMetadataOverridesFromPersistentCache();
+
+        /*
+        if latest <whichever cache> is null/failed to fetch from ehCache/exception thrown above...
+        turn off cache manager?
+        move ehcache backup in place
+        turn on cache manager?
+        call resetCache()
+        */
+
         HashMap<String, ClinicalAttributeMetadata> latestClinicalAttributeMetadataCache = new HashMap<String, ClinicalAttributeMetadata>();
         for (ClinicalAttributeMetadata clinicalAttributeMetadata : latestClinicalAttributeMetadata) {
             latestClinicalAttributeMetadataCache.put(clinicalAttributeMetadata.getColumnHeader(), clinicalAttributeMetadata);
@@ -159,8 +181,14 @@ public class ClinicalAttributeMetadataCache {
         logger.info("resetCache(): refilled cache with " + latestClinicalAttributeMetadata.size() + " clinical attributes");
         overridesCache = latestOverridesCache;
         logger.info("resetCache(): refilled overrides cache with " + latestOverrides.size() + " overrides");
-        dateOfLastCacheRefresh = dateOfCurrentCacheRefresh;
-        logger.info("resetCache(): cache last refreshed on: " + dateOfLastCacheRefresh.toString());
+
+        if (failedClinicalAttributeMetadataCacheRefresh || failedOverridesCacheRefresh) {
+            logger.info("Unable to update cache with latest data from TopBraid... falling back on EHCache store.");
+            throw new FailedCacheRefreshException("Failed to refresh cache", new Exception());
+        } else {
+            dateOfLastCacheRefresh = dateOfCurrentCacheRefresh;
+            logger.info("resetCache(): cache last refreshed on: " + dateOfLastCacheRefresh.toString());
+        }
     }
 
     public boolean cacheIsStale() {
