@@ -23,13 +23,9 @@ import javax.annotation.Resource;
 
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
 import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
-import javax.cache.Cache;
-import javax.cache.CacheManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.jcache.JCacheCacheManager;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Repository;
@@ -40,9 +36,6 @@ import org.springframework.stereotype.Repository;
  **/
 @Repository
 public class ClinicalAttributeMetadataRepositoryTopBraidImpl extends TopBraidRepository<ClinicalAttributeMetadata> implements ClinicalAttributeMetadataRepository {
-
-    @Autowired
-    private JCacheCacheManager jCacheCacheManager;
 
     private final static Logger logger = LoggerFactory.getLogger(ClinicalAttributeMetadataRepositoryTopBraidImpl.class);
 
@@ -83,10 +76,10 @@ public class ClinicalAttributeMetadataRepositoryTopBraidImpl extends TopBraidRep
         "        ?subject cdd:Priority ?priority. " +
         "    } " +
         "}";
-    @Cacheable(value = "clinicalAttributeMetadataEHCache", key = "#root.target.GET_CLINICAL_ATTRIBUTES_SPARQL_QUERY_STRING")
+
     public ArrayList<ClinicalAttributeMetadata> getClinicalAttributeMetadata() {
+        logger.info("Fetching clinical attribute metadata from TopBraid...");
         try {
-            logger.info("CACHING SPARQL QUERY getClinicalAttributeMetadata");
             ArrayList<ClinicalAttributeMetadata> list = new ArrayList<ClinicalAttributeMetadata>(super.query(GET_CLINICAL_ATTRIBUTES_SPARQL_QUERY_STRING, new ParameterizedTypeReference<List<ClinicalAttributeMetadata>>(){}));
             return list;
         } catch (TopBraidException e) {
@@ -95,10 +88,9 @@ public class ClinicalAttributeMetadataRepositoryTopBraidImpl extends TopBraidRep
         }
     }
 
-    @Cacheable(value = "clinicalAttributeMetadataOverridesEHCache", key = "#root.target.GET_OVERRIDES_SPARQL_QUERY_STRING")
     public Map<String, ArrayList<ClinicalAttributeMetadata>> getClinicalAttributeMetadataOverrides() {
+        logger.info("Fetch clinical attribute metadata overrides from TopBraid...");
         try {
-            logger.info("CACHING SPARQL QUERY getClinicalAttributeMetadataOverrides");
             List<ClinicalAttributeMetadata> overridesList = super.query(GET_OVERRIDES_SPARQL_QUERY_STRING, new ParameterizedTypeReference<List<ClinicalAttributeMetadata>>(){});
             Map<String, ArrayList<ClinicalAttributeMetadata>> overridesStudyMap = new HashMap<>();
             for (ClinicalAttributeMetadata clinicalAttributeMetadata : overridesList) {
