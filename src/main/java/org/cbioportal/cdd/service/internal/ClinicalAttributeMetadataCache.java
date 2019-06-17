@@ -15,21 +15,19 @@
 
 package org.cbioportal.cdd.service.internal;
 
-import javax.annotation.PostConstruct;
-
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
-import java.time.ZonedDateTime;
 
 import org.apache.http.*;
 import org.apache.http.client.*;
+import org.apache.http.client.methods.*;
 import org.apache.http.entity.*;
 import org.apache.http.impl.client.*;
-import org.apache.http.client.methods.*;
 
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
 import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
@@ -40,20 +38,13 @@ import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.context.event.EventListener;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-
-// TODO move
-import org.cbioportal.cdd.service.internal.ClinicalAttributeMetadataPersistentCache;
-import javax.cache.Cache;
-import javax.cache.CacheManager;
-import javax.cache.spi.CachingProvider;
-import org.ehcache.jsr107.EhcacheCachingProvider;
 
 /**
  * @author Robert Sheridan, Avery Wang, Manda Wilson
@@ -154,41 +145,39 @@ public class ClinicalAttributeMetadataCache {
             failedOverridesCacheRefresh = true;
         }
 
-
         // regardless of whether ehcache was updated with new data - use that data to populate modeled object caches
         // ensures app starts up (between tomcat restarts) if TopBraid is down
         logger.info("Loading modeled object cache from EHCache");
-        // this will throw an exception if we cannot connect to TopBraid AND cache is corrupt
-        latestClinicalAttributeMetadata = clinicalAttributeMetadataPersistentCache.getClinicalAttributeMetadataFromPersistentCache();
-        latestOverrides = clinicalAttributeMetadataPersistentCache.getClinicalAttributeMetadataOverridesFromPersistentCache();
-
-        // backup cache at this point (maybe backup after each successful update above?)
-        if (!failedClinicalAttributeMetadataCacheRefresh && !failedOverridesCacheRefresh) {
-            logger.error("resetCache(): cache update succeeded, back it up");
-            // TODO put this somewhere else and clean up (e.g. hardcoded names etc.)
-            System.out.println("Backing up cache...");
-            CachingProvider cachingProvider = new EhcacheCachingProvider();
+        try {
+            // this will throw an exception if we cannot connect to TopBraid AND cache is corrupt
+            latestClinicalAttributeMetadata = clinicalAttributeMetadataPersistentCache.getClinicalAttributeMetadataFromPersistentCache();
+            latestOverrides = clinicalAttributeMetadataPersistentCache.getClinicalAttributeMetadataOverridesFromPersistentCache();
+        } catch (Exception e) {
             try {
-                CacheManager cacheManager = cachingProvider.getCacheManager(getClass().getClassLoader().getResource("ehcache_backup.xml").toURI(), getClass().getClassLoader());
-                Cache<String, ArrayList<ClinicalAttributeMetadata>> clinicalAttributeMetadataPersistentCacheBackup = cacheManager.getCache("clinicalAttributeMetadataEHCache");
-                Cache<String, Map<String, ArrayList<ClinicalAttributeMetadata>>> clinicalAttributeMetadataPersistentCacheOverridesBackup = cacheManager.getCache("clinicalAttributeMetadataOverridesEHCache");
-                clinicalAttributeMetadataPersistentCacheBackup.put(ClinicalAttributeMetadataPersistentCache.CLINICAL_ATTRIBUTES_METADATA_CACHE_KEY, latestClinicalAttributeMetadata);
-                clinicalAttributeMetadataPersistentCacheOverridesBackup.put(ClinicalAttributeMetadataPersistentCache.OVERRIDES_CACHE_KEY, latestOverrides);
-                cacheManager.close();
-                System.out.println("Finished backup up cache");
-            } catch (Exception e) {
-                logger.error("resetCache(): failed to backup cache");
-                e.printStackTrace();
+                // this will throw an exception if backup is unavailable
+                logger.error("Unable to load modeled object cache from default EHCache... attempting to read from backup");
+                latestClinicalAttributeMetadata = clinicalAttributeMetadataPersistentCache.getClinicalAttributeMetadataFromPersistentCacheBackup();
+                latestOverrides = clinicalAttributeMetadataPersistentCache.getClinicalAttributeMetadataOverridesFromPersistentCacheBackup();
+                if (latestClinicalAttributeMetadata == null || latestOverrides == null) {
+                    throw new FailedCacheRefreshException("No data found in specified backup cache location...", new Exception());
+                }
+            } catch (Exception e2) {
+                logger.error("Unable to load modeled object cache from backup EHCache...");
+                throw new FailedCacheRefreshException("Unable to load data from all backup caches...", new Exception());
             }
         }
 
-        /*
-        if latest <whichever cache> is null/failed to fetch from ehCache/exception thrown above...
-        turn off cache manager?
-        move ehcache backup in place
-        turn on cache manager?
-        call resetCache()
-        */
+        // backup cache at this point (maybe backup after each successful update above?)
+        if (!failedClinicalAttributeMetadataCacheRefresh && !failedOverridesCacheRefresh) {
+            logger.info("resetCache(): cache update succeeded, backing up cache...");
+            try {
+                clinicalAttributeMetadataPersistentCache.backupClinicalAttributeMetadataPersistentCache(latestClinicalAttributeMetadata);
+                clinicalAttributeMetadataPersistentCache.backupClinicalAttributeMetadataOverridesPersistentCache(latestOverrides);
+                logger.info("resetCache(): succesfully backed up cache");
+            } catch (Exception e) {
+                logger.error("resetCache(): failed to backup cache: " + e.getMessage());
+            }
+        }
 
         HashMap<String, ClinicalAttributeMetadata> latestClinicalAttributeMetadataCache = new HashMap<String, ClinicalAttributeMetadata>();
         for (ClinicalAttributeMetadata clinicalAttributeMetadata : latestClinicalAttributeMetadata) {
