@@ -6,6 +6,7 @@ slack.url=
 
 # ehcache properties
 ehcache.persistence.path=
+ehcache.persistence.backup.path=
 ehcache.enable.statistics=false
 ehcache.clinicalAttributeMetadataByStudyCache.maxBytesLocalDiskUnits=
 ehcache.clinicalAttributeMetadataByStudyCache.maxBytesLocalDisk=
