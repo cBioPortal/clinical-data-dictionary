@@ -18,13 +18,15 @@
 
 package org.cbioportal.cdd.config;
 
+import javax.cache.CacheManager;
+import javax.cache.spi.CachingProvider;
+import org.ehcache.jsr107.EhcacheCachingProvider;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.jcache.JCacheCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import javax.cache.CacheManager;
-import javax.cache.spi.CachingProvider;
-import org.ehcache.jsr107.EhcacheCachingProvider;
 
 /**
  *
@@ -34,10 +36,15 @@ import org.ehcache.jsr107.EhcacheCachingProvider;
 @EnableCaching
 public class CDDAppConfig {
 
+    @Bean
+    public CachingProvider cachingProvider() throws Exception {
+        CachingProvider cachingProvider = new EhcacheCachingProvider();
+        return cachingProvider;
+    }
+    
     @Bean(destroyMethod = "close")
     public CacheManager cddCacheManager() throws Exception {
-        CachingProvider cachingProvider = new EhcacheCachingProvider();
-        return cachingProvider.getCacheManager(getClass().getClassLoader().getResource("ehcache.xml").toURI(),
+        return cachingProvider().getCacheManager(getClass().getClassLoader().getResource("ehcache.xml").toURI(),
             getClass().getClassLoader());
     }
 
