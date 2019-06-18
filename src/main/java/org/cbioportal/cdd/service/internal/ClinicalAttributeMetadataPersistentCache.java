@@ -56,10 +56,10 @@ public class ClinicalAttributeMetadataPersistentCache {
     public static final String CLINICAL_ATTRIBUTES_METADATA_CACHE_KEY = "CLINICAL_ATTRIBUTES_METADATA_CACHE_KEY";
     public static final String OVERRIDES_CACHE_KEY = "OVERRIDES_CACHE_KEY";
 
-    public CacheManager getBackupCacheManager(String ehcacheXML) throws Exception {
+    public CacheManager getCacheManager(String ehcacheXMLFilename) throws Exception {
         CacheManager cacheManager = cachingProvider.getCacheManager(getClass().getClassLoader().getResource(ehcacheXML).toURI(), getClass().getClassLoader());
         return cacheManager;
-    } 
+    }
 
     // retrieve cached TopBraid responses from default EHCache location
     @Cacheable(value = "clinicalAttributeMetadataEHCache", key = "#root.target.CLINICAL_ATTRIBUTES_METADATA_CACHE_KEY", unless = "#result==null")
@@ -75,20 +75,20 @@ public class ClinicalAttributeMetadataPersistentCache {
     // retrieve cache TopBraid responses from backup EHCache location (and re-populate default EHCache locatin)
     @Cacheable(value = "clinicalAttributeMetadataEHCache", key = "#root.target.CLINICAL_ATTRIBUTES_METADATA_CACHE_KEY", unless = "#result==null")
     public ArrayList<ClinicalAttributeMetadata> getClinicalAttributeMetadataFromPersistentCacheBackup() throws Exception {
-        CacheManager backupCacheManager = getBackupCacheManager("ehcache_backup.xml"); 
+        CacheManager backupCacheManager = getCacheManager("ehcache_backup.xml");
         ArrayList<ClinicalAttributeMetadata> clinicalAttributeMetadata = (ArrayList<ClinicalAttributeMetadata>)backupCacheManager.getCache(CLINICAL_ATTRIBUTE_METADATA_CACHE).get(CLINICAL_ATTRIBUTES_METADATA_CACHE_KEY);
         backupCacheManager.close();
         return clinicalAttributeMetadata;
     }
-   
+
     @Cacheable(value = "clinicalAttributeMetadataOverridesEHCache", key = "#root.target.OVERRIDES_CACHE_KEY", unless = "#result==null")
     public Map<String, ArrayList<ClinicalAttributeMetadata>> getClinicalAttributeMetadataOverridesFromPersistentCacheBackup() throws Exception {
-        CacheManager backupCacheManager = getBackupCacheManager("ehcache_backup.xml");
+        CacheManager backupCacheManager = getCacheManager("ehcache_backup.xml");
         Map<String, ArrayList<ClinicalAttributeMetadata>> clinicalAttributeMetadataOverrides = (Map<String, ArrayList<ClinicalAttributeMetadata>>)backupCacheManager.getCache(OVERRIDES_CACHE).get(OVERRIDES_CACHE_KEY);
         backupCacheManager.close();
         return clinicalAttributeMetadataOverrides;
     }
-    
+
     // update default EHCache location with TopBraid data
     @CachePut(value = "clinicalAttributeMetadataEHCache", key = "#root.target.CLINICAL_ATTRIBUTES_METADATA_CACHE_KEY", unless = "#result==null")
     public ArrayList<ClinicalAttributeMetadata> updateClinicalAttributeMetadataInPersistentCache() {
@@ -104,13 +104,13 @@ public class ClinicalAttributeMetadataPersistentCache {
 
     // update backup EHCache location with modeled-object cache values
     public void backupClinicalAttributeMetadataPersistentCache(ArrayList<ClinicalAttributeMetadata> clinicalAttributeMetadata) throws Exception {
-        CacheManager cacheManager = getBackupCacheManager("ehcache_backup.xml");       
+        CacheManager cacheManager = getCacheManager("ehcache_backup.xml");
         cacheManager.getCache(CLINICAL_ATTRIBUTE_METADATA_CACHE).put(CLINICAL_ATTRIBUTES_METADATA_CACHE_KEY, clinicalAttributeMetadata);
         cacheManager.close();
     }
 
     public void backupClinicalAttributeMetadataOverridesPersistentCache(Map<String, ArrayList<ClinicalAttributeMetadata>> clinicalAttributeMetadataOverrides) throws Exception {
-        CacheManager cacheManager = getBackupCacheManager("ehcache_backup.xml");       
+        CacheManager cacheManager = getCacheManager("ehcache_backup.xml");
         cacheManager.getCache(OVERRIDES_CACHE).put(OVERRIDES_CACHE_KEY, clinicalAttributeMetadataOverrides);
         cacheManager.close();
     }
