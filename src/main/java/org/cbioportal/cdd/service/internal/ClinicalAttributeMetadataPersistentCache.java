@@ -44,8 +44,6 @@ import org.springframework.stereotype.Component;
 public class ClinicalAttributeMetadataPersistentCache {
 
     private final static Logger logger = LoggerFactory.getLogger(ClinicalAttributeMetadataPersistentCache.class);
-    private static final String CLINICAL_ATTRIBUTE_METADATA_CACHE = "clinicalAttributeMetadataEHCache";
-    private static final String OVERRIDES_CACHE = "clinicalAttributeMetadataOverridesEHCache";
 
     @Autowired
     private CachingProvider cachingProvider;
@@ -53,11 +51,13 @@ public class ClinicalAttributeMetadataPersistentCache {
     @Autowired
     private ClinicalAttributeMetadataRepository clinicalAttributesRepository;
 
+    private static final String CLINICAL_ATTRIBUTE_METADATA_CACHE = "clinicalAttributeMetadataEHCache";
+    private static final String OVERRIDES_CACHE = "clinicalAttributeMetadataOverridesEHCache";
     public static final String CLINICAL_ATTRIBUTES_METADATA_CACHE_KEY = "CLINICAL_ATTRIBUTES_METADATA_CACHE_KEY";
     public static final String OVERRIDES_CACHE_KEY = "OVERRIDES_CACHE_KEY";
 
     public CacheManager getCacheManager(String ehcacheXMLFilename) throws Exception {
-        CacheManager cacheManager = cachingProvider.getCacheManager(getClass().getClassLoader().getResource(ehcacheXML).toURI(), getClass().getClassLoader());
+        CacheManager cacheManager = cachingProvider.getCacheManager(getClass().getClassLoader().getResource(ehcacheXMLFilename).toURI(), getClass().getClassLoader());
         return cacheManager;
     }
 
