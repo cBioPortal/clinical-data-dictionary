@@ -13,6 +13,9 @@ CDD_JAR=$CDD_DIRECTORY/target/cdd.jar
 CCD_SCRIPTS_DIRECTORY=$CDD_DIRECTORY/scripts
 CCD_DOCS_DIRECTORY=$CDD_DIRECTORY/docs
 REDCAP_JAR=$CMO_PIPELINES_DIRECTORY/redcap/redcap_pipeline/target/redcap_pipeline.jar
+AWS_SSL_TRUSTSTORE=/var/lib/jenkins/pipelines-credentials/AwsSsl.truststore
+AWS_SSL_TRUSTSTORE_PASSWORD_FILE=/var/lib/jenkins/pipelines-credentials/AwsSsl.truststore.password
+JAVA_SSL_ARGS="-Djavax.net.ssl.trustStore=$AWS_SSL_TRUSTSTORE -Djavax.net.ssl.trustStorePassword=`cat $AWS_SSL_TRUSTSTORE_PASSWORD_FILE`"
 IMPORT_SCRIPTS_DIRECTORY=$CMO_PIPELINES_DIRECTORY/import-scripts
 EXPECTED_METADATA_HEADERS=$CDD_DIRECTORY/integration-tests/expected_metadata_headers.txt
 
@@ -107,7 +110,7 @@ if [ $CDD_DEPLOYMENT_SUCCESS -gt 0 ] ; then
     # First test redcap exports still work (uses CDD to add metadata)
     rsync $JENKINS_PROPERTIES_DIRECTORY/redcap-pipeline/$APPLICATION_PROPERTIES $CMO_PIPELINES_DIRECTORY/redcap/redcap_pipeline/src/main/resources
     cd $CMO_PIPELINES_DIRECTORY/redcap ; mvn clean install
-    java "-Dcdd_base_url=$CDD_URL" -jar $REDCAP_JAR -e -s mskimpact_heme -d $TESTING_DIRECTORY_TEMP
+    java "-Dcdd_base_url=$CDD_URL" $JAVA_SSL_ARGS -jar $REDCAP_JAR -e -s mskimpact_heme -d $TESTING_DIRECTORY_TEMP
     if [ $? -gt 0 ] ; then
         echo "export from redcap using new CDD failed -- new CDD code incompatible with CMO pipelines (redcap)"
     else
