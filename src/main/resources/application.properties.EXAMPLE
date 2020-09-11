@@ -1,6 +1,8 @@
 topbraid.url=
 topbraid.username=
 topbraid.password=
+topbraid.cdd_namespace_prefix=
+topbraid.cdd_graph_id=
 
 slack.url=
 
