@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2018 - 2020 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -25,7 +25,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.Serializable;
 import java.util.*;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -68,7 +67,7 @@ public class ClinicalAttributeMetadata implements Serializable {
     * No args constructor for use in serialization
     *
     */
-    private ClinicalAttributeMetadata() {}
+    public ClinicalAttributeMetadata() {}
 
     /** Primitive Arguments Constructor
     *

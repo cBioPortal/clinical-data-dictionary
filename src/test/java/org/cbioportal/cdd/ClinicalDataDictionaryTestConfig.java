@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2018 - 2020 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -18,35 +18,36 @@ package org.cbioportal.cdd;
 import java.util.*;
 import org.mockito.Mockito;
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
-import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
-import org.springframework.context.annotation.Bean;
+import org.cbioportal.cdd.repository.topbraid.KnowledgeSystemsRepository;
+import org.cbioportal.cdd.repository.topbraid.MskVocabularyRepository;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ClinicalDataDictionaryTestConfig {
 
-    @Bean
-    public ClinicalAttributeMetadataRepository clinicalAttributesRepository() {
-        ClinicalAttributeMetadataRepository clinicalAttributesRepository = Mockito.mock(ClinicalAttributeMetadataRepository.class);
-        return clinicalAttributesRepository;
+    @MockBean
+    public KnowledgeSystemsRepository mockClinicalAttributesRepository;
+
+    @MockBean
+    public MskVocabularyRepository mockMskVocabularyRepository;
+
+    public void resetWorkingClinicalAttributesRepository(KnowledgeSystemsRepository mockClinicalAttributesRepository) {
+        Mockito.reset(mockClinicalAttributesRepository);
+        Mockito.when(mockClinicalAttributesRepository.getClinicalAttributeMetadata()).thenReturn(makeMockAttributeList());
+        Mockito.when(mockClinicalAttributesRepository.getClinicalAttributeMetadataOverrides()).thenReturn(makeMockOverridesMap());
     }
 
-    public void resetWorkingClinicalAttributesRepository(ClinicalAttributeMetadataRepository clinicalAttributesRepository) {
-        Mockito.reset(clinicalAttributesRepository);
-        Mockito.when(clinicalAttributesRepository.getClinicalAttributeMetadata()).thenReturn(makeMockAttributeList());
-        Mockito.when(clinicalAttributesRepository.getClinicalAttributeMetadataOverrides()).thenReturn(makeMockOverridesMap());
+    public void resetUpdatedClinicalAttributesRepository(KnowledgeSystemsRepository mockClinicalAttributesRepository) {
+        Mockito.reset(mockClinicalAttributesRepository);
+        Mockito.when(mockClinicalAttributesRepository.getClinicalAttributeMetadata()).thenReturn(makeUpdatedMockAttributeList());
+        Mockito.when(mockClinicalAttributesRepository.getClinicalAttributeMetadataOverrides()).thenReturn(makeUpdatedMockOverridesMap());
     }
 
-    public void resetUpdatedClinicalAttributesRepository(ClinicalAttributeMetadataRepository clinicalAttributesRepository) {
-        Mockito.reset(clinicalAttributesRepository);
-        Mockito.when(clinicalAttributesRepository.getClinicalAttributeMetadata()).thenReturn(makeUpdatedMockAttributeList());
-        Mockito.when(clinicalAttributesRepository.getClinicalAttributeMetadataOverrides()).thenReturn(makeUpdatedMockOverridesMap());
-    }
-
-    public void resetNotWorkingClinicalAttributesRepository(ClinicalAttributeMetadataRepository clinicalAttributesRepository) {
-        Mockito.reset(clinicalAttributesRepository);
-        Mockito.when(clinicalAttributesRepository.getClinicalAttributeMetadata()).thenThrow(new RuntimeException("faking a problem getting the clinical attribute data"));
-        Mockito.when(clinicalAttributesRepository.getClinicalAttributeMetadataOverrides()).thenThrow(new RuntimeException("faking a problem getting the clinical attribute data"));
+    public void resetNotWorkingClinicalAttributesRepository(KnowledgeSystemsRepository mockClinicalAttributesRepository) {
+        Mockito.reset(mockClinicalAttributesRepository);
+        Mockito.when(mockClinicalAttributesRepository.getClinicalAttributeMetadata()).thenThrow(new RuntimeException("faking a problem getting the clinical attribute data"));
+        Mockito.when(mockClinicalAttributesRepository.getClinicalAttributeMetadataOverrides()).thenThrow(new RuntimeException("faking a problem getting the clinical attribute data"));
     }
 
     private ArrayList<ClinicalAttributeMetadata> makeMockAttributeList() {

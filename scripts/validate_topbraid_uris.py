@@ -13,13 +13,13 @@ import ConfigParser
 import requests
 
 
-TOPBRAID_QUERY = """
+TOPBRAID_QUERY_TEMPLATE = """
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-        PREFIX cdd:<http://data.mskcc.org/ontologies/clinical_data_dictionary/>
+        PREFIX cdd:<%s>
         PREFIX skos:<http://www.w3.org/2004/02/skos/core#>
         SELECT ?subject ?column_header ?display_name ?attribute_type ?datatype ?description ?priority
         WHERE {
-            GRAPH <urn:x-evn-master:clinical_data_dictionary> {
+            GRAPH <%s> {
                 ?subject skos:prefLabel ?column_header.
                 ?subject cdd:AttributeType ?attribute_type.
                 ?subject cdd:Datatype ?datatype.
@@ -35,9 +35,12 @@ URI_PATTERN = re.compile(URI_PATTERN_STR)
 COLUMN_HEADER_PATTERN_STR = "^(\")?[A-Z][A-Z_0-9]{0,99}(\"@en)?$" # e.g. "DELIVERED_DOSE"@en or PLATINUM_OS_MONTHS
 COLUMN_HEADER_PATTERN = re.compile(COLUMN_HEADER_PATTERN_STR)
 MULTIPLE_UNDERSCORES_PATTERN = re.compile("_{2,}")
-TOPBRAID_URL_PROPERTY_NAME = "topbraid.url"
-TOPBRAID_USERNAME_PROPERTY_NAME = "topbraid.username"
-TOPBRAID_PASSWORD_PROPERTY_NAME = "topbraid.password"
+TOPBRAID_SERVICE_URL_PROPERTY_NAME = "topbraid.knowledgeSystems.serviceUrl"
+TOPBRAID_LOGIN_URL_PROPERTY_NAME = "topbraid.knowledgeSystems.loginUrl"
+TOPBRAID_USERNAME_PROPERTY_NAME = "topbraid.knowledgeSystems.username"
+TOPBRAID_PASSWORD_PROPERTY_NAME = "topbraid.knowledgeSystems.password"
+TOPBRAID_NAMESPACE_PREFIX_PROPERTY_NAME = "topbraid.knowledgeSystems.cddNamespacePrefix"
+TOPBRAID_CDD_GRAPH_ID_PROPERTY_NAME = "topbraid.knowledgeSystems.cddGraphId"
 DEFAULT_SECTION_HEAD_FOR_PROPERTIES_FILE = "DEFAULT"
 JSESSION_ID_COOKIE_NAME = "JSESSIONID"
 errors = []
@@ -60,28 +63,28 @@ class DefaultSectionHeadOnPropertiesFile:
         else:
             return self.fp.readline()
 
-def get_logged_in_session_id(topbraid_url, topbraid_username, topbraid_password):
+def get_logged_in_session_id(topbraid_login_url, topbraid_username, topbraid_password):
     # first we just hit the page and get a session id
     session = requests.Session()
-    response = session.get(topbraid_url)
+    response = session.get(topbraid_login_url)
     if response.status_code != 200:
-        print >> sys.stderr, "ERROR: Initial connection to '%s' failed, response status code is '%d', body is '%s'" % (topbraid_url, response.status_code, response.text)
+        print >> sys.stderr, "ERROR: Initial connection to '%s' failed, response status code is '%d', body is '%s'" % (topbraid_login_url, response.status_code, response.text)
         sys.exit(2)
     initial_jsession_id = session.cookies.get_dict()[JSESSION_ID_COOKIE_NAME]
     # now we login using that session id
-    response = session.get(topbraid_url + "/j_security_check?j_username=" + topbraid_username + "&j_password=" + topbraid_password, cookies={ JSESSION_ID_COOKIE_NAME : initial_jsession_id })
+    response = session.get(topbraid_login_url + "/j_security_check?j_username=" + topbraid_username + "&j_password=" + topbraid_password, cookies={ JSESSION_ID_COOKIE_NAME : initial_jsession_id })
     if response.status_code != 200:
-        print >> sys.stderr, "ERROR: Failed to log into '%s', response status code is '%d', body is '%s'" % (topbraid_url, response.status_code, response.text)
+        print >> sys.stderr, "ERROR: Failed to log into '%s', response status code is '%d', body is '%s'" % (topbraid_login_url, response.status_code, response.text)
         sys.exit(2)
     logged_in_session_id = session.cookies.get_dict()[JSESSION_ID_COOKIE_NAME]
     return logged_in_session_id
 
-def query_topbraid(topbraid_url, logged_in_session_id):
+def query_topbraid(topbraid_service_url, logged_in_session_id, topbraid_namespace_prefix, topbraid_cdd_graph_id):
     session = requests.Session()
-    data = {"format" : "json-simple", "query" : TOPBRAID_QUERY}
-    response = session.post(topbraid_url, cookies={ JSESSION_ID_COOKIE_NAME : logged_in_session_id}, data=data)
+    data = {"format" : "json-simple", "query" : TOPBRAID_QUERY_TEMPLATE % (topbraid_namespace_prefix, topbraid_cdd_graph_id) }
+    response = session.post(topbraid_service_url, cookies={ JSESSION_ID_COOKIE_NAME : logged_in_session_id}, data=data)
     if response.status_code != 200:
-        print >> sys.stderr, "ERROR: Failed to query '%s', response status code is '%d', body is '%s'" % (topbraid_url, response.status_code, response.text)
+        print >> sys.stderr, "ERROR: Failed to query '%s', response status code is '%d', body is '%s'" % (topbraid_service_url, response.status_code, response.text)
         sys.exit(2)
     return response.json()
 
@@ -186,15 +189,18 @@ def main():
     config = ConfigParser.RawConfigParser()
     config.readfp(DefaultSectionHeadOnPropertiesFile(open(properties_filename)))
     try:
-        topbraid_url = config.get(DEFAULT_SECTION_HEAD_FOR_PROPERTIES_FILE, TOPBRAID_URL_PROPERTY_NAME)
+        topbraid_service_url = config.get(DEFAULT_SECTION_HEAD_FOR_PROPERTIES_FILE, TOPBRAID_SERVICE_URL_PROPERTY_NAME)
+        topbraid_login_url = config.get(DEFAULT_SECTION_HEAD_FOR_PROPERTIES_FILE, TOPBRAID_LOGIN_URL_PROPERTY_NAME)
         topbraid_username = config.get(DEFAULT_SECTION_HEAD_FOR_PROPERTIES_FILE, TOPBRAID_USERNAME_PROPERTY_NAME)
         topbraid_password = config.get(DEFAULT_SECTION_HEAD_FOR_PROPERTIES_FILE, TOPBRAID_PASSWORD_PROPERTY_NAME)
+        topbraid_namespace_prefix = config.get(DEFAULT_SECTION_HEAD_FOR_PROPERTIES_FILE, TOPBRAID_NAMESPACE_PREFIX_PROPERTY_NAME)
+        topbraid_cdd_graph_id = config.get(DEFAULT_SECTION_HEAD_FOR_PROPERTIES_FILE, TOPBRAID_CDD_GRAPH_ID_PROPERTY_NAME)
     except ConfigParser.NoOptionError as noe:
         print >> sys.stderr, "ERROR:", noe, "in properties file"
         sys.exit(2)
 
-    jsession_id = get_logged_in_session_id(topbraid_url, topbraid_username, topbraid_password)
-    topbraid_results = query_topbraid(topbraid_url, jsession_id)
+    jsession_id = get_logged_in_session_id(topbraid_login_url, topbraid_username, topbraid_password)
+    topbraid_results = query_topbraid(topbraid_service_url, jsession_id, topbraid_namespace_prefix, topbraid_cdd_graph_id)
 
     curated_uris = read_curated_uris(curated_filename)
     topbraid_uris = read_topbraid_uris(topbraid_results)

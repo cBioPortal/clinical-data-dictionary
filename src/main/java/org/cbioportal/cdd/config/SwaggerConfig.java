@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2018 - 2020 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -13,7 +13,7 @@
  * Center has been advised of the possibility of such damage.
  */
 
-package org.cbioportal.cdd.swagger;
+package org.cbioportal.cdd.config;
 
 import com.google.common.base.Predicates;
 
@@ -25,7 +25,6 @@ import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.service.ApiInfo;
 
 /**
  *

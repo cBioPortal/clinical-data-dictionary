@@ -1,17 +1,25 @@
-topbraid.url=
-topbraid.username=
-topbraid.password=
-topbraid.cdd_namespace_prefix=
-topbraid.cdd_graph_id=
+# the knowledge systems topbraid server sparql endpoint (e.g. http://test.evn.mskcc.org/edg/tbl/sparql)
+topbraid.knowledgeSystems.serviceUrl=
+topbraid.knowledgeSystems.loginUrl=
+topbraid.knowledgeSystems.username=
+topbraid.knowledgeSystems.password=
+topbraid.knowledgeSystems.cddNamespacePrefix=
+topbraid.knowledgeSystems.cddGraphId=
+# the msk vocabulary topbraid server api endpoint (e.g. http://dev.evn.mskcc.org/edg/api/projects)
+topbraid.mskVocabulary.serviceUrl=
+topbraid.mskVocabulary.loginUrl=
+topbraid.mskVocabulary.username=
+topbraid.mskVocabulary.password=
 
 slack.url=
 
-# ehcache properties
+# mskcc vocabulary studies
+mskVocabulary.studyIdList=
+
 ehcache.persistence.path=
-ehcache.persistence.backup.path=
-ehcache.enable.statistics=false
+ehcache.persistence.backupPath=
+ehcache.enable.statistics=
 ehcache.clinicalAttributeMetadataByStudyCache.maxBytesLocalDiskUnits=
 ehcache.clinicalAttributeMetadataByStudyCache.maxBytesLocalDisk=
-ehcache.clinicalAttributeMetadataOverridesEHCache.maxBytesLocalDiskUnits=
-ehcache.clinicalAttributeMetadataOverridesEHCache.maxBytesLocalDisk=
-
+ehcache.clinicalAttributeMetadataOverridesByStudyCache.maxBytesLocalDiskUnits=
+ehcache.clinicalAttributeMetadataOverridesByStudyCache.maxBytesLocalDisk=
