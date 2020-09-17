@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2018 - 2020 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -15,7 +15,7 @@
 
 package org.cbioportal.cdd;
 
-import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
+import org.cbioportal.cdd.repository.topbraid.KnowledgeSystemsRepository;
 import org.cbioportal.cdd.service.internal.ClinicalAttributeMetadataCache;
 import org.cbioportal.cdd.service.exception.*;
 import org.cbioportal.cdd.config.CDDAppConfig;
@@ -54,7 +54,7 @@ public class ClinicalDataDictionaryTest {
     private TestRestTemplate restTemplate;
 
     @Autowired
-    private ClinicalAttributeMetadataRepository clinicalAttributesRepository;
+    private KnowledgeSystemsRepository mockClinicalAttributesRepository;
 
     @Autowired
     private ClinicalAttributeMetadataCache clinicalAttributesCache;
@@ -63,7 +63,7 @@ public class ClinicalDataDictionaryTest {
     // make sure repository is working version before each test
     public void resetToWorkingRepository() {
         ClinicalDataDictionaryTestConfig config = new ClinicalDataDictionaryTestConfig();
-        config.resetWorkingClinicalAttributesRepository(clinicalAttributesRepository);
+        config.resetWorkingClinicalAttributesRepository(mockClinicalAttributesRepository);
         ResponseEntity<String> response = restTemplate.getForEntity("/api/refreshCache", String.class);
     }
 
@@ -169,7 +169,7 @@ public class ClinicalDataDictionaryTest {
     public void failedCacheRefreshTest() throws Exception {
         // resetting cache with a broken repository should throw a FailedCacheRefreshException
         ClinicalDataDictionaryTestConfig config = new ClinicalDataDictionaryTestConfig();
-        config.resetNotWorkingClinicalAttributesRepository(clinicalAttributesRepository);
+        config.resetNotWorkingClinicalAttributesRepository(mockClinicalAttributesRepository);
         clinicalAttributesCache.resetCache();
     }
 
@@ -232,24 +232,24 @@ public class ClinicalDataDictionaryTest {
         // test that cache is updated after GET /api/refreshCache
         ClinicalDataDictionaryTestConfig config = new ClinicalDataDictionaryTestConfig();
         // change repository to version with 2 attributes/1 override
-        config.resetUpdatedClinicalAttributesRepository(clinicalAttributesRepository);
+        config.resetUpdatedClinicalAttributesRepository(mockClinicalAttributesRepository);
         ResponseEntity<String> response = restTemplate.getForEntity("/api/refreshCache", String.class);
         assertThat(response.getBody(), equalTo("{\"response\":\"Success!\"}"));
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
-        assertThat(clinicalAttributesRepository.getClinicalAttributeMetadata().size(), equalTo(2));
-        assertThat(clinicalAttributesRepository.getClinicalAttributeMetadataOverrides(), hasKey("updated_override_study"));
-        assertThat(clinicalAttributesRepository.getClinicalAttributeMetadataOverrides().size(), equalTo(1));
+        assertThat(mockClinicalAttributesRepository.getClinicalAttributeMetadata().size(), equalTo(2));
+        assertThat(mockClinicalAttributesRepository.getClinicalAttributeMetadataOverrides(), hasKey("updated_override_study"));
+        assertThat(mockClinicalAttributesRepository.getClinicalAttributeMetadataOverrides().size(), equalTo(1));
         // change repository to non-working version
-        config.resetNotWorkingClinicalAttributesRepository(clinicalAttributesRepository);
+        config.resetNotWorkingClinicalAttributesRepository(mockClinicalAttributesRepository);
         response = restTemplate.getForEntity("/api/refreshCache", String.class);
         assertThat(response.getBody(), containsString("org.cbioportal.cdd.service.exception.FailedCacheRefreshException"));
         assertThat(response.getStatusCode(), equalTo(HttpStatus.SERVICE_UNAVAILABLE));
         // change repository to version with 5 attributes/2 overrides
-        config.resetWorkingClinicalAttributesRepository(clinicalAttributesRepository);
+        config.resetWorkingClinicalAttributesRepository(mockClinicalAttributesRepository);
         restTemplate.getForEntity("/api/refreshCache", String.class);
-        assertThat(clinicalAttributesRepository.getClinicalAttributeMetadata().size(), equalTo(5));
-        assertThat(clinicalAttributesRepository.getClinicalAttributeMetadataOverrides().size(), equalTo(2));
-        assertThat(clinicalAttributesRepository.getClinicalAttributeMetadataOverrides(), not(hasKey("updated_override_study")));
+        assertThat(mockClinicalAttributesRepository.getClinicalAttributeMetadata().size(), equalTo(5));
+        assertThat(mockClinicalAttributesRepository.getClinicalAttributeMetadataOverrides().size(), equalTo(2));
+        assertThat(mockClinicalAttributesRepository.getClinicalAttributeMetadataOverrides(), not(hasKey("updated_override_study")));
     }
 
     @Test

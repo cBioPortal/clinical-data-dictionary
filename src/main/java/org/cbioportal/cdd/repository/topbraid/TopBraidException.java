@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2018 - 2020 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF
@@ -21,12 +21,11 @@ package org.cbioportal.cdd.repository.topbraid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  *
  * @author Manda Wilson
  **/
-public class TopBraidException extends RuntimeException {
+public class TopBraidException extends Exception {
 
     private final static Logger logger = LoggerFactory.getLogger(TopBraidException.class);
 

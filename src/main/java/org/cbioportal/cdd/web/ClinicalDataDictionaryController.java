@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2018 - 2020 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -14,9 +14,6 @@
  */
 
 package org.cbioportal.cdd.web;
-
-
-import com.fasterxml.jackson.annotation.JsonView;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -40,6 +37,7 @@ import org.cbioportal.cdd.service.exception.CancerStudyNotFoundException;
 import org.cbioportal.cdd.service.exception.FailedCacheRefreshException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -54,6 +52,7 @@ import org.springframework.web.bind.annotation.*;
 public class ClinicalDataDictionaryController {
 
     @Autowired
+    @Qualifier("servicerouter")
     private ClinicalDataDictionaryService clinicalAttributesService;
 
     @ApiOperation(value = "Get metadata for all clinical attributes", response = ClinicalAttributeMetadata.class, responseContainer = "List")
@@ -81,7 +80,7 @@ public class ClinicalDataDictionaryController {
     @RequestMapping(method = RequestMethod.POST, value="/", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Iterable<ClinicalAttributeMetadata> getClinicalAttributeMetadata(
         @ApiParam(value = "Cancer study name e.g. mskimpact")
-        @RequestParam(value = "cancerStudy", required = false) String cancerStudyName, 
+        @RequestParam(value = "cancerStudy", required = false) String cancerStudyName,
         @ApiParam(value = "List of column headers to retrieve clinical attribute metadata for. For example: [\"PATIENT_ID\", \"SAMPLE_ID\", \"CANCER_TYPE\"]")
         @RequestBody(required = true) List<String> columnHeaders) {
         return clinicalAttributesService.getMetadataByColumnHeaders(cancerStudyName, columnHeaders);
@@ -98,9 +97,9 @@ public class ClinicalDataDictionaryController {
     @RequestMapping(method = RequestMethod.POST, value="/search", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Iterable<ClinicalAttributeMetadata> getClinicalAttributeMetadataBySearchTerms(
         @ApiParam(value = "Attribute type e.g. PATIENT or SAMPLE")
-        @RequestParam(value = "attributeType", required = false) String attributeType, 
+        @RequestParam(value = "attributeType", required = false) String attributeType,
         @ApiParam(value = "Inclusive search - all search terms must be present when searching")
-        @RequestParam(value = "inclusiveSearch", defaultValue = "false", required = true) boolean inclusiveSearch, 
+        @RequestParam(value = "inclusiveSearch", defaultValue = "false", required = true) boolean inclusiveSearch,
         @ApiParam(value = "List of search terms that may be present in the description, display name, or column header. For example: [\"TMB\", \"mutation burden\"]")
         @RequestBody(required = true) List<String> searchTerms) {
         return clinicalAttributesService.getMetadataBySearchTerms(searchTerms, attributeType, inclusiveSearch);
@@ -116,7 +115,7 @@ public class ClinicalDataDictionaryController {
     @RequestMapping(value = "/{columnHeader}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ClinicalAttributeMetadata getClinicalAttribute(
         @ApiParam(value = "Cancer study name e.g. mskimpact")
-        @RequestParam(value = "cancerStudy", required = false) String cancerStudyName, 
+        @RequestParam(value = "cancerStudy", required = false) String cancerStudyName,
         @ApiParam(value = "Column header to retrieve clinical attribute metadata for")
         @PathVariable(required = true) String columnHeader) {
         return clinicalAttributesService.getMetadataByColumnHeader(cancerStudyName, columnHeader);
@@ -154,7 +153,7 @@ public class ClinicalDataDictionaryController {
     @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE, reason = "Failed to refresh metadata cache")
     @ExceptionHandler(FailedCacheRefreshException.class)
     public void handleFailedCacheRefreshException() {}
-    
+
     @ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE, reason = "Clinical attribute metadata source unavailable")
     @ExceptionHandler(ClinicalMetadataSourceUnresponsiveException.class)
     public void handleClinicalMetadataSourceUnresponsive() {}

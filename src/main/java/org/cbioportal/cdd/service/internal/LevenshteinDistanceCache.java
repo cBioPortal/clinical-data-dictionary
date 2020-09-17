@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2018 - 2020 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -15,35 +15,20 @@
 
 package org.cbioportal.cdd.service.internal;
 
-import javax.annotation.PostConstruct;
-
-import java.util.Collections;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
-import java.time.ZonedDateTime;
-
 import org.apache.http.*;
 import org.apache.http.client.*;
+import org.apache.http.client.methods.*;
 import org.apache.http.entity.*;
 import org.apache.http.impl.client.*;
-import org.apache.http.client.methods.*;
-
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
-import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
 import org.cbioportal.cdd.service.exception.FailedCacheRefreshException;
-
-import com.google.common.base.Strings;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
@@ -54,9 +39,9 @@ public class LevenshteinDistanceCache {
 
     @Autowired
     private ClinicalAttributeMetadataCache clinicalAttributesCache;
-    
+
     private Map<ClinicalAttributeMetadata, Map<String, Integer>> levenshteinDistanceCache = new HashMap<ClinicalAttributeMetadata, Map<String, Integer>>();
-    
+
     private static final Logger logger = LoggerFactory.getLogger(LevenshteinDistanceCache.class);
 
     public boolean containsClinicalAttribute(ClinicalAttributeMetadata clinicalAttributeMetadata) {
@@ -70,11 +55,11 @@ public class LevenshteinDistanceCache {
     public boolean containsClinicalAttributeToSearchTermMapping(ClinicalAttributeMetadata clinicalAttributeMetadata, String searchTerm) {
         return levenshteinDistanceCache.get(clinicalAttributeMetadata).containsKey(searchTerm);
     }
-    
+
     public void addClinicalAttributeToSearchTermMapping(ClinicalAttributeMetadata clinicalAttributeMetadata, String searchTerm) {
         this.levenshteinDistanceCache.get(clinicalAttributeMetadata).put(searchTerm, clinicalAttributeMetadata.levenshteinDistanceFromSearchTerm(searchTerm));
     }
-    
+
     public Integer getLevenshteinDistanceForMapping(ClinicalAttributeMetadata clinicalAttributeMetadata, String searchTerm) {
         return levenshteinDistanceCache.get(clinicalAttributeMetadata).get(searchTerm);
     }
@@ -84,17 +69,17 @@ public class LevenshteinDistanceCache {
         Map<String, ClinicalAttributeMetadata> defaultClinicalAttributeCache = clinicalAttributesCache.getClinicalAttributeMetadata();
         Map<ClinicalAttributeMetadata, List<String>> searchTermMappingsToRemove = new HashMap<ClinicalAttributeMetadata, List<String>>();
         List<ClinicalAttributeMetadata> clinicalAttributeMetadataToRemove = new ArrayList<ClinicalAttributeMetadata>();
-        
+
         for (ClinicalAttributeMetadata cachedClinicalAttributeMetadata : levenshteinDistanceCache.keySet()) {
             ClinicalAttributeMetadata currentClinicalAttributeMetadata;
             // during cache refresh - remove levenshtein distance mappings if the clinical attribute has been removed from CDD
             if (!defaultClinicalAttributeCache.containsKey(cachedClinicalAttributeMetadata.getColumnHeader())) {
                 clinicalAttributeMetadataToRemove.add(cachedClinicalAttributeMetadata);
-                continue; 
+                continue;
             } else {
                 currentClinicalAttributeMetadata = defaultClinicalAttributeCache.get(cachedClinicalAttributeMetadata.getColumnHeader());
             }
-            // recalculate and set levenshtein distances to new values (calculated from updated displays, descriptions, etc...) 
+            // recalculate and set levenshtein distances to new values (calculated from updated displays, descriptions, etc...)
             // remove search term mappings which are no longer contained in the display, description, etc...
             for (String searchTerm : levenshteinDistanceCache.get(cachedClinicalAttributeMetadata).keySet()) {
                 if (!currentClinicalAttributeMetadata.containsSearchTerm(searchTerm)) {
@@ -103,7 +88,7 @@ public class LevenshteinDistanceCache {
                     }
                     searchTermMappingsToRemove.get(cachedClinicalAttributeMetadata).add(searchTerm);
                     continue;
-                }                   
+                }
                 Integer levenshteinDistance = currentClinicalAttributeMetadata.levenshteinDistanceFromSearchTerm(searchTerm);
                 levenshteinDistanceCache.get(cachedClinicalAttributeMetadata).put(searchTerm, levenshteinDistance);
             }
@@ -117,4 +102,4 @@ public class LevenshteinDistanceCache {
             }
         }
     }
-} 
+}

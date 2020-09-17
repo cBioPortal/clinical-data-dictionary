@@ -26,7 +26,7 @@
       </ehcache:listeners>
       <ehcache:resources>
         <ehcache:heap unit="B">1</ehcache:heap>
-        <ehcache:disk unit="${ehcache.dev.clinicalAttributeMetadataEHCache.maxBytesLocalDiskUnits}" persistent="true">${ehcache.dev.clinicalAttributeMetadataEHCache.maxBytesLocalDisk}</ehcache:disk>
+        <ehcache:disk unit="${ehcache.dev.clinicalAttributeMetadataByStudyCache.maxBytesLocalDiskUnits}" persistent="true">${ehcache.dev.clinicalAttributeMetadataByStudyCache.maxBytesLocalDisk}</ehcache:disk>
       </ehcache:resources>
     </ehcache:cache>
 
@@ -44,7 +44,7 @@
       </ehcache:listeners>
       <ehcache:resources>
         <ehcache:heap unit="B">1</ehcache:heap>
-        <ehcache:disk unit="${ehcache.dev.clinicalAttributeMetadataOverridesEHCache.maxBytesLocalDiskUnits}" persistent="true">${ehcache.dev.clinicalAttributeMetadataOverridesEHCache.maxBytesLocalDisk}</ehcache:disk>
+        <ehcache:disk unit="${ehcache.dev.clinicalAttributeMetadataOverridesByStudyCache.maxBytesLocalDiskUnits}" persistent="true">${ehcache.dev.clinicalAttributeMetadataOverridesByStudyCache.maxBytesLocalDisk}</ehcache:disk>
       </ehcache:resources>
     </ehcache:cache>
 
