@@ -19,7 +19,6 @@ import java.util.*;
 import org.cbioportal.cdd.model.CancerStudy;
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
 import org.cbioportal.cdd.service.ClinicalDataDictionaryService;
-import org.cbioportal.cdd.service.util.MSKVocabStudyUtil;
 import org.cbioportal.cdd.service.exception.CancerStudyNotFoundException;
 import org.cbioportal.cdd.service.exception.ClinicalAttributeNotFoundException;
 import org.cbioportal.cdd.service.exception.ClinicalMetadataSourceUnresponsiveException;
@@ -30,69 +29,47 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+/**
+ *
+ */
 @Service
-@Qualifier("servicerouter")
-public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionaryService {
+@Qualifier("mskvocabulary")
+public class CDDServiceMskVocabularyImpl implements ClinicalDataDictionaryService {
 
-    @Autowired
-    private MSKVocabStudyUtil mskVocabStudyUtil;
-
-    @Autowired
-    @Qualifier("mskvocabulary")
-    private ClinicalDataDictionaryService cddServiceMskVocabularyImpl;
-
-    @Autowired
-    @Qualifier("topbraid")
-    private ClinicalDataDictionaryService cddServiceTopBraidImpl;
-
-    private static final Logger logger = LoggerFactory.getLogger(ClinicalDataDictionaryServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(CDDServiceMskVocabularyImpl.class);
 
     @Override
     public List<ClinicalAttributeMetadata> getClinicalAttributeMetadata(String cancerStudy)
         throws ClinicalMetadataSourceUnresponsiveException, CancerStudyNotFoundException {
-        if (mskVocabStudyUtil.useMskVocabularyForStudy(cancerStudy)) {
-            return cddServiceMskVocabularyImpl.getClinicalAttributeMetadata(cancerStudy);
-        } else {
-            return cddServiceTopBraidImpl.getClinicalAttributeMetadata(cancerStudy);
-        }
+        return null;
     }
 
     @Override
     public List<ClinicalAttributeMetadata> getMetadataByColumnHeaders(String cancerStudy, List<String> columnHeaders)
         throws ClinicalAttributeNotFoundException, ClinicalMetadataSourceUnresponsiveException, CancerStudyNotFoundException {
-        if (mskVocabStudyUtil.useMskVocabularyForStudy(cancerStudy)) {
-            return cddServiceMskVocabularyImpl.getMetadataByColumnHeaders(cancerStudy, columnHeaders);
-        } else {
-            return cddServiceTopBraidImpl.getMetadataByColumnHeaders(cancerStudy, columnHeaders);
-        }
+        return null;
     }
 
     @Override
     public List<ClinicalAttributeMetadata> getMetadataBySearchTerms(List<String> searchTerms, String attributeType, boolean inclusiveSearch)
         throws ClinicalAttributeNotFoundException, ClinicalMetadataSourceUnresponsiveException {
-        return cddServiceTopBraidImpl.getMetadataBySearchTerms(searchTerms, attributeType, inclusiveSearch);
+        return null;
     }
 
     @Override
     public ClinicalAttributeMetadata getMetadataByColumnHeader(String cancerStudy, String columnHeader)
         throws ClinicalAttributeNotFoundException, ClinicalMetadataSourceUnresponsiveException, CancerStudyNotFoundException {
-        if (mskVocabStudyUtil.useMskVocabularyForStudy(cancerStudy)) {
-            return cddServiceMskVocabularyImpl.getMetadataByColumnHeader(cancerStudy, columnHeader);
-        } else {
-            return cddServiceTopBraidImpl.getMetadataByColumnHeader(cancerStudy, columnHeader);
-        }
+        return null;
     }
 
     @Override
     public List<CancerStudy> getCancerStudies() throws ClinicalMetadataSourceUnresponsiveException {
-        return cddServiceTopBraidImpl.getCancerStudies();
+        return null;
     }
 
     @Override
     public Map<String, String> forceResetCache() throws FailedCacheRefreshException {
-        cddServiceMskVocabularyImpl.forceResetCache();
-        cddServiceTopBraidImpl.forceResetCache();
-        return Collections.singletonMap("response", "Success!");
+        return Collections.singletonMap("response", "No Cache!");
     }
 
 }
