@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.cbioportal.cdd.service.util.MSKVocabStudyUtil;
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
 import org.cbioportal.cdd.model.CancerStudy;
 import org.cbioportal.cdd.service.ClinicalDataDictionaryService;

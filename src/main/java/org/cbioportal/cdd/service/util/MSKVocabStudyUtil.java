@@ -16,6 +16,7 @@
 package org.cbioportal.cdd.service.util;
 
 import java.util.*;
+import org.cbioportal.cdd.model.CancerStudy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +31,14 @@ public class MSKVocabStudyUtil {
             return false;
         }
         return studyIdSet.contains(studyId.toLowerCase());
+    }
+
+    public List<CancerStudy> getMskVocabularyStudyList() {
+        List<CancerStudy> studyList = new ArrayList<>();
+        for (String studyId : studyIdSet) {
+            studyList.add(new CancerStudy(studyId));
+        }
+        return studyList;
     }
 
 }
