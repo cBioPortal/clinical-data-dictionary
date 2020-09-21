@@ -30,104 +30,61 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * @author Avery Wang, Manda Wilson
+ * @author Avery Wang
  */
-//@JsonInclude(Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonPropertyOrder({
-    "label",
-})
-public class MSKClinicalAttributeMetadata extends ClinicalAttributeMetadata implements Serializable {
+public class MskVocabulary implements Serializable {
 
-    @JsonProperty("label")
-    private String description;
-
-    @JsonProperty("variable")
-    private String displayName;
-   
-    @JsonProperty("blah")
-    private String columnHeader;
-    
-    @JsonProperty("typeLabel")
-    private String dataType;
-    
     @JsonProperty("formName")
-    private String attributeType;
-   
-    private String priority = "1";
- 
+    private String formName;
+    @JsonProperty("label")
+    private String label;
+    @JsonProperty("typeLabel")
+    private String typeLabel;
+    @JsonProperty("variable")
+    private String variable;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
     
-    public MSKClinicalAttributeMetadata() {}
+    public MskVocabulary() {}
 
-    /**
-    *
-    * @return
-    * The fields
-    */
     @JsonProperty("label")
-    public String getDescription() {
-        return description;
+    public String getLabel() {
+        return label;
     }
 
-    /**
-    *
-    * @param fields
-    * The display_name
-    */
     @JsonProperty("label")
-    public void setDescription(String description) {
-        this.description = description;
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     @JsonProperty("variable")
-    public String getDisplayName() {
-        return displayName;
+    public String getVariable() {
+        return variable;
     }
 
     @JsonProperty("variable")
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
+    public void setVariable(String variable) {
+        this.variable = variable;
     }
 
     @JsonProperty("typeLabel")
-    public String getDataType() {
-        return dataType;
+    public String getTypeLabel() {
+        return typeLabel;
     }
 
     @JsonProperty("typeLabel")
-    public void setDataType(String dataType) {
-        this.dataType = dataType;
-    }
-
-    @JsonProperty("blah")
-    public String getColumnHeader() {
-        return columnHeader;
-    }
-
-    @JsonProperty("blah")
-    public void setColumnHeader(String columnHeader) {
-        this.columnHeader = columnHeader;
+    public void setTypeLabel(String typeLabel) {
+        this.typeLabel = typeLabel;
     }
 
     @JsonProperty("formName")
-    public String getAttributeType() {
-        return attributeType;
+    public String getFormName() {
+        return formName;
     }
 
     @JsonProperty("formName")
-    public void setAttributeType(String attributeType) {
-        this.attributeType = attributeType;
-    }
-
-    @JsonProperty("priority")
-    public String getPriority() {
-        return priority;
-    }
-
-    @JsonProperty("priority")
-    public void setPriority(String priority) {
-        this.priority = priority;
+    public void setFormName(String formName) {
+        this.formName = formName;
     }
 }

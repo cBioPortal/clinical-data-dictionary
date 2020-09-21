@@ -109,6 +109,15 @@ public class ClinicalAttributeMetadata implements Serializable {
         }
     }
 
+    public ClinicalAttributeMetadata(MskVocabulary mskVocabulary) {
+        this.columnHeader = mskVocabulary.getVariable().toUpperCase();
+        this.displayName = mskVocabulary.getLabel();
+        this.description = mskVocabulary.getLabel();
+        this.datatype = mskVocabulary.getTypeLabel();
+        this.attributeType = mskVocabulary.getFormName();
+        this.priority = "1";
+    }
+
     /**
     *
     * @return

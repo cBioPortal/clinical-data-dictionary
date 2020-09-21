@@ -30,40 +30,26 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * @author Avery Wang, Manda Wilson
+ * @author Avery Wang
  */
-//@JsonInclude(Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonPropertyOrder({
-    "fields",
-})
-public class MSKVocabResponse implements Serializable {
+public class MskVocabularyResponse implements Serializable {
 
     @JsonProperty("fields")
-    private ArrayList<MSKClinicalAttributeMetadata> mskClinicalAttributeMetadata = null;
+    private ArrayList<MskVocabulary> mskVocabulary = null;
 
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    private MSKVocabResponse() {}
+    private MskVocabularyResponse() {}
 
-    /**
-    *
-    * @return
-    * The fields
-    */
     @JsonProperty("fields")
-    public ArrayList<MSKClinicalAttributeMetadata> getMSKClinicalAttributeMetadata() {
-        return mskClinicalAttributeMetadata;
+    public ArrayList<MskVocabulary> getMskVocabulary() {
+        return mskVocabulary;
     }
 
-    /**
-    *
-    * @param fields
-    * The display_name
-    */
     @JsonProperty("fields")
-    public void setMSKClinicalAttributeMetadata(ArrayList<MSKClinicalAttributeMetadata> mskClinicalAttributeMetadata) {
-        this.mskClinicalAttributeMetadata = mskClinicalAttributeMetadata;
+    public void setMskVocabulary(ArrayList<MskVocabulary> mskVocabulary) {
+        this.mskVocabulary = mskVocabulary;
     }
 }

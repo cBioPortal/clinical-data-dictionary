@@ -15,10 +15,17 @@
 
 package org.cbioportal.cdd.service.internal;
 
+
+// TODO : need to move some of the changes added to MskVocabularyClinicalAttributeMetadataRepository into MskVocabularyRepository
+import org.cbioportal.cdd.repository.topbraid.MskVocabularyClinicalAttributeMetadataRepository;
+import org.cbioportal.cdd.repository.mskvocabulary.MskVocabularyRepository;
+
+
+
 import java.util.*;
 import org.cbioportal.cdd.model.CancerStudy;
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
-import org.cbioportal.cdd.repository.topbraid.MskVocabularyClinicalAttributeMetadataRepository;
+import org.cbioportal.cdd.model.MskVocabulary;
 import org.cbioportal.cdd.service.ClinicalDataDictionaryService;
 import org.cbioportal.cdd.service.exception.CancerStudyNotFoundException;
 import org.cbioportal.cdd.service.exception.ClinicalAttributeNotFoundException;
@@ -43,33 +50,51 @@ public class CDDServiceMskVocabularyImpl implements ClinicalDataDictionaryServic
 
     private static final Logger logger = LoggerFactory.getLogger(CDDServiceMskVocabularyImpl.class);
 
+    // TODO : flesh out caching approach
+    private Map<String, ClinicalAttributeMetadata> clinicalAttributeMetadataCache = new HashMap<String, ClinicalAttributeMetadata>();   
+ 
+    @Autowired
+    private MskVocabularyRepository  mskVocabularyRepository;
+   
+    // TODO : flesh out caching approach
+    private void fillClinicalAttributeMetadataCache() { 
+        List<MskVocabulary> mskClinicalAttributeMetadataList = mskVocabularyRepository.getClinicalAttributeMetadata();
+        for (MskVocabulary mskClinicalAttributeMetadata : mskClinicalAttributeMetadataList) {
+            // TODO : remove conversion logic from model class .. relocate to service layer util
+            ClinicalAttributeMetadata clinicalAttributeMetadata = new ClinicalAttributeMetadata(mskClinicalAttributeMetadata);
+            // TODO : detect when two object instances have the same column header --- and report the inconsisteny or duplication (slack or email?) .. maybe do this in CI integration testing .. data integrity check
+            clinicalAttributeMetadataCache.put(clinicalAttributeMetadata.getColumnHeader(), clinicalAttributeMetadata);
+        }
+    }
+
     @Override
     public List<ClinicalAttributeMetadata> getClinicalAttributeMetadata(String cancerStudy)
         throws ClinicalMetadataSourceUnresponsiveException, CancerStudyNotFoundException {
-        HashMap<String, ClinicalAttributeMetadata> clinicalAttributeMetadataMap = getClinicalAttributeMetadataMap();
-        List<String> columnHeaders = new ArrayList<>(clinicalAttributeMetadataMap.keySet());
-        List<ClinicalAttributeMetadata> clinicalAttributes = getMetadataByColumnHeaders(cancerStudy, columnHeaders);
-        return clinicalAttributes;
+        if (clinicalAttributeMetadataCache.isEmpty()) {
+            fillClinicalAttributeMetadataCache();
+        }
+        return new ArrayList<ClinicalAttributeMetadata>(clinicalAttributeMetadataCache.values());
     }
 
     @Override
     public List<ClinicalAttributeMetadata> getMetadataByColumnHeaders(String cancerStudy, List<String> columnHeaders)
         throws ClinicalAttributeNotFoundException, ClinicalMetadataSourceUnresponsiveException, CancerStudyNotFoundException {
-        HashMap<String, ClinicalAttributeMetadata> clinicalAttributeMetadataMap = getClinicalAttributeMetadataMap();
-        List<ClinicalAttributeMetadata> clinicalAttributes = new ArrayList<>();
-        List<String> invalidClinicalAttributes = new ArrayList<String>();
+        ArrayList<ClinicalAttributeMetadata> clinicalAttributeMetadata = new ArrayList<ClinicalAttributeMetadata>();
+        ArrayList<String> invalidColumnHeaders = new ArrayList<String>();
+        if (clinicalAttributeMetadataCache.isEmpty()) {
+            fillClinicalAttributeMetadataCache();
+        }
         for (String columnHeader : columnHeaders) {
             try {
-                ClinicalAttributeMetadata clinicalAttributeMetadataForColumnHeader = getMetadataByColumnHeader(clinicalAttributeMetadataMap, columnHeader);
-                clinicalAttributes.add(clinicalAttributeMetadataForColumnHeader);
+                clinicalAttributeMetadata.add(getMetadataByColumnHeadercolumnHeader);
             } catch (ClinicalAttributeNotFoundException e) {
-                invalidClinicalAttributes.add(columnHeader);
+                invalidColumnHeaders.add(columnHeader);
             }
         }
-        if (invalidClinicalAttributes.size() > 0) {
-            throw new ClinicalAttributeNotFoundException(invalidClinicalAttributes);
+        if (invalidColumnHeaders.size() > 0) {
+            throw new ClinicalAttributeNotFoundException(invalidColumnHeaders);
         }
-        return clinicalAttributes;
+        return clinicalAttributeMetadata;
     }
 
     @Override
@@ -81,8 +106,10 @@ public class CDDServiceMskVocabularyImpl implements ClinicalDataDictionaryServic
     @Override
     public ClinicalAttributeMetadata getMetadataByColumnHeader(String cancerStudy, String columnHeader)
         throws ClinicalAttributeNotFoundException, ClinicalMetadataSourceUnresponsiveException, CancerStudyNotFoundException {
-        HashMap<String, ClinicalAttributeMetadata> clinicalAttributeMetadataMap = getClinicalAttributeMetadataMap();
-        return getMetadataByColumnHeader(clinicalAttributeMetadataMap, columnHeader);
+        if (clinicalAttributeMetadataCache.isEmpty()) {
+            fillClinicalAttributeMetadataCache();
+        }
+        return getMetadataByColumnHeader(columnHeader);
     }
 
     @Override
@@ -104,13 +131,12 @@ public class CDDServiceMskVocabularyImpl implements ClinicalDataDictionaryServic
         return clinicalAttributeMetadataMap;
     }
 
-    private ClinicalAttributeMetadata getMetadataByColumnHeader(Map<String, ClinicalAttributeMetadata> clinicalAttributeMetadataMap, String columnHeader)
+    private ClinicalAttributeMetadata getMetadataByColumnHeader(String columnHeader)
         throws ClinicalAttributeNotFoundException {
-        if (clinicalAttributeMetadataMap.containsKey(columnHeader.toUpperCase())) {
-            return clinicalAttributeMetadataMap.get(columnHeader.toUpperCase());
+        if (clinicalAttributeMetadataCache.containsKey(columnHeader.toUpperCase())) {
+            return clinicalAttributeMetadataCache.get(columnHeader.toUpperCase());
         }
         throw new ClinicalAttributeNotFoundException(columnHeader);
     }
-
 
 }
