@@ -68,7 +68,7 @@ public class ClinicalAttributeMetadata implements Serializable {
     * No args constructor for use in serialization
     *
     */
-    private ClinicalAttributeMetadata() {}
+    public ClinicalAttributeMetadata() {}
 
     /** Primitive Arguments Constructor
     *

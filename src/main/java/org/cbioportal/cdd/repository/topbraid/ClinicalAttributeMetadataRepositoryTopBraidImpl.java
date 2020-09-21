@@ -35,7 +35,7 @@ import org.springframework.stereotype.Repository;
  *
  * @author Manda Wilson
  **/
-@Repository
+//@Repository
 public class ClinicalAttributeMetadataRepositoryTopBraidImpl extends TopBraidRepository<ClinicalAttributeMetadata> implements ClinicalAttributeMetadataRepository {
 
     private final static Logger logger = LoggerFactory.getLogger(ClinicalAttributeMetadataRepositoryTopBraidImpl.class);
