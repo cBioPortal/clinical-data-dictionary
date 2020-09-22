@@ -29,6 +29,7 @@ import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -70,12 +71,13 @@ public class ClinicalAttributeMetadataRepositoryMSKVocabImpl implements Clinical
     private String mskVocabAPI = "http://dev.evn.mskcc.org/edg/api/projects";
  
     @Autowired
-    private TopBraidSessionConfiguration topBraidSessionConfiguration;
+    @Qualifier("mskVocabularySessionManager")
+    private TopBraidSessionManager topBraidSessionManager;
     
     public ArrayList<ClinicalAttributeMetadata> getClinicalAttributeMetadata() {
         logger.info("Fetching clinical attribute metadata from MSKVocab...");
         
-        String sessionId = topBraidSessionConfiguration.getSessionId();
+        String sessionId = topBraidSessionManager.getSessionId();
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cookie", "JSESSIONID=" + sessionId);
