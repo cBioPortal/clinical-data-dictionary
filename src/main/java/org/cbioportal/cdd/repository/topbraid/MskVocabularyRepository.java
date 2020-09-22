@@ -16,9 +16,10 @@
  * has been advised of the possibility of such damage.
 */
 
-package org.cbioportal.cdd.repository.mskvocabulary;
+package org.cbioportal.cdd.repository.topbraid;
 
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
+// TODO : should MskVocabulary be something like MskVocabularyTerm ?
 import org.cbioportal.cdd.model.MskVocabulary;
 import org.cbioportal.cdd.model.MskVocabularyResponse;
 import org.cbioportal.cdd.repository.topbraid.TopBraidSessionConfiguration;
@@ -51,45 +52,30 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @author Avery Wang
  **/
 @Repository
-public class MskVocabularyRepository {
+public class MskVocabularyRepository extends TopBraidRepository<MskVocabulary> {
 
     private final static Logger logger = LoggerFactory.getLogger(MskVocabularyRepository.class);
 
-    @Autowired
-    private TopBraidSessionConfiguration topBraidSessionConfiguration;
-    
-    private String mskVocabAPI = "http://dev.evn.mskcc.org/edg/api/projects";
- 
+    private MultiValueMap<String, String> requestParameters = null;
+
+    // All session configuration has been supplied to this class in ClinicalAttributeMetadataRepositoryConfiguration
+    public MskVocabularyRepository(TopBraidSessionManager topBraidSessionManager) {
+        super.setTopBraidSessionManager(topBraidSessionManager);
+    }
+
+    private MultiValueMap<String, String> getRequestParameters() {
+        if (requestParameters == null) {
+            requestParameters = new LinkedMultiValueMap<String, String>();
+            requestParameters.add("projectGraph", "urn:x-evn-master:redcap_projects");
+            requestParameters.add("projectId", "http://mskcc.org/ontologies/redcap#MSKO0012623");
+        }
+        return requestParameters;
+    }
+
     public ArrayList<MskVocabulary> getClinicalAttributeMetadata() {
         logger.info("Fetching clinical attribute metadata from MskVocabulary...");
-        
-        String sessionId = topBraidSessionConfiguration.getSessionId();
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Cookie", "JSESSIONID=" + sessionId);
-        HttpEntity<String> request = new HttpEntity<String>(headers);
-        
-        URI uri = UriComponentsBuilder.fromHttpUrl(mskVocabAPI)
-            .queryParam("projectGraph", "urn:x-evn-master:redcap_projects")
-            .queryParam("projectId", "http://mskcc.org/ontologies/redcap#MSKO0012623")
-            .build()
-            .toUri();
-       
-         ArrayList<MskVocabulary> mskVocabulary = new ArrayList<MskVocabulary>();
-        try {
-            ResponseEntity<String> response = restTemplate.exchange(uri,
-                HttpMethod.GET,
-                request,
-                String.class);
-            ObjectMapper mapper = new ObjectMapper();
-            MskVocabularyResponse mskVocabularyResponse = mapper.readValue(response.getBody(), MskVocabularyResponse.class);
-            mskVocabulary = mskVocabularyResponse.getMskVocabulary();
-        } catch (RestClientException e) {
-            logger.info("query() -- caught RestClientException");
-            logger.info(e.getMessage());
-            throw new TopBraidException("Failed to connect to TopBraid", e);
-        } catch (Exception e) {}
-        return mskVocabulary;
+        MskVocabularyResponse mskVocabularyResponse = super.getApiResponse(getRequestParameters(), ParameterizedTypeReference<MskVocabularyResponse>);
+        return mskVocabularyResponse.getMskVocabulary();
     }
 
 }

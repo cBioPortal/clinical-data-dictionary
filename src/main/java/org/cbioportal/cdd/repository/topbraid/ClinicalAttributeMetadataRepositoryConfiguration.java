@@ -77,14 +77,15 @@ public class ClinicalAttributeMetadataRepositoryConfiguration {
     }
 
     @Bean
+    // TODO : rename to knowledgeSystemsRepository
     @Qualifier("knowledgeSystemsClinicalAttributeMetadataRepository")
     public KnowledgeSystemsClinicalAttributeMetadataRepository knowledgeSystemsClinicalAttributeMetadataRepository() {
         return new KnowledgeSystemsClinicalAttributeMetadataRepository(knowledgeSystemsSessionManager());
     }
 
     @Bean
-    @Qualifier("mskVocabularyClinicalAttributeMetadataRepository")
-    public MskVocabularyClinicalAttributeMetadataRepository mskVocabularyClinicalAttributeMetadataRepository() {
-        return new MskVocabularyClinicalAttributeMetadataRepository(mskVocabularySessionManager());
+    @Qualifier("mskVocabularyRepository")
+    public MskVocabularyRepository mskVocabularyRepository() {
+        return new MskVocabularyRepository(mskVocabularySessionManager());
     }
 }

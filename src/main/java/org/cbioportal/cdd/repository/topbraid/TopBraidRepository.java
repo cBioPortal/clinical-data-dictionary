@@ -30,7 +30,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Repository;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
@@ -40,7 +39,6 @@ import org.springframework.web.client.RestTemplate;
  *
  * @author Manda Wilson
  **/
-@Repository
 public abstract class TopBraidRepository<T> {
 
     private final static Logger logger = LoggerFactory.getLogger(TopBraidRepository.class);
@@ -98,7 +96,7 @@ public abstract class TopBraidRepository<T> {
         } catch (RestClientException e) {
             logger.debug("query() -- caught RestClientException");
             // see if we should try again, maybe the session expired
-            if (refreshSessionOnFailure == true) {
+            if (refreshSessionOnFailure) {
                 // force refresh of the session id
                 sessionId = topBraidSessionManager.getFreshSessionId();
                 return query(query, parameterizedType, false); // do not make a second attempt
@@ -106,4 +104,50 @@ public abstract class TopBraidRepository<T> {
             throw new TopBraidException("Failed to connect to TopBraid", e);
         }
     }
+
+    protected T getApiResponse(MultiValueMap<String, String> requestParameters, ParameterizedTypeReference<T> parameterizedType)
+            throws TopBraidException {
+        return getApiResponse(requestParameters, parameterizedType, true);
+    }
+
+    private T getApiResponse(MultiValueMap<String, String> requestParameters, ParameterizedTypeReference<T> parameterizedType, boolean refreshSessionOnFailure)
+            throws TopBraidException {
+        logger.debug("getApiResponse() called");
+        String sessionId = topBraidSessionManager.getSessionId();
+        logger.debug("getApiResponse() -- sessionId: " + sessionId);
+        RestTemplate restTemplate = new RestTemplate();
+
+        // set our JSESSIONID cookie and our params
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Cookie", "JSESSIONID=" + sessionId);
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(requestParameters, headers);
+        try {
+            String url = topBraidSessionManager.getConfiguration().getURL();
+            ResponseEntity<T> response = restTemplate.exchange(url,
+                HttpMethod.GET,
+                request,
+                parameterizedType);
+            logger.debug("query() -- response.getBody(): '" + response.getBody() + "'");
+            return response.getBody();
+        } catch (RestClientException e) {
+            logger.debug("query() -- caught RestClientException");
+            // see if we should try again, maybe the session expired
+            if (refreshSessionOnFailure) {
+                // force refresh of the session id
+                sessionId = topBraidSessionManager.getFreshSessionId();
+                return getApiResponse(requestParameters, parameterizedType, false); // do not make a second attempt
+            }
+            throw new TopBraidException("Failed to connect to TopBraid", e);
+        }
+/*
+TODO : delete this
+    // Maybe don't need :
+    private ObjectMapper mapper = new ObjectMapper();
+            MskVocabularyResponse mskVocabularyResponse = mapper.readValue(response.getBody(), MskVocabularyResponse.class);
+    // this either
+        } catch (RestClientException e) {
+*/
+       
+    }
+
 }

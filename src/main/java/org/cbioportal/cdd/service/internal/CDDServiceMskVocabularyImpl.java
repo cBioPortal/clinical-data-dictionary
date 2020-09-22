@@ -15,17 +15,11 @@
 
 package org.cbioportal.cdd.service.internal;
 
-
-// TODO : need to move some of the changes added to MskVocabularyClinicalAttributeMetadataRepository into MskVocabularyRepository
-import org.cbioportal.cdd.repository.topbraid.MskVocabularyClinicalAttributeMetadataRepository;
-import org.cbioportal.cdd.repository.mskvocabulary.MskVocabularyRepository;
-
-
-
 import java.util.*;
 import org.cbioportal.cdd.model.CancerStudy;
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
 import org.cbioportal.cdd.model.MskVocabulary;
+import org.cbioportal.cdd.repository.topbraid.MskVocabularyRepository;
 import org.cbioportal.cdd.service.ClinicalDataDictionaryService;
 import org.cbioportal.cdd.service.exception.CancerStudyNotFoundException;
 import org.cbioportal.cdd.service.exception.ClinicalAttributeNotFoundException;
@@ -43,19 +37,16 @@ import org.springframework.stereotype.Service;
 public class CDDServiceMskVocabularyImpl implements ClinicalDataDictionaryService {
 
     @Autowired
-    private MskVocabularyClinicalAttributeMetadataRepository clinicalAttributeRepository;
+    private MSKVocabStudyUtil mskVocabStudyUtil;
 
     @Autowired
-    private MSKVocabStudyUtil mskVocabStudyUtil;
+    private MskVocabularyRepository mskVocabularyRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(CDDServiceMskVocabularyImpl.class);
 
     // TODO : flesh out caching approach
     private Map<String, ClinicalAttributeMetadata> clinicalAttributeMetadataCache = new HashMap<String, ClinicalAttributeMetadata>();   
  
-    @Autowired
-    private MskVocabularyRepository  mskVocabularyRepository;
-   
     // TODO : flesh out caching approach
     private void fillClinicalAttributeMetadataCache() { 
         List<MskVocabulary> mskClinicalAttributeMetadataList = mskVocabularyRepository.getClinicalAttributeMetadata();
@@ -86,7 +77,7 @@ public class CDDServiceMskVocabularyImpl implements ClinicalDataDictionaryServic
         }
         for (String columnHeader : columnHeaders) {
             try {
-                clinicalAttributeMetadata.add(getMetadataByColumnHeadercolumnHeader);
+                clinicalAttributeMetadata.add(getMetadataByColumnHeader(columnHeader));
             } catch (ClinicalAttributeNotFoundException e) {
                 invalidColumnHeaders.add(columnHeader);
             }
@@ -122,14 +113,16 @@ public class CDDServiceMskVocabularyImpl implements ClinicalDataDictionaryServic
         return Collections.singletonMap("response", "No Cache!");
     }
 
+/* TODO: delete after porting logic into other code
     private HashMap<String, ClinicalAttributeMetadata> getClinicalAttributeMetadataMap() throws ClinicalMetadataSourceUnresponsiveException {
-        List<ClinicalAttributeMetadata> clinicalAttributes = clinicalAttributeRepository.getClinicalAttributeMetadata(); // TODO : add a caching layer so refetching for every request is not needed
+        List<ClinicalAttributeMetadata> clinicalAttributes = mskVocabularyRepository.getClinicalAttributeMetadata(); // TODO : add a caching layer so refetching for every request is not needed
         HashMap<String, ClinicalAttributeMetadata> clinicalAttributeMetadataMap = new HashMap<String, ClinicalAttributeMetadata>();
         for (ClinicalAttributeMetadata clinicalAttributeMetadata : clinicalAttributes) {
             clinicalAttributeMetadataMap.put(clinicalAttributeMetadata.getColumnHeader(), clinicalAttributeMetadata);
         }
         return clinicalAttributeMetadataMap;
     }
+*/
 
     private ClinicalAttributeMetadata getMetadataByColumnHeader(String columnHeader)
         throws ClinicalAttributeNotFoundException {
