@@ -26,6 +26,7 @@ import org.cbioportal.cdd.service.exception.ClinicalAttributeNotFoundException;
 import org.cbioportal.cdd.service.exception.ClinicalMetadataSourceUnresponsiveException;
 import org.cbioportal.cdd.service.exception.FailedCacheRefreshException;
 import org.cbioportal.cdd.service.util.MSKVocabStudyUtil;
+import org.cbioportal.cdd.service.util.MskVocabularyConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,20 +41,22 @@ public class CDDServiceMskVocabularyImpl implements ClinicalDataDictionaryServic
     private MSKVocabStudyUtil mskVocabStudyUtil;
 
     @Autowired
+    private MskVocabularyConverter mskVocabularyConverter;
+    
+    @Autowired
     private MskVocabularyRepository mskVocabularyRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(CDDServiceMskVocabularyImpl.class);
 
-    // TODO : flesh out caching approach
     private Map<String, ClinicalAttributeMetadata> clinicalAttributeMetadataCache = new HashMap<String, ClinicalAttributeMetadata>();   
  
-    // TODO : flesh out caching approach
     private void fillClinicalAttributeMetadataCache() { 
-        List<MskVocabulary> mskClinicalAttributeMetadataList = mskVocabularyRepository.getClinicalAttributeMetadata();
-        for (MskVocabulary mskClinicalAttributeMetadata : mskClinicalAttributeMetadataList) {
-            // TODO : remove conversion logic from model class .. relocate to service layer util
-            ClinicalAttributeMetadata clinicalAttributeMetadata = new ClinicalAttributeMetadata(mskClinicalAttributeMetadata);
-            // TODO : detect when two object instances have the same column header --- and report the inconsisteny or duplication (slack or email?) .. maybe do this in CI integration testing .. data integrity check
+        List<MskVocabulary> mskVocabularyList = mskVocabularyRepository.getClinicalAttributeMetadata();
+        if (mskVocabularyList.size() < clinicalAttributeMetadataCache.keySet().size() || mskVocabularyList == null) {
+            throw new ClinicalMetadataSourceUnresponsiveException("MskVocabulary system did not return valid set of terms");
+        }
+        for (MskVocabulary mskVocabulary : mskVocabularyList) {
+            ClinicalAttributeMetadata clinicalAttributeMetadata = mskVocabularyConverter.convertToClinicalAttributeMetadata(mskVocabulary);
             clinicalAttributeMetadataCache.put(clinicalAttributeMetadata.getColumnHeader(), clinicalAttributeMetadata);
         }
     }
@@ -110,19 +113,13 @@ public class CDDServiceMskVocabularyImpl implements ClinicalDataDictionaryServic
 
     @Override
     public Map<String, String> forceResetCache() throws FailedCacheRefreshException {
-        return Collections.singletonMap("response", "No Cache!");
-    }
-
-/* TODO: delete after porting logic into other code
-    private HashMap<String, ClinicalAttributeMetadata> getClinicalAttributeMetadataMap() throws ClinicalMetadataSourceUnresponsiveException {
-        List<ClinicalAttributeMetadata> clinicalAttributes = mskVocabularyRepository.getClinicalAttributeMetadata(); // TODO : add a caching layer so refetching for every request is not needed
-        HashMap<String, ClinicalAttributeMetadata> clinicalAttributeMetadataMap = new HashMap<String, ClinicalAttributeMetadata>();
-        for (ClinicalAttributeMetadata clinicalAttributeMetadata : clinicalAttributes) {
-            clinicalAttributeMetadataMap.put(clinicalAttributeMetadata.getColumnHeader(), clinicalAttributeMetadata);
+        try {
+            fillClinicalAttributeMetadataCache();
+        } catch (ClinicalMetadataSourceUnresponsiveException e) {
+            throw new FailedCacheRefreshException("failed to refresh cache", e);
         }
-        return clinicalAttributeMetadataMap;
+        return Collections.singletonMap("response", "Success!");
     }
-*/
 
     private ClinicalAttributeMetadata getMetadataByColumnHeader(String columnHeader)
         throws ClinicalAttributeNotFoundException {

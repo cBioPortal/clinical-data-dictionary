@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -52,7 +53,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @author Avery Wang
  **/
 @Repository
-public class MskVocabularyRepository extends TopBraidRepository<MskVocabulary> {
+public class MskVocabularyRepository extends TopBraidRepository<MskVocabularyResponse> {
 
     private final static Logger logger = LoggerFactory.getLogger(MskVocabularyRepository.class);
 
@@ -74,8 +75,7 @@ public class MskVocabularyRepository extends TopBraidRepository<MskVocabulary> {
 
     public ArrayList<MskVocabulary> getClinicalAttributeMetadata() {
         logger.info("Fetching clinical attribute metadata from MskVocabulary...");
-        MskVocabularyResponse mskVocabularyResponse = super.getApiResponse(getRequestParameters(), ParameterizedTypeReference<MskVocabularyResponse>);
+        MskVocabularyResponse mskVocabularyResponse =  super.getApiResponse(getRequestParameters(), new ParameterizedTypeReference<MskVocabularyResponse>(){});
         return mskVocabularyResponse.getMskVocabulary();
     }
-
 }

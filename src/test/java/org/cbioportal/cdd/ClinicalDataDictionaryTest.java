@@ -15,7 +15,7 @@
 
 package org.cbioportal.cdd;
 
-import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
+import org.cbioportal.cdd.repository.topbraid.KnowledgeSystemsClinicalAttributeMetadataRepository;
 import org.cbioportal.cdd.service.internal.ClinicalAttributeMetadataCache;
 import org.cbioportal.cdd.service.exception.*;
 import org.cbioportal.cdd.config.CDDAppConfig;
@@ -54,7 +54,7 @@ public class ClinicalDataDictionaryTest {
     private TestRestTemplate restTemplate;
 
     @Autowired
-    private ClinicalAttributeMetadataRepository clinicalAttributesRepository;
+    private KnowledgeSystemsClinicalAttributeMetadataRepository clinicalAttributesRepository;
 
     @Autowired
     private ClinicalAttributeMetadataCache clinicalAttributesCache;
