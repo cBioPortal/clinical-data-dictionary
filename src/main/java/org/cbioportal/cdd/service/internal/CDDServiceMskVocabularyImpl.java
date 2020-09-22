@@ -18,7 +18,7 @@ package org.cbioportal.cdd.service.internal;
 import java.util.*;
 import org.cbioportal.cdd.model.CancerStudy;
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
-import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
+import org.cbioportal.cdd.repository.topbraid.MskVocabularyClinicalAttributeMetadataRepository;
 import org.cbioportal.cdd.service.ClinicalDataDictionaryService;
 import org.cbioportal.cdd.service.exception.CancerStudyNotFoundException;
 import org.cbioportal.cdd.service.exception.ClinicalAttributeNotFoundException;
@@ -31,15 +31,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-/**
- *
- */
 @Service
 @Qualifier("mskvocabulary")
 public class CDDServiceMskVocabularyImpl implements ClinicalDataDictionaryService {
 
     @Autowired
-    private ClinicalAttributeMetadataRepository clinicalAttributesRepository;
+    private MskVocabularyClinicalAttributeMetadataRepository clinicalAttributeRepository;
 
     @Autowired
     private MSKVocabStudyUtil mskVocabStudyUtil;
@@ -99,7 +96,7 @@ public class CDDServiceMskVocabularyImpl implements ClinicalDataDictionaryServic
     }
 
     private HashMap<String, ClinicalAttributeMetadata> getClinicalAttributeMetadataMap() throws ClinicalMetadataSourceUnresponsiveException {
-        List<ClinicalAttributeMetadata> clinicalAttributes = clinicalAttributesRepository.getClinicalAttributeMetadata(); // TODO : add a caching layer so refetching for every request is not needed
+        List<ClinicalAttributeMetadata> clinicalAttributes = clinicalAttributeRepository.getClinicalAttributeMetadata(); // TODO : add a caching layer so refetching for every request is not needed
         HashMap<String, ClinicalAttributeMetadata> clinicalAttributeMetadataMap = new HashMap<String, ClinicalAttributeMetadata>();
         for (ClinicalAttributeMetadata clinicalAttributeMetadata : clinicalAttributes) {
             clinicalAttributeMetadataMap.put(clinicalAttributeMetadata.getColumnHeader(), clinicalAttributeMetadata);

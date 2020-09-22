@@ -1,17 +1,21 @@
-topbraid.url=
-topbraid.username=
-topbraid.password=
-topbraid.cdd_namespace_prefix=
-topbraid.cdd_graph_id=
+# the knowledgesystems topbraid server sparql endpoint (e.g. http://test.evn.mskcc.org/edg/tbl/sparql)
+#TODO: make this a simple BASE url
+topbraid.knowledgesystems.url=
+topbraid.knowledgesystems.username=
+topbraid.knowledgesystems.password=
+topbraid.knowledgesystems.cdd_namespace_prefix=
+topbraid.knowledgesystems.cdd_graph_id=
+# the msk vocabulary topbraid server api endpoint (e.g. http://dev.evn.mskcc.org/edg/api/projects)
+topbraid.mskvocabulary.url=
+topbraid.mskvocabulary.username=
+topbraid.mskvocabulary.password=
 
 slack.url=
 
-# ehcache properties
 ehcache.persistence.path=
 ehcache.persistence.backup.path=
-ehcache.enable.statistics=false
-ehcache.clinicalAttributeMetadataByStudyCache.maxBytesLocalDiskUnits=
-ehcache.clinicalAttributeMetadataByStudyCache.maxBytesLocalDisk=
+ehcache.enable.statistics=
+ehcache.clinicalAttributeMetadataEHCache.maxBytesLocalDiskUnits=
+ehcache.clinicalAttributeMetadataEHCache.maxBytesLocalDisk=
 ehcache.clinicalAttributeMetadataOverridesEHCache.maxBytesLocalDiskUnits=
 ehcache.clinicalAttributeMetadataOverridesEHCache.maxBytesLocalDisk=
-

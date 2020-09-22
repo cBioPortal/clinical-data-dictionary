@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2018 - 2020 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF
@@ -18,64 +18,50 @@
 
 package org.cbioportal.cdd.repository.topbraid;
 
-import java.lang.String;
+import java.net.URI;
 import java.util.*;
-import javax.annotation.Resource;
-
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
-import org.cbioportal.cdd.model.MSKVocabResponse;
 import org.cbioportal.cdd.model.MSKClinicalAttributeMetadata;
-import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
+import org.cbioportal.cdd.model.MSKVocabResponse;
+import org.cbioportal.cdd.repository.topbraid.MskVocabularyClinicalAttributeMetadataRepository;
+import org.cbioportal.cdd.repository.topbraid.TopBraidSessionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.stereotype.Repository;
-
-import java.net.URI;
-import org.springframework.web.util.UriComponentsBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
+//TODO: clean up unused imports
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.stereotype.Repository;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  *
  * @author Manda Wilson
  **/
-@Repository
-public class ClinicalAttributeMetadataRepositoryMSKVocabImpl implements ClinicalAttributeMetadataRepository {
+public class MskVocabularyClinicalAttributeMetadataRepository extends TopBraidRepository<ClinicalAttributeMetadata> {
 
-    private final static Logger logger = LoggerFactory.getLogger(ClinicalAttributeMetadataRepositoryMSKVocabImpl.class);
+    private final static Logger logger = LoggerFactory.getLogger(MskVocabularyClinicalAttributeMetadataRepository.class);
 
-    @Value("${topbraid.url}")
+    @Value("${topbraid.mskvocabulary.base_url}")
     private String topBraidURL;
 
     private String mskVocabAPI = "http://dev.evn.mskcc.org/edg/api/projects";
+    //TODO : use configuration instead .. and add constructor
  
-    @Autowired
-    private TopBraidSessionConfiguration topBraidSessionConfiguration;
-    
+    public MskVocabularyClinicalAttributeMetadataRepository(TopBraidSessionManager topBraidSessionManager) {
+        super.setTopBraidSessionManager(topBraidSessionManager);
+    }
+
     public ArrayList<ClinicalAttributeMetadata> getClinicalAttributeMetadata() {
         logger.info("Fetching clinical attribute metadata from MSKVocab...");
         
-        String sessionId = topBraidSessionConfiguration.getSessionId();
+        String sessionId = super.getSessionId();
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cookie", "JSESSIONID=" + sessionId);
@@ -84,6 +70,7 @@ public class ClinicalAttributeMetadataRepositoryMSKVocabImpl implements Clinical
         URI uri = UriComponentsBuilder.fromHttpUrl(mskVocabAPI)
             .queryParam("projectGraph", "urn:x-evn-master:redcap_projects")
             .queryParam("projectId", "http://mskcc.org/ontologies/redcap#MSKO0012623")
+//TODO: pass these arguments into super
             .build()
             .toUri();
         try {

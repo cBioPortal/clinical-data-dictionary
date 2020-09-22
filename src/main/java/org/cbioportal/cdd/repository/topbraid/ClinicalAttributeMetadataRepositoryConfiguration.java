@@ -18,10 +18,6 @@
 
 package org.cbioportal.cdd.repository.topbraid;
 
-import java.util.*;
-import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
-import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -30,48 +26,48 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ClinicalAttributeMetadataRepositoryConfiguration {
 
-    @Value("${topbraid.url}")
-    private String topbraidUrl;
+    @Value("${topbraid.knowledgesystems.base_url:}")
+    private String topbraidKnowledgeSystemsBaseUrl;
 
-    @Value("${topbraid.username:}")
-    private String topbraidUsername;
+    @Value("${topbraid.knowledgesystems.username:}")
+    private String topbraidKnowledgeSystemsUsername;
 
-    @Value("${topbraid.password:}")
-     private String topbraidPassword;
+    @Value("${topbraid.knowledgesystems.password:}")
+    private String topbraidKnowledgeSystemsPassword;
 
-    @Value("${mskVocabulary.url}")
+    @Value("${topbraid.mskVocabulary.base_url}")
     private String mskVocabularyUrl;
 
-    @Value("${mskVocabulary.username:}")
+    @Value("${topbraid.mskVocabulary.username:}")
     private String mskVocabularyUsername;
 
-    @Value("${mskVocabulary.password:}")
-     private String mskVocabularyPassword;
+    @Value("${topbraid.mskVocabulary.password:}")
+    private String mskVocabularyPassword;
 
     @Bean
-    @Qualifier("topBraidSessionConfiguration")
-    public TopBraidSessionConfiguration topBraidSessionConfiguration() {
-        TopBraidSessionConfiguration topBraidSessionConfiguration = new TopBraidSessionConfiguration(); 
-        topBraidSessionConfiguration.setURL(topbraidUrl);
-        topBraidSessionConfiguration.setUsername(topbraidUsername);
-        topBraidSessionConfiguration.setPassword(topbraidPassword);
-        return topBraidSessionConfiguration;
+    @Qualifier("knowledgeSystemsSessionConfiguration")
+    public TopBraidSessionConfiguration knowledgeSystemsSessionConfiguration() {
+        TopBraidSessionConfiguration knowledgeSystemsSessionConfiguration = new TopBraidSessionConfiguration(); 
+        knowledgeSystemsSessionConfiguration.setURL(topbraidKnowledgeSystemsBaseUrl);
+        knowledgeSystemsSessionConfiguration.setUsername(topbraidKnowledgeSystemsUsername);
+        knowledgeSystemsSessionConfiguration.setPassword(topbraidKnowledgeSystemsPassword);
+        return knowledgeSystemsSessionConfiguration;
     }
 
     @Bean
     @Qualifier("mskVocabularySessionConfiguration")
     public TopBraidSessionConfiguration mskVocabularySessionConfiguration() {
         TopBraidSessionConfiguration mskVocabularySessionConfiguration = new TopBraidSessionConfiguration(); 
-        mskVocabularySessionConfiguration.setURL(topbraidUrl);
-        mskVocabularySessionConfiguration.setUsername(topbraidUsername);
-        mskVocabularySessionConfiguration.setPassword(topbraidPassword);
+        mskVocabularySessionConfiguration.setURL(topbraidKnowledgeSystemsBaseUrl);
+        mskVocabularySessionConfiguration.setUsername(topbraidKnowledgeSystemsUsername);
+        mskVocabularySessionConfiguration.setPassword(topbraidKnowledgeSystemsPassword);
         return mskVocabularySessionConfiguration;
     }
 
     @Bean
-    @Qualifier("topBraidSessionManager")
-    public TopBraidSessionManager topBraidSessionManager() {
-        return new TopBraidSessionManager(topBraidSessionConfiguration());
+    @Qualifier("knowledgeSystemsSessionManager")
+    public TopBraidSessionManager knowledgeSystemsSessionManager() {
+        return new TopBraidSessionManager(knowledgeSystemsSessionConfiguration());
     }
 
     @Bean
@@ -81,8 +77,14 @@ public class ClinicalAttributeMetadataRepositoryConfiguration {
     }
 
     @Bean
-    @Qualifier("clinicalAttributeMetadataRepositoryTopBraidImpl")
-    public ClinicalAttributeMetadataRepositoryTopBraidImpl clinicalAttributeMetadataRepositoryTopBraidImpl() {
-        return new ClinicalAttributeMetadataRepositoryTopBraidImpl(topBraidSessionManager());
+    @Qualifier("knowledgeSystemsClinicalAttributeMetadataRepository")
+    public KnowledgeSystemsClinicalAttributeMetadataRepository knowledgeSystemsClinicalAttributeMetadataRepository() {
+        return new KnowledgeSystemsClinicalAttributeMetadataRepository(knowledgeSystemsSessionManager());
+    }
+
+    @Bean
+    @Qualifier("mskVocabularyClinicalAttributeMetadataRepository")
+    public MskVocabularyClinicalAttributeMetadataRepository mskVocabularyClinicalAttributeMetadataRepository() {
+        return new MskVocabularyClinicalAttributeMetadataRepository(mskVocabularySessionManager());
     }
 }

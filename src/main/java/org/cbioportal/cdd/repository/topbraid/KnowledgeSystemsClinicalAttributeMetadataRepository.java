@@ -19,27 +19,19 @@
 package org.cbioportal.cdd.repository.topbraid;
 
 import java.util.*;
-import javax.annotation.Resource;
-
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
-import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.stereotype.Repository;
 
 /**
  *
  * @author Manda Wilson
  **/
-//@Repository
-public class ClinicalAttributeMetadataRepositoryTopBraidImpl extends TopBraidRepository<ClinicalAttributeMetadata> implements ClinicalAttributeMetadataRepository {
+public class KnowledgeSystemsClinicalAttributeMetadataRepository extends TopBraidRepository<ClinicalAttributeMetadata> {
 
-    private final static Logger logger = LoggerFactory.getLogger(ClinicalAttributeMetadataRepositoryTopBraidImpl.class);
+    private final static Logger logger = LoggerFactory.getLogger(KnowledgeSystemsClinicalAttributeMetadataRepository.class);
 
     @Value("${topbraid.cdd_namespace_prefix:http://data.mskcc.org/ontologies/ClinicalDataDictionary#}")
     private String topBraidCddNamespacePrefix;
@@ -50,7 +42,7 @@ public class ClinicalAttributeMetadataRepositoryTopBraidImpl extends TopBraidRep
     private String overridesQuery = null;
     private String attributesQuery = null;
 
-    public ClinicalAttributeMetadataRepositoryTopBraidImpl(TopBraidSessionManager topBraidSessionManager) {
+    public KnowledgeSystemsClinicalAttributeMetadataRepository(TopBraidSessionManager topBraidSessionManager) {
         super.setTopBraidSessionManager(topBraidSessionManager);
     }
 
