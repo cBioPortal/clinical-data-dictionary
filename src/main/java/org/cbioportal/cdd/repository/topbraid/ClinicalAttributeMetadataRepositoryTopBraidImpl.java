@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2018 - 2020 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF
@@ -26,6 +26,7 @@ import org.cbioportal.cdd.repository.ClinicalAttributeMetadataRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -40,7 +41,6 @@ public class ClinicalAttributeMetadataRepositoryTopBraidImpl extends TopBraidRep
 
     private final static Logger logger = LoggerFactory.getLogger(ClinicalAttributeMetadataRepositoryTopBraidImpl.class);
 
-
     @Value("${topbraid.cdd_namespace_prefix:http://data.mskcc.org/ontologies/ClinicalDataDictionary#}")
     private String topBraidCddNamespacePrefix;
 
@@ -49,6 +49,10 @@ public class ClinicalAttributeMetadataRepositoryTopBraidImpl extends TopBraidRep
 
     private String overridesQuery = null;
     private String attributesQuery = null;
+
+    public ClinicalAttributeMetadataRepositoryTopBraidImpl(TopBraidSessionManager topBraidSessionManager) {
+        super.setTopBraidSessionManager(topBraidSessionManager);
+    }
 
     private String getOverridesQuery() {
         if (overridesQuery == null) {
@@ -101,7 +105,8 @@ public class ClinicalAttributeMetadataRepositoryTopBraidImpl extends TopBraidRep
     public ArrayList<ClinicalAttributeMetadata> getClinicalAttributeMetadata() {
         logger.info("Fetching clinical attribute metadata from TopBraid...");
         try {
-            ArrayList<ClinicalAttributeMetadata> list = new ArrayList<ClinicalAttributeMetadata>(super.query(getAttributesQuery(), new ParameterizedTypeReference<List<ClinicalAttributeMetadata>>(){}));
+            ArrayList<ClinicalAttributeMetadata> list = new ArrayList<ClinicalAttributeMetadata>(
+            super.query(getAttributesQuery(), new ParameterizedTypeReference<List<ClinicalAttributeMetadata>>(){}));
             return list;
         } catch (TopBraidException e) {
             logger.error("Problem connecting to TopBraid");

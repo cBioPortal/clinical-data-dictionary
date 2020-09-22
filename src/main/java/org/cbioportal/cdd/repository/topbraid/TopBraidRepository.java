@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2018 - 2020 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF
@@ -21,16 +21,15 @@ package org.cbioportal.cdd.repository.topbraid;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -46,11 +45,15 @@ public abstract class TopBraidRepository<T> {
 
     private final static Logger logger = LoggerFactory.getLogger(TopBraidRepository.class);
 
-    @Value("${topbraid.url}")
-    private String topBraidURL;
+    protected TopBraidSessionManager topBraidSessionManager;
 
-    @Autowired
-    private TopBraidSessionConfiguration topBraidSessionConfiguration;
+    protected TopBraidSessionManager getTopBraidSessionManager() {
+        return topBraidSessionManager;
+    }
+
+    protected void setTopBraidSessionManager(TopBraidSessionManager topBraidSessionManager) {
+        this.topBraidSessionManager = topBraidSessionManager;
+    }
 
     protected List<T> query(String query, ParameterizedTypeReference<List<T>> parameterizedType)
             throws TopBraidException {
@@ -60,7 +63,7 @@ public abstract class TopBraidRepository<T> {
     private List<T> query(String query, ParameterizedTypeReference<List<T>> parameterizedType, boolean refreshSessionOnFailure)
             throws TopBraidException {
         logger.debug("query() -- query: '" + query + "'");
-        String sessionId = topBraidSessionConfiguration.getSessionId();
+        String sessionId = topBraidSessionManager.getSessionId();
         logger.debug("query() -- sessionId: " + sessionId);
         RestTemplate restTemplate = new RestTemplate();
 
@@ -85,7 +88,8 @@ public abstract class TopBraidRepository<T> {
         // NOTE ParameterizedTypeReference cannot be made generic, that is why child class passes it
         // See: http://stackoverflow.com/questions/21987295/using-spring-resttemplate-in-generic-method-with-generic-parameter
         try {
-            ResponseEntity<List<T>> response = restTemplate.exchange(topBraidURL,
+            String url = topBraidSessionManager.getConfiguration().getURL();
+            ResponseEntity<List<T>> response = restTemplate.exchange(url,
                 HttpMethod.POST,
                 request,
                 parameterizedType);
@@ -96,7 +100,7 @@ public abstract class TopBraidRepository<T> {
             // see if we should try again, maybe the session expired
             if (refreshSessionOnFailure == true) {
                 // force refresh of the session id
-                sessionId = topBraidSessionConfiguration.getFreshSessionId();
+                sessionId = topBraidSessionManager.getFreshSessionId();
                 return query(query, parameterizedType, false); // do not make a second attempt
             }
             throw new TopBraidException("Failed to connect to TopBraid", e);
