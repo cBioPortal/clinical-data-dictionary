@@ -81,7 +81,7 @@ public class ClinicalAttributeMetadataRepositoryConfiguration {
         return new TopBraidSessionManager(mskVocabularySessionConfiguration());
     }
 
-    @Bean
+   // @Bean
     // TODO : rename to knowledgeSystemsRepository
     @Qualifier("knowledgeSystemsClinicalAttributeMetadataRepository")
     public KnowledgeSystemsClinicalAttributeMetadataRepository knowledgeSystemsClinicalAttributeMetadataRepository() {
