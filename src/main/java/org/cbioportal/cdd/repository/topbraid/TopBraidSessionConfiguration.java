@@ -25,8 +25,17 @@ package org.cbioportal.cdd.repository.topbraid;
 public class TopBraidSessionConfiguration {
 
     private String url;
+    private String loginUrl;
     private String username;
     private String password;
+
+    public String getLoginURL() {
+        return loginUrl;
+    }
+
+    public void setLoginURL(String loginUrl) {
+        this.loginUrl = loginUrl;
+    }
 
     public String getURL() {
         return url;

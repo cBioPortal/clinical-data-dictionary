@@ -17,7 +17,13 @@
 */
 
 package org.cbioportal.cdd.repository.topbraid;
-
+import java.net.URI;
+import org.springframework.web.util.UriComponentsBuilder;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import org.cbioportal.cdd.model.MskVocabulary;
+import org.cbioportal.cdd.model.MskVocabularyResponse;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,10 +126,14 @@ public abstract class TopBraidRepository<T> {
         // set our JSESSIONID cookie and our params
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cookie", "JSESSIONID=" + sessionId);
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(requestParameters, headers);
+        HttpEntity<String> request = new HttpEntity<String>(headers);
         try {
             String url = topBraidSessionManager.getConfiguration().getURL();
-            ResponseEntity<T> response = restTemplate.exchange(url,
+            URI uri = UriComponentsBuilder.fromHttpUrl(url)
+                .queryParams(requestParameters)
+                .build()
+                .toUri();
+            ResponseEntity<T> response = restTemplate.exchange(uri,
                 HttpMethod.GET,
                 request,
                 parameterizedType);
@@ -139,6 +149,8 @@ public abstract class TopBraidRepository<T> {
             }
             throw new TopBraidException("Failed to connect to TopBraid", e);
         }
+    }
+}
 /*
 TODO : delete this
     // Maybe don't need :
@@ -148,6 +160,3 @@ TODO : delete this
         } catch (RestClientException e) {
 */
        
-    }
-
-}

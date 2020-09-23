@@ -35,9 +35,12 @@ public class ClinicalAttributeMetadataRepositoryConfiguration {
     @Value("${topbraid.knowledgesystems.password:}")
     private String topbraidKnowledgeSystemsPassword;
 
-    @Value("${topbraid.mskVocabulary.base_url}")
+    @Value("${topbraid.mskVocabulary.base_url:}")
     private String mskVocabularyUrl;
 
+    @Value("${topbraid.mskVocabulary.login_url:}")
+    private String mskVocabularyLoginUrl;
+    
     @Value("${topbraid.mskVocabulary.username:}")
     private String mskVocabularyUsername;
 
@@ -49,6 +52,7 @@ public class ClinicalAttributeMetadataRepositoryConfiguration {
     public TopBraidSessionConfiguration knowledgeSystemsSessionConfiguration() {
         TopBraidSessionConfiguration knowledgeSystemsSessionConfiguration = new TopBraidSessionConfiguration(); 
         knowledgeSystemsSessionConfiguration.setURL(topbraidKnowledgeSystemsBaseUrl);
+        knowledgeSystemsSessionConfiguration.setLoginURL(topbraidKnowledgeSystemsBaseUrl);
         knowledgeSystemsSessionConfiguration.setUsername(topbraidKnowledgeSystemsUsername);
         knowledgeSystemsSessionConfiguration.setPassword(topbraidKnowledgeSystemsPassword);
         return knowledgeSystemsSessionConfiguration;
@@ -59,6 +63,7 @@ public class ClinicalAttributeMetadataRepositoryConfiguration {
     public TopBraidSessionConfiguration mskVocabularySessionConfiguration() {
         TopBraidSessionConfiguration mskVocabularySessionConfiguration = new TopBraidSessionConfiguration(); 
         mskVocabularySessionConfiguration.setURL(mskVocabularyUrl);
+        mskVocabularySessionConfiguration.setLoginURL(mskVocabularyLoginUrl);
         mskVocabularySessionConfiguration.setUsername(mskVocabularyUsername);
         mskVocabularySessionConfiguration.setPassword(mskVocabularyPassword);
         return mskVocabularySessionConfiguration;

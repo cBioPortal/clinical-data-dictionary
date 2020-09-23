@@ -76,11 +76,11 @@ public class TopBraidSessionManager {
      */
     public String getFreshSessionId() {
         // we need a valid session id to query the login page, so first get that from another page
-        Cookie initialSessionIdCookie = getSessionIdCookie(configuration.getURL());
+        Cookie initialSessionIdCookie = getSessionIdCookie(configuration.getLoginURL());
         if (initialSessionIdCookie != null) {
             logger.debug("getFreshSessionId() -- initial session id: " + initialSessionIdCookie.getValue());
             // now actually login, using our session id
-            String loginURL = constructLoginURL();
+            String loginURL = constructURL();
             // send our previous session id cookie and then replace it with the one attached to our successful login
             sessionIdCookie = getSessionIdCookie(loginURL, initialSessionIdCookie);
             if (sessionIdCookie != null) {
@@ -98,8 +98,8 @@ public class TopBraidSessionManager {
         return getSessionIdCookie(url, null);
     }
 
-    private String constructLoginURL() {
-        return configuration.getURL() + "/j_security_check" + "?" +
+    private String constructURL() {
+        return configuration.getLoginURL() + "/j_security_check" + "?" +
                 "j_username=" + configuration.getUsername() + "&" +
                 "j_password=" + configuration.getPassword();
     }
