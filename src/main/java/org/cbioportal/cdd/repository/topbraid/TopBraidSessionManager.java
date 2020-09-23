@@ -39,14 +39,13 @@ import org.springframework.http.HttpStatus;
  *
  * @author Manda Wilson
  **/
-@Configuration
 public class TopBraidSessionManager {
 
     private final static Logger logger = LoggerFactory.getLogger(TopBraidSessionConfiguration.class);
 
     private TopBraidSessionConfiguration configuration;
 
-    private static Cookie sessionIdCookie;
+    private Cookie sessionIdCookie;
 
     public TopBraidSessionManager(TopBraidSessionConfiguration configuration) {
         this.configuration = configuration;

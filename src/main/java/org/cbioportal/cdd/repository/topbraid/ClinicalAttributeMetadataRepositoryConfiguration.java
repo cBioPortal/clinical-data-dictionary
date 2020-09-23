@@ -58,9 +58,9 @@ public class ClinicalAttributeMetadataRepositoryConfiguration {
     @Qualifier("mskVocabularySessionConfiguration")
     public TopBraidSessionConfiguration mskVocabularySessionConfiguration() {
         TopBraidSessionConfiguration mskVocabularySessionConfiguration = new TopBraidSessionConfiguration(); 
-        mskVocabularySessionConfiguration.setURL(topbraidKnowledgeSystemsBaseUrl);
-        mskVocabularySessionConfiguration.setUsername(topbraidKnowledgeSystemsUsername);
-        mskVocabularySessionConfiguration.setPassword(topbraidKnowledgeSystemsPassword);
+        mskVocabularySessionConfiguration.setURL(mskVocabularyUrl);
+        mskVocabularySessionConfiguration.setUsername(mskVocabularyUsername);
+        mskVocabularySessionConfiguration.setPassword(mskVocabularyPassword);
         return mskVocabularySessionConfiguration;
     }
 
