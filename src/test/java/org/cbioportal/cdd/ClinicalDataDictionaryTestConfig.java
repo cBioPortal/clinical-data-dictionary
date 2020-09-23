@@ -19,16 +19,33 @@ import java.util.*;
 import org.mockito.Mockito;
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
 import org.cbioportal.cdd.repository.topbraid.KnowledgeSystemsClinicalAttributeMetadataRepository;
+import org.cbioportal.cdd.repository.topbraid.MskVocabularyRepository;
+import org.cbioportal.cdd.model.MskVocabulary;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 @Configuration
 public class ClinicalDataDictionaryTestConfig {
 
     @Bean
+    @Primary
+    @Qualifier("mockedKnowledgeSystemsClinicalAttributeMetadataRepository")
     public KnowledgeSystemsClinicalAttributeMetadataRepository mockClinicalAttributesRepository() {
         KnowledgeSystemsClinicalAttributeMetadataRepository mockClinicalAttributesRepository = Mockito.mock(KnowledgeSystemsClinicalAttributeMetadataRepository.class);
         return mockClinicalAttributesRepository;
+    }
+
+    @Bean
+    @Primary
+    @Qualifier("mockedMskVocabularyRepository")
+    public MskVocabularyRepository mockMskVocabularyRepository() {
+        MskVocabularyRepository mockMskVocabularyRepository = Mockito.mock(MskVocabularyRepository.class);
+        Mockito.reset(mockMskVocabularyRepository);
+        // TODO : mock realistic behavior and write unit tests against the MskVocabularyRepository
+        Mockito.when(mockMskVocabularyRepository.getClinicalAttributeMetadata()).thenReturn(new ArrayList<MskVocabulary>());
+        return mockMskVocabularyRepository;
     }
 
     public void resetWorkingClinicalAttributesRepository(KnowledgeSystemsClinicalAttributeMetadataRepository mockClinicalAttributesRepository) {
