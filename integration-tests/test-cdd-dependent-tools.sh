@@ -72,10 +72,10 @@ cd $CDD_DIRECTORY ; mvn package -DskipTests=true -Dpackaging.type=jar
 #start up CDD on some port on dashi-dev
 CDD_PORT=`find_free_port`
 
-TIME_BETWEEN_CDD_AVAILIBILITY_TESTS=3
+TIME_BETWEEN_CDD_AVAILIBILITY_TESTS=60
 CDD_DEPLOYMENT_SUCCESS=0
 CURRENT_WAIT_TIME=0
-MAXIMUM_WAIT_TIME=120
+MAXIMUM_WAIT_TIME=210
 
 if [ $CDD_PORT -gt 0 ] ; then
     java -jar $CDD_JAR --server.port=$CDD_PORT >> /dev/null 2>&1 &
@@ -100,7 +100,7 @@ if [ $CDD_PORT -gt 0 ] ; then
         fi
 
         if [ $CURRENT_WAIT_TIME -gt $MAXIMUM_WAIT_TIME ] ; then
-            echo "CDD is inaccessible (after a 2 min wait time)... canceling tests"
+            echo "CDD is inaccessible (after a 3 min wait time)... canceling tests"
         fi
         sleep $TIME_BETWEEN_CDD_AVAILIBILITY_TESTS
     done
