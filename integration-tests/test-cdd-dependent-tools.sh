@@ -86,23 +86,24 @@ if [ $CDD_PORT -gt 0 ] ; then
     CDD_URL="http://dashi-dev.cbio.mskcc.org:$CDD_PORT/api/"
     CDD_ENDPOINT="http://dashi-dev.cbio.mskcc.org:$CDD_PORT/api/SAMPLE_ID"
     while [ $CDD_DEPLOYMENT_SUCCESS -eq 0 ] ; do
-        CURRENT_WAIT_TIME=$(($CURRENT_WAIT_TIME + 10))
         JOB_RUNNING=`jobs | grep "cdd.jar" | grep "Running"`
-        if [ -z $JOB_RUNNING ] ; then
+        if [ -n $JOB_RUNNING ] ; then
             curl --fail -X GET --header 'Accept: */*' $CDD_ENDPOINT
             if [ $? -eq 0 ] ; then
                 CDD_DEPLOYMENT_SUCCESS=1
                 break
             fi
         else
-            echo "CDD unable to start up... canceling tests"
+            echo "CDD not yet available - waiting $TIME_BETWEEN_CDD_AVAILIBILITY_TESTS seconds before retest"
             break
         fi
 
         if [ $CURRENT_WAIT_TIME -gt $MAXIMUM_WAIT_TIME ] ; then
-            echo "CDD is inaccessible (after a 3 min wait time)... canceling tests"
+            echo "CDD is still inaccessible (after waiting at least $MAXIMUM_WAIT_TIME seconds)... canceling tests"
+            break
         fi
         sleep $TIME_BETWEEN_CDD_AVAILIBILITY_TESTS
+        CURRENT_WAIT_TIME=$(($CURRENT_WAIT_TIME + $TIME_BETWEEN_CDD_AVAILIBILITY_TESTS))
     done
 fi
 
