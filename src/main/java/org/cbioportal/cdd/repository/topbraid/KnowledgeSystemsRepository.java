@@ -36,10 +36,7 @@ public class KnowledgeSystemsRepository extends TopBraidRepository<ClinicalAttri
 
     private final static Logger logger = LoggerFactory.getLogger(KnowledgeSystemsRepository.class);
 
-    @Value("${topbraid.knowledgeSystems.cddNamespacePrefix:http://data.mskcc.org/ontologies/ClinicalDataDictionary#}")
     private String topBraidCddNamespacePrefix;
-
-    @Value("${topbraid.knowledgeSystems.cddGraphId:urn:x-evn-master:cdd}")
     private String topBraidCddGraphId;
 
     private MultiValueMap<String, String> overridesRequestParameters = null;
@@ -47,8 +44,10 @@ public class KnowledgeSystemsRepository extends TopBraidRepository<ClinicalAttri
 
     private final ParameterizedTypeReference<List<ClinicalAttributeMetadata>> clinicalAttributeMetaDataListType = new ParameterizedTypeReference<List<ClinicalAttributeMetadata>>(){};
 
-    public KnowledgeSystemsRepository(TopBraidSessionManager topBraidSessionManager) {
+    public KnowledgeSystemsRepository(TopBraidSessionManager topBraidSessionManager, String topBraidCddNamespacePrefix, String topBraidCddGraphId) {
         super.setTopBraidSessionManager(topBraidSessionManager);
+        this.topBraidCddNamespacePrefix = topBraidCddNamespacePrefix;
+        this.topBraidCddGraphId = topBraidCddGraphId;
     }
 
     private String getOverridesQuery() {

@@ -45,6 +45,12 @@ public class RepositoryConfig {
     @Value("${topbraid.mskVocabulary.serviceUrl:}")
     private String mskVocabularyServiceUrl;
 
+    @Value("${topbraid.knowledgeSystems.cddNamespacePrefix:}")
+    private String topBraidCddNamespacePrefix;
+
+    @Value("${topbraid.knowledgeSystems.cddGraphId:}")
+    private String topBraidCddGraphId;
+
     @Value("${topbraid.mskVocabulary.loginUrl:}")
     private String mskVocabularyLoginUrl;
 
@@ -91,7 +97,7 @@ public class RepositoryConfig {
     @Bean
     @Qualifier("knowledgeSystemsRepository")
     public KnowledgeSystemsRepository knowledgeSystemsRepository() {
-        return new KnowledgeSystemsRepository(knowledgeSystemsSessionManager());
+        return new KnowledgeSystemsRepository(knowledgeSystemsSessionManager(), topBraidCddNamespacePrefix, topBraidCddGraphId);
     }
 
     @Bean
