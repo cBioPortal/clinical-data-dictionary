@@ -21,6 +21,7 @@ EXPECTED_METADATA_HEADERS=$CDD_DIRECTORY/integration-tests/expected_metadata_hea
 
 JENKINS_USER_HOME_DIRECTORY=/var/lib/jenkins
 JENKINS_PROPERTIES_DIRECTORY=$JENKINS_USER_HOME_DIRECTORY/pipelines-configuration/properties
+JENKINS_TEST_APPLICATION_PROPERTIES=jenkins.test.application.properties
 APPLICATION_PROPERTIES=application.properties
 TEST_APPLICATION_PROPERTIES=test.application.properties
 
@@ -65,7 +66,7 @@ function find_free_port {
 }
 
 # Copy in CDD properties and build jar
-rsync $JENKINS_PROPERTIES_DIRECTORY/clinical-data-dictionary/$APPLICATION_PROPERTIES $CDD_DIRECTORY/src/main/resources
+rsync $JENKINS_PROPERTIES_DIRECTORY/clinical-data-dictionary/$JENKINS_TEST_APPLICATION_PROPERTIES $CDD_DIRECTORY/src/main/resources/$APPLICATION_PROPERTIES
 rsync $JENKINS_PROPERTIES_DIRECTORY/clinical-data-dictionary/$TEST_APPLICATION_PROPERTIES $CDD_DIRECTORY/src/test/resources
 cd $CDD_DIRECTORY ; mvn package -DskipTests=true -Dpackaging.type=jar
 
@@ -155,7 +156,7 @@ fi
 rm -rf $TESTING_DIRECTORY_TEMP
 
 # test that the resource_uri_to_clinical_attribute_mapping.txt is valid and matches Topbriad
-python $CCD_SCRIPTS_DIRECTORY/validate_topbraid_uris.py --curated-file $CCD_DOCS_DIRECTORY/resource_uri_to_clinical_attribute_mapping.txt --properties-file $JENKINS_PROPERTIES_DIRECTORY/clinical-data-dictionary/$APPLICATION_PROPERTIES
+python $CCD_SCRIPTS_DIRECTORY/validate_topbraid_uris.py --curated-file $CCD_DOCS_DIRECTORY/resource_uri_to_clinical_attribute_mapping.txt --properties-file $JENKINS_PROPERTIES_DIRECTORY/clinical-data-dictionary/$JENKINS_TEST_APPLICATION_PROPERTIES
 if [ $? -gt 0 ] ; then
     echo "validate_topbraid_uris.py failed, resource_uri_to_clinical_attribute_mapping.txt is invalid or in conflict with Topbraid"
 else
