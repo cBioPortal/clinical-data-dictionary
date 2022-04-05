@@ -90,7 +90,8 @@ public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionary
 
     @Override
     public Map<String, String> forceResetCache() throws FailedCacheRefreshException {
-        cddServiceMskVocabularyImpl.forceResetCache();
+        // No longer in use, MskVocabulary project has been deleted and is no longer supported
+	// cddServiceMskVocabularyImpl.forceResetCache();
         cddServiceTopBraidImpl.forceResetCache();
         return Collections.singletonMap("response", "Success!");
     }
