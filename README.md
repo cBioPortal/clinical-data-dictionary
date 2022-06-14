@@ -1,5 +1,5 @@
 # clinical-data-dictionary
-
+okay
 Clinical Attribute Web Service for retrieving clinical attribute names and metadata.
 
 ### Requirements
