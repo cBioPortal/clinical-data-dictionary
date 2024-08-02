@@ -29,7 +29,7 @@ REDCAP_EXPORT_TEST_SUCCESS=0
 ADD_TEST_CDD_HEADERS_SUCCESS=0
 EQUAL_METADATA_HEADERS_TEST_SUCCESS=0
 FAKE_STUDY_ID_TEST_SUCCESS=0
-CDD_TOPBRAID_URI_VALIDATION_SUCCESS=0
+CDD_GRAPHITE_URI_VALIDATION_SUCCESS=0
 
 function find_and_kill_cdd_process {
     CDD_PORT_NUMBER=$1
@@ -156,15 +156,15 @@ fi
 rm -rf $TESTING_DIRECTORY_TEMP
 
 # test that the resource_uri_to_clinical_attribute_mapping.txt is valid and matches Topbriad
-python $CCD_SCRIPTS_DIRECTORY/validate_topbraid_uris.py --curated-file $CCD_DOCS_DIRECTORY/resource_uri_to_clinical_attribute_mapping.txt --properties-file $JENKINS_PROPERTIES_DIRECTORY/clinical-data-dictionary/$JENKINS_TEST_APPLICATION_PROPERTIES
+python $CCD_SCRIPTS_DIRECTORY/validate_graphite_cdd_ids.py --curated-file $CCD_DOCS_DIRECTORY/resource_uri_to_clinical_attribute_mapping.txt --properties-file $JENKINS_PROPERTIES_DIRECTORY/clinical-data-dictionary/$JENKINS_TEST_APPLICATION_PROPERTIES
 if [ $? -gt 0 ] ; then
-    echo "validate_topbraid_uris.py failed, resource_uri_to_clinical_attribute_mapping.txt is invalid or in conflict with Topbraid"
+    echo "validate_graphite_cdd_ids.py failed, resource_uri_to_clinical_attribute_mapping.txt is invalid or in conflict with Graphite"
 else
-    CDD_TOPBRAID_URI_VALIDATION_SUCCESS=1
+    CDD_GRAPHITE_URI_VALIDATION_SUCCESS=1
 fi
 
 # all five tests must pass for integration test to succeed
-if [[ $REDCAP_EXPORT_TEST_SUCCESS -eq 0 || $ADD_TEST_CDD_HEADERS_SUCCESS -eq 0 || $EQUAL_METADATA_HEADERS_TEST_SUCCESS -eq 0 || $FAKE_STUDY_ID_TEST_SUCCESS -eq 0 || $CDD_TOPBRAID_URI_VALIDATION_SUCCESS -eq 0 ]] ; then
+if [[ $REDCAP_EXPORT_TEST_SUCCESS -eq 0 || $ADD_TEST_CDD_HEADERS_SUCCESS -eq 0 || $EQUAL_METADATA_HEADERS_TEST_SUCCESS -eq 0 || $FAKE_STUDY_ID_TEST_SUCCESS -eq 0 || $CDD_GRAPHITE_URI_VALIDATION_SUCCESS -eq 0 ]] ; then
     echo "Integration tests for CDD failed"
     exit 1
 fi

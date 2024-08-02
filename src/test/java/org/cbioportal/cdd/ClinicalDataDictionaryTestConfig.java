@@ -18,8 +18,7 @@ package org.cbioportal.cdd;
 import java.util.*;
 import org.mockito.Mockito;
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
-import org.cbioportal.cdd.repository.topbraid.KnowledgeSystemsRepository;
-import org.cbioportal.cdd.repository.topbraid.MskVocabularyRepository;
+import org.cbioportal.cdd.repository.graphite.KnowledgeSystemsRepository;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Configuration;
 
@@ -28,9 +27,6 @@ public class ClinicalDataDictionaryTestConfig {
 
     @MockBean
     public KnowledgeSystemsRepository mockClinicalAttributesRepository;
-
-    @MockBean
-    public MskVocabularyRepository mockMskVocabularyRepository;
 
     public void resetWorkingClinicalAttributesRepository(KnowledgeSystemsRepository mockClinicalAttributesRepository) {
         Mockito.reset(mockClinicalAttributesRepository);

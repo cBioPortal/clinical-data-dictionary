@@ -140,10 +140,10 @@ public class ClinicalAttributeMetadataCache {
         }
 
         // regardless of whether ehcache was updated with new data - use that data to populate modeled object caches
-        // ensures app starts up (between tomcat restarts) if TopBraid is down
+        // ensures app starts up (between tomcat restarts) if Graphite is down
         logger.info("Loading modeled object cache from EHCache");
         try {
-            // this will throw an exception if we cannot connect to TopBraid AND cache is corrupt
+            // this will throw an exception if we cannot connect to Graphite AND cache is corrupt
             latestClinicalAttributeMetadata = clinicalAttributeMetadataPersistentCache.getClinicalAttributeMetadataFromPersistentCache();
             latestOverrides = clinicalAttributeMetadataPersistentCache.getClinicalAttributeMetadataOverridesFromPersistentCache();
         } catch (Exception e) {
@@ -195,7 +195,7 @@ public class ClinicalAttributeMetadataCache {
         logger.info("resetCache(): refilled overrides cache with " + latestOverrides.size() + " overrides");
 
         if (failedClinicalAttributeMetadataCacheRefresh || failedOverridesCacheRefresh) {
-            logger.info("Unable to update cache with latest data from TopBraid... falling back on EHCache store.");
+            logger.info("Unable to update cache with latest data from Graphite... falling back on EHCache store.");
             throw new FailedCacheRefreshException("Failed to refresh cache", new Exception());
         } else {
             dateOfLastCacheRefresh = dateOfCurrentCacheRefresh;

@@ -138,6 +138,11 @@ public class ClinicalAttributeMetadata implements Serializable {
         return columnHeader;
     }
 
+    @JsonProperty("column_header")
+    public void setColumnHeader(String columnHeader) {
+        this.columnHeader = columnHeader;
+    }
+
     /**
     *
     * @param normalizedColumnHeader

@@ -1,20 +1,11 @@
-# the knowledge systems topbraid server sparql endpoint (e.g. http://test.evn.mskcc.org/edg/tbl/sparql)
-topbraid.knowledgeSystems.serviceUrl=
-topbraid.knowledgeSystems.loginUrl=
-topbraid.knowledgeSystems.username=
-topbraid.knowledgeSystems.password=
-topbraid.knowledgeSystems.cddNamespacePrefix=
-topbraid.knowledgeSystems.cddGraphId=
-# the msk vocabulary topbraid server api endpoint (e.g. http://dev.evn.mskcc.org/edg/api/projects)
-topbraid.mskVocabulary.serviceUrl=
-topbraid.mskVocabulary.loginUrl=
-topbraid.mskVocabulary.username=
-topbraid.mskVocabulary.password=
+# the graphite server sparql endpoint (e.g. http://localhost:7200/repositories/graphite)
+graphite.url=
+graphite.username=
+graphite.password=
+graphite.cddNamespacePrefix=
+graphite.cddGraphId=
 
 slack.url=
-
-# mskcc vocabulary studies
-mskVocabulary.studyIdList=
 
 ehcache.persistence.path=
 ehcache.persistence.backupPath=

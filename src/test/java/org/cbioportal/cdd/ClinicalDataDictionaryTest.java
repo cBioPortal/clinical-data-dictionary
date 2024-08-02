@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - 2020 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2018 - 2020, 2024 Memorial Sloan Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS
@@ -15,7 +15,7 @@
 
 package org.cbioportal.cdd;
 
-import org.cbioportal.cdd.repository.topbraid.KnowledgeSystemsRepository;
+import org.cbioportal.cdd.repository.graphite.KnowledgeSystemsRepository;
 import org.cbioportal.cdd.service.internal.ClinicalAttributeMetadataCache;
 import org.cbioportal.cdd.service.exception.*;
 import org.cbioportal.cdd.config.CDDAppConfig;

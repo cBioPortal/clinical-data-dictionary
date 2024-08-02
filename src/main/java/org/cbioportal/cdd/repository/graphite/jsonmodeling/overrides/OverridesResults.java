@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 - 2020 Memorial Sloan-Kettering Cancer Center.
+ * Copyright (c) 2024 Memorial Sloan-Kettering Cancer Center.
  *
  * This library is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF
@@ -16,21 +16,23 @@
  * has been advised of the possibility of such damage.
 */
 
-package org.cbioportal.cdd.repository.topbraid;
+package org.cbioportal.cdd.repository.graphite.jsonmodeling.overrides;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-/**
- *
- * @author Manda Wilson
- **/
-public class TopBraidException extends Exception {
+import java.util.List;
 
-    private final static Logger logger = LoggerFactory.getLogger(TopBraidException.class);
+public class OverridesResults {
 
-    public TopBraidException(String message, Throwable cause) {
-        super(message, cause);
-        logger.error(message + ": " + cause + " (Check that authentication is working)");
+    @JsonProperty("bindings")
+    private List<OverridesBinding> bindings;
+
+    public List<OverridesBinding> getBindings() {
+        return bindings;
     }
+
+    public void setBindings(List<OverridesBinding> bindings) {
+        this.bindings = bindings;
+    }
+
 }

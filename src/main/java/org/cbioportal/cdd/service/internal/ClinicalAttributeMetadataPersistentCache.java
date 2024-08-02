@@ -20,7 +20,7 @@ import java.util.Map;
 import javax.cache.CacheManager;
 import javax.cache.spi.CachingProvider;
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
-import org.cbioportal.cdd.repository.topbraid.KnowledgeSystemsRepository;
+import org.cbioportal.cdd.repository.graphite.KnowledgeSystemsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +52,7 @@ public class ClinicalAttributeMetadataPersistentCache {
         return cacheManager;
     }
 
-    // retrieve cached TopBraid responses from default EHCache location
+    // retrieve cached Graphite responses from default EHCache location
     @Cacheable(value = "clinicalAttributeMetadataEHCache", key = "#root.target.CLINICAL_ATTRIBUTES_METADATA_CACHE_KEY", unless = "#result==null")
     public ArrayList<ClinicalAttributeMetadata> getClinicalAttributeMetadataFromPersistentCache() {
         return clinicalAttributeRepository.getClinicalAttributeMetadata();
@@ -63,7 +63,7 @@ public class ClinicalAttributeMetadataPersistentCache {
         return clinicalAttributeRepository.getClinicalAttributeMetadataOverrides();
     }
 
-    // retrieve cache TopBraid responses from backup EHCache location (and re-populate default EHCache locatin)
+    // retrieve cache Graphite responses from backup EHCache location (and re-populate default EHCache locatin)
     @Cacheable(value = "clinicalAttributeMetadataEHCache", key = "#root.target.CLINICAL_ATTRIBUTES_METADATA_CACHE_KEY", unless = "#result==null")
     public ArrayList<ClinicalAttributeMetadata> getClinicalAttributeMetadataFromPersistentCacheBackup() throws Exception {
         CacheManager backupCacheManager = getCacheManager("ehcache_backup.xml");
@@ -82,16 +82,16 @@ public class ClinicalAttributeMetadataPersistentCache {
         return clinicalAttributeMetadataOverrides;
     }
 
-    // update default EHCache location with TopBraid data
+    // update default EHCache location with Graphite data
     @CachePut(value = "clinicalAttributeMetadataEHCache", key = "#root.target.CLINICAL_ATTRIBUTES_METADATA_CACHE_KEY", unless = "#result==null")
     public ArrayList<ClinicalAttributeMetadata> updateClinicalAttributeMetadataInPersistentCache() {
-        logger.info("updating EHCache with updated clinical attribute metadata from TopBraid");
+        logger.info("updating EHCache with updated clinical attribute metadata from Graphite");
         return  clinicalAttributeRepository.getClinicalAttributeMetadata();
     }
 
     @CachePut(value = "clinicalAttributeMetadataOverridesEHCache", key = "#root.target.OVERRIDES_CACHE_KEY", unless = "#result==null")
     public Map<String, ArrayList<ClinicalAttributeMetadata>> updateClinicalAttributeMetadataOverridesInPersistentCache() {
-        logger.info("updating EHCache with updated overrides from TopBraid");
+        logger.info("updating EHCache with updated overrides from Graphite");
         return clinicalAttributeRepository.getClinicalAttributeMetadataOverrides();
     }
 

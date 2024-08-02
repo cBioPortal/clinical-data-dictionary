@@ -19,7 +19,6 @@ import java.util.*;
 import org.cbioportal.cdd.model.CancerStudy;
 import org.cbioportal.cdd.model.ClinicalAttributeMetadata;
 import org.cbioportal.cdd.service.ClinicalDataDictionaryService;
-import org.cbioportal.cdd.service.util.MSKVocabStudyUtil;
 import org.cbioportal.cdd.service.exception.CancerStudyNotFoundException;
 import org.cbioportal.cdd.service.exception.ClinicalAttributeNotFoundException;
 import org.cbioportal.cdd.service.exception.ClinicalMetadataSourceUnresponsiveException;
@@ -35,64 +34,43 @@ import org.springframework.stereotype.Service;
 public class ClinicalDataDictionaryServiceImpl implements ClinicalDataDictionaryService {
 
     @Autowired
-    private MSKVocabStudyUtil mskVocabStudyUtil;
-
-    @Autowired
-    @Qualifier("mskvocabulary")
-    private ClinicalDataDictionaryService cddServiceMskVocabularyImpl;
-
-    @Autowired
     @Qualifier("knowledgesystems")
-    private ClinicalDataDictionaryService cddServiceTopBraidImpl;
+    private ClinicalDataDictionaryService cddServiceImpl;
 
     private static final Logger logger = LoggerFactory.getLogger(ClinicalDataDictionaryServiceImpl.class);
 
     @Override
     public List<ClinicalAttributeMetadata> getClinicalAttributeMetadata(String cancerStudy)
         throws ClinicalMetadataSourceUnresponsiveException, CancerStudyNotFoundException {
-        if (mskVocabStudyUtil.useMskVocabularyForStudy(cancerStudy)) {
-            return cddServiceMskVocabularyImpl.getClinicalAttributeMetadata(cancerStudy);
-        } else {
-            return cddServiceTopBraidImpl.getClinicalAttributeMetadata(cancerStudy);
-        }
+        return cddServiceImpl.getClinicalAttributeMetadata(cancerStudy);
     }
 
     @Override
     public List<ClinicalAttributeMetadata> getMetadataByColumnHeaders(String cancerStudy, List<String> columnHeaders)
         throws ClinicalAttributeNotFoundException, ClinicalMetadataSourceUnresponsiveException, CancerStudyNotFoundException {
-        if (mskVocabStudyUtil.useMskVocabularyForStudy(cancerStudy)) {
-            return cddServiceMskVocabularyImpl.getMetadataByColumnHeaders(cancerStudy, columnHeaders);
-        } else {
-            return cddServiceTopBraidImpl.getMetadataByColumnHeaders(cancerStudy, columnHeaders);
-        }
+        return cddServiceImpl.getMetadataByColumnHeaders(cancerStudy, columnHeaders);
     }
 
     @Override
     public List<ClinicalAttributeMetadata> getMetadataBySearchTerms(List<String> searchTerms, String attributeType, boolean inclusiveSearch)
         throws ClinicalAttributeNotFoundException, ClinicalMetadataSourceUnresponsiveException {
-        return cddServiceTopBraidImpl.getMetadataBySearchTerms(searchTerms, attributeType, inclusiveSearch);
+        return cddServiceImpl.getMetadataBySearchTerms(searchTerms, attributeType, inclusiveSearch);
     }
 
     @Override
     public ClinicalAttributeMetadata getMetadataByColumnHeader(String cancerStudy, String columnHeader)
         throws ClinicalAttributeNotFoundException, ClinicalMetadataSourceUnresponsiveException, CancerStudyNotFoundException {
-        if (mskVocabStudyUtil.useMskVocabularyForStudy(cancerStudy)) {
-            return cddServiceMskVocabularyImpl.getMetadataByColumnHeader(cancerStudy, columnHeader);
-        } else {
-            return cddServiceTopBraidImpl.getMetadataByColumnHeader(cancerStudy, columnHeader);
-        }
+        return cddServiceImpl.getMetadataByColumnHeader(cancerStudy, columnHeader);
     }
 
     @Override
     public List<CancerStudy> getCancerStudies() throws ClinicalMetadataSourceUnresponsiveException {
-        return cddServiceTopBraidImpl.getCancerStudies();
+        return cddServiceImpl.getCancerStudies();
     }
 
     @Override
     public Map<String, String> forceResetCache() throws FailedCacheRefreshException {
-        // No longer in use, MskVocabulary project has been deleted and is no longer supported
-	// cddServiceMskVocabularyImpl.forceResetCache();
-        cddServiceTopBraidImpl.forceResetCache();
+        cddServiceImpl.forceResetCache();
         return Collections.singletonMap("response", "Success!");
     }
 
