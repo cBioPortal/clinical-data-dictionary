@@ -49,8 +49,6 @@ public class KnowledgeSystemsRepository extends GraphiteRepository<ClinicalAttri
     private String getOverridesQuery() {
         return "PREFIX cdd: <" + graphiteCddNamespacePrefix + "> " +
             "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> " +
-            "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
-            "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> " +
             "PREFIX g:<http://schema.synaptica.com/oasis#> " +
             "SELECT DISTINCT ?study_id ?column_header (SAMPLE(?PriorityValue) AS ?priority) " +
                 "(SAMPLE(?AttributeTypeValue) AS ?attribute_type) " +
@@ -64,7 +62,7 @@ public class KnowledgeSystemsRepository extends GraphiteRepository<ClinicalAttri
                 "?node skos:broader ?parent. " +
                 "?parent cdd:studyid ?study_id. " +
                 "?parent skos:broader ?grandparent. " +
-                "?grandparent rdfs:label ?column_header. " +
+                "?grandparent skos:prefLabel ?column_header. " +
                 "OPTIONAL { ?node cdd:priorityvalue ?PriorityValue }. " +
                 "OPTIONAL { ?node cdd:attributetypevalue ?AttributeTypeValue }. " +
                 "OPTIONAL { ?node cdd:datatypevalue ?DatatypeValue }. " +
@@ -89,11 +87,10 @@ public class KnowledgeSystemsRepository extends GraphiteRepository<ClinicalAttri
     private String getAttributesQuery() {
         return "PREFIX cdd: <" + graphiteCddNamespacePrefix + "> " +
             "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> " +
-            "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
             "PREFIX g:<http://schema.synaptica.com/oasis#> " +
             "SELECT ?column_header ?display_name ?attribute_type ?datatype ?description ?priority WHERE { " +
                 "?subject skos:inScheme <" + graphiteCddGraphId + "> . " +
-                "?subject rdfs:label ?column_header . " +
+                "?subject skos:prefLabel ?column_header . " +
                 "?subject cdd:attributetype ?attribute_type . " +
                 "?subject cdd:datatype ?datatype . " +
                 "?subject cdd:description ?description . " +
