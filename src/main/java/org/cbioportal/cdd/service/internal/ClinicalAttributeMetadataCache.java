@@ -115,7 +115,7 @@ public class ClinicalAttributeMetadataCache {
     * It is a public method so that it can be easily tested.
     */
     public void resetCache() {
-        logger.info("resetCache(): refilling clinical attribute cache");
+        logger.info("resetCache(): refilling clinical attribute cache from local JSON files");
 
         Date dateOfCurrentCacheRefresh = new Date();
         ArrayList<ClinicalAttributeMetadata> latestClinicalAttributeMetadata = null;
@@ -141,7 +141,7 @@ public class ClinicalAttributeMetadataCache {
 
         // regardless of whether ehcache was updated with new data - use that data to populate modeled object caches
         // ensures app starts up (between tomcat restarts) if Graphite is down
-        logger.info("Loading modeled object cache from EHCache");
+        logger.info("Loading modeled object cache from EHCache (backed by local JSON files)");
         try {
             // this will throw an exception if we cannot connect to Graphite AND cache is corrupt
             latestClinicalAttributeMetadata = clinicalAttributeMetadataPersistentCache.getClinicalAttributeMetadataFromPersistentCache();
@@ -195,7 +195,7 @@ public class ClinicalAttributeMetadataCache {
         logger.info("resetCache(): refilled overrides cache with " + latestOverrides.size() + " overrides");
 
         if (failedClinicalAttributeMetadataCacheRefresh || failedOverridesCacheRefresh) {
-            logger.info("Unable to update cache with latest data from Graphite... falling back on EHCache store.");
+            logger.info("Unable to update cache with latest data from repository... falling back on EHCache store.");
             throw new FailedCacheRefreshException("Failed to refresh cache", new Exception());
         } else {
             dateOfLastCacheRefresh = dateOfCurrentCacheRefresh;

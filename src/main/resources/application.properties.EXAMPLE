@@ -1,10 +1,3 @@
-# the graphite server sparql endpoint (e.g. http://localhost:7200/repositories/graphite)
-graphite.url=
-graphite.username=
-graphite.password=
-graphite.cddNamespacePrefix=
-graphite.cddGraphId=
-
 slack.url=
 
 ehcache.persistence.path=

@@ -191,6 +191,13 @@
             <include>**/log4j.properties</include>
         </includes>
       </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+        <includes>
+            <include>jsonfiles/**</include>
+        </includes>
+      </resource>
     </resources>
     <!-- enable filtering on test resources -->
     <testResources>
